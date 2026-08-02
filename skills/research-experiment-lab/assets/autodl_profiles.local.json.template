@@ -1,0 +1,62 @@
+{
+  "profiles": {
+    "autodl-main": {
+      "ssh_alias": "autodl-main",
+      "remote_root": "/root/autodl-tmp/research/PROJECT",
+      "data_root": "/root/autodl-tmp/datasets",
+      "weights_root": "/root/autodl-tmp/weights",
+      "session_backend": "tmux",
+      "console_instance_id": null,
+      "console_region_name": null,
+      "gpu_required_default": true,
+      "allow_no_card_mode": false,
+      "allow_data_disk_expand": false,
+      "max_data_disk_gb": null
+    },
+    "autodl-c25-example": {
+      "ssh_alias": "autodl-c25",
+      "remote_root": "/root/autodl-tmp/research/PROJECT",
+      "data_root": "/root/autodl-tmp/datasets",
+      "weights_root": "/root/autodl-tmp/weights",
+      "session_backend": "tmux",
+      "console_instance_id": "xzb715mwbw-9d69a00c",
+      "console_region_name": "northwest-B/C25",
+      "gpu_required_default": true,
+      "allow_no_card_mode": false,
+      "allow_data_disk_expand": false,
+      "max_data_disk_gb": null
+    },
+    "autodl-direct-example": {
+      "host": "region-N.autodl.com",
+      "port": 12345,
+      "user": "root",
+      "identity_file": "C:/Users/USER/.ssh/id_rsa",
+      "remote_root": "/root/autodl-tmp/research/PROJECT",
+      "data_root": "/root/autodl-tmp/datasets",
+      "weights_root": "/root/autodl-tmp/weights",
+      "session_backend": "tmux",
+      "console_instance_id": null,
+      "console_region_name": null,
+      "gpu_required_default": true,
+      "allow_no_card_mode": false,
+      "allow_data_disk_expand": false,
+      "max_data_disk_gb": null
+    },
+    "autodl-interactive-example": {
+      "host": "connect.example.seetacloud.com",
+      "port": 12345,
+      "user": "root",
+      "auth": "interactive-password",
+      "remote_root": "/root/autodl-tmp/research/PROJECT",
+      "data_root": "/root/autodl-tmp/datasets",
+      "weights_root": "/root/autodl-tmp/weights",
+      "session_backend": "screen",
+      "console_instance_id": null,
+      "console_region_name": null,
+      "gpu_required_default": true,
+      "allow_no_card_mode": false,
+      "allow_data_disk_expand": false,
+      "max_data_disk_gb": null
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "research-experiment/plan-v1",
+  "experiment_id": "example-experiment",
+  "plan_revision": 1,
+  "mode": "pilot",
+  "idea_id": "example-idea",
+  "idea_revision": 1,
+  "research_question": "",
+  "hypothesis": "",
+  "mechanism_prediction": "",
+  "null_explanation": "",
+  "datasets": [],
+  "splits": [],
+  "variants": [],
+  "baselines": [],
+  "metrics": [],
+  "seeds": [],
+  "success_thresholds": [],
+  "failure_thresholds": [],
+  "stop_conditions": [],
+  "confounders_and_controls": [],
+  "autonomy": {
+    "enabled": false,
+    "idea_event_cursor": null,
+    "auto_start_next_eligible_task": false,
+    "autodl_lifecycle": {
+      "authorized": false,
+      "profile": null,
+      "instance_id": null,
+      "allow_start": false,
+      "allow_stop": false,
+      "allow_no_card_mode": false,
+      "allow_data_disk_expand": false,
+      "max_data_disk_gb": null,
+      "max_data_disk_expand_cost": 0,
+      "max_idle_minutes": 30,
+      "max_lifecycle_budget": 0
+    }
+  },
+  "tasks": [],
+  "resource_policy": {
+    "gpu_required_default": true,
+    "tasks_may_override_gpu_required": true,
+    "data_disk_safety_margin": 0.15,
+    "large_download_direct_remote": true
+  },
+  "budget": {
+    "gpu_types": [],
+    "max_parallel_runs": 1,
+    "max_wall_time_hours": 24,
+    "max_retry_per_failure": 2,
+    "max_debug_runs": 6,
+    "checkpoint_download_limit_gb": 5
+  },
+  "required_outputs": [],
+  "required_runs": []
+}

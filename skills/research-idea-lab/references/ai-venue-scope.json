@@ -1,0 +1,165 @@
+{
+  "schema_version": "ai-openreview-venues/v2",
+  "policy": {
+    "main_conferences_allowed": true,
+    "workshops_allowed": true,
+    "position_tracks_allowed": true,
+    "journals_allowed": true,
+    "require_public_official_reviews": true,
+    "require_public_decisions_for_decision_patterns": true,
+    "require_public_meta_reviews_for_fatal_patterns": true
+  },
+  "source_types": {
+    "main-conference": {
+      "evidence_role": "review-and-rejection-calibration",
+      "allowed_uses": [
+        "idea-generation",
+        "reviewer-attacks",
+        "experimental-evidence-requirements",
+        "decision-linked-patterns",
+        "top-conference-calibration"
+      ],
+      "forbidden_uses": []
+    },
+    "workshop": {
+      "evidence_role": "emerging-idea-scouting",
+      "allowed_uses": [
+        "idea-generation",
+        "emerging-topics",
+        "cross-domain-transfer",
+        "early-failure-signals"
+      ],
+      "forbidden_uses": [
+        "top-conference-rejection-calibration",
+        "fatal-pattern-severity"
+      ]
+    },
+    "journal": {
+      "evidence_role": "soundness-and-revision",
+      "allowed_uses": [
+        "idea-generation",
+        "soundness",
+        "reproducibility",
+        "revision-paths",
+        "long-form-evidence"
+      ],
+      "forbidden_uses": [
+        "top-conference-excitement-calibration",
+        "top-conference-acceptance-prediction"
+      ]
+    },
+    "position-track": {
+      "evidence_role": "agenda-and-framing",
+      "allowed_uses": [
+        "open-problems",
+        "research-agendas",
+        "problem-framing",
+        "counterarguments",
+        "evaluation-critique"
+      ],
+      "forbidden_uses": [
+        "method-novelty-proof",
+        "experimental-sufficiency",
+        "method-paper-rejection-calibration"
+      ]
+    }
+  },
+  "venues": [
+    {
+      "family": "ICLR",
+      "category": "general-ml",
+      "source_type": "main-conference",
+      "priority": 1,
+      "pattern": "^ICLR\\.cc/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "NeurIPS",
+      "category": "general-ml",
+      "source_type": "main-conference",
+      "priority": 1,
+      "pattern": "^NeurIPS\\.cc/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "ICML",
+      "category": "general-ml",
+      "source_type": "main-conference",
+      "priority": 1,
+      "pattern": "^ICML\\.cc/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "AAAI",
+      "category": "general-ai",
+      "source_type": "main-conference",
+      "priority": 2,
+      "pattern": "^AAAI\\.org/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "CVPR",
+      "category": "computer-vision-video",
+      "source_type": "main-conference",
+      "priority": 1,
+      "pattern": "^thecvf\\.com/CVPR/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "ICCV",
+      "category": "computer-vision-video",
+      "source_type": "main-conference",
+      "priority": 1,
+      "pattern": "^thecvf\\.com/ICCV/[0-9]{4}/Conference$",
+      "openreview_verified": true
+    },
+    {
+      "family": "ICLR-Workshop",
+      "category": "general-ml-emerging",
+      "source_type": "workshop",
+      "priority": 3,
+      "pattern": "^ICLR\\.cc/[0-9]{4}/Workshop/[^/]+$",
+      "openreview_verified": true
+    },
+    {
+      "family": "NeurIPS-Workshop",
+      "category": "general-ml-emerging",
+      "source_type": "workshop",
+      "priority": 3,
+      "pattern": "^NeurIPS\\.cc/[0-9]{4}/Workshop/[^/]+$",
+      "openreview_verified": true
+    },
+    {
+      "family": "ICML-Workshop",
+      "category": "general-ml-emerging",
+      "source_type": "workshop",
+      "priority": 3,
+      "pattern": "^ICML\\.cc/[0-9]{4}/Workshop/[^/]+$",
+      "openreview_verified": false
+    },
+    {
+      "family": "NeurIPS-Position",
+      "category": "ai-agenda",
+      "source_type": "position-track",
+      "priority": 2,
+      "pattern": "^NeurIPS\\.cc/[0-9]{4}/Position_Paper_Track$",
+      "openreview_verified": true
+    },
+    {
+      "family": "ICML-Position",
+      "category": "ai-agenda",
+      "source_type": "position-track",
+      "priority": 2,
+      "pattern": "^ICML\\.cc/[0-9]{4}/Position_Paper_Track$",
+      "openreview_verified": true
+    },
+    {
+      "family": "TMLR",
+      "category": "general-ml-journal",
+      "source_type": "journal",
+      "priority": 2,
+      "pattern": "^TMLR$",
+      "openreview_verified": true
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "argv": ["python", "train.py", "--config", "configs/example.yaml"],
+  "cwd": ".",
+  "env": {},
+  "metrics_required": true,
+  "resource_interval_seconds": 30
+}

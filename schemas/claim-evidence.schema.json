@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim-evidence.schema.json",
+  "title": "Claim Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "claim_id", "claim", "status", "evidence"],
+  "properties": {
+    "schema_version": {"const": "research-writing/claim-evidence-v1"},
+    "project_id": {"type": "string"},
+    "claim_id": {"type": "string"},
+    "claim": {"type": "string", "minLength": 1},
+    "status": {"enum": ["planned", "supported", "partially-supported", "unsupported", "blocked"]},
+    "evidence": {"type": "array", "items": {"type": "object", "required": ["source", "role"]}},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "paper_section": {"type": "string"}
+  }
+}

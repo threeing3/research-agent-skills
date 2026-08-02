@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "figure-spec.schema.json",
+  "title": "Paper Figure Specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "figure_id", "purpose", "claim_ids", "figure_family", "editable_backend", "evidence_refs"],
+  "properties": {
+    "schema_version": {"const": "research-writing/figure-spec-v1"},
+    "project_id": {"type": "string"},
+    "figure_id": {"type": "string"},
+    "purpose": {"type": "string", "minLength": 1},
+    "claim_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "figure_family": {"enum": ["motivation", "method-flow", "qualitative", "quantitative", "overview"]},
+    "editable_backend": {"enum": ["drawio", "originpro", "other"]},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "required_components": {"type": "array", "items": {"type": "object"}},
+    "caption": {"type": "string"}
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Idea Lab"
+  short_description: "Multi-role generation and vetting of ML/AI ideas"
+  default_prompt: "Use $research-idea-lab to map this field, run independent native and cross-domain ideation, debate the candidates, and verify novelty and reviewer risks before experiments."

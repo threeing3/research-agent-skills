@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "idea-contract.schema.json",
+  "title": "Research Idea Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "idea_id", "revision", "status", "title", "problem", "core_hypothesis", "mechanism", "experiment_entry"],
+  "properties": {
+    "schema_version": {"const": "research-idea/v3"},
+    "project_id": {"type": "string", "minLength": 1},
+    "idea_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["raw", "screened", "novelty-risk", "discussion-active", "experiment-ready", "parked", "rejected"]},
+    "title": {"type": "string", "minLength": 1},
+    "problem": {"type": "string", "minLength": 1},
+    "core_hypothesis": {"type": "string", "minLength": 1},
+    "mechanism": {"type": "string", "minLength": 1},
+    "novelty": {"type": "object"},
+    "evaluation": {"type": "object"},
+    "experiment_entry": {"type": "object", "required": ["recommended_mode", "cheapest_test"], "properties": {"recommended_mode": {"type": "string"}, "cheapest_test": {"type": "string"}}}
+  }
+}

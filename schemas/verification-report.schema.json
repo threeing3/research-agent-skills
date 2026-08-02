@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verification-report.schema.json",
+  "title": "Experiment Verification Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "experiment_id", "plan_revision", "stage", "runs", "claims", "blockers"],
+  "properties": {
+    "schema_version": {"const": "research-experiment/verification-v1"},
+    "project_id": {"type": "string"},
+    "experiment_id": {"type": "string"},
+    "plan_revision": {"type": "integer", "minimum": 1},
+    "stage": {"enum": ["completed-technical", "verified-scientific", "paper-ready", "blocked"]},
+    "runs": {"type": "array", "items": {"type": "object"}},
+    "claims": {"type": "array", "items": {"type": "object", "required": ["claim_id", "status"]}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "idea_revision_request": {"type": ["object", "null"]}
+  }
+}
