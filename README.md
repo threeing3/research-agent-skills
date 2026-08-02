@@ -131,6 +131,36 @@ Idea Skill 的产出不是一串未经筛选的灵感，而是逐步收敛的研
 
 使用者可以加入自己的领域见解，例如某类工作在自己的方向中通常不被认可、某个指标容易被质疑、某个基线实际上更强。这些见解应作为带来源和置信度的评估规则加入，而不是直接覆盖论文事实。这样系统会逐渐形成个人化的 idea 评估标准，同时保留可审计的证据链。
 
+## Experiment Skill 的设计逻辑
+
+`research-experiment-lab` 的定位不是“让 AI 多跑几个实验”，而是把一个已经选中的研究想法，转换成边界清楚、过程可审计、结论可复核的证据。它遵循一条单向证据链：
+
+```text
+idea_contract.yaml → experiment_plan.json → 不可变 run → verification_report.json → 写作交接
+```
+
+具体设计分成五层：
+
+1. **入口门槛**：实验必须绑定 `idea_contract.yaml`（想法契约）或明确的研究问题；没有可检验假设时，先回到 Idea Skill，而不是直接开长实验。
+2. **预注册与冻结**：执行前固定假设、对比方法、数据集与划分、指标、随机种子、成功/失败阈值、停止条件、预算和潜在混杂因素，避免看到结果后再改规则。
+3. **不可变执行**：每次运行生成新的 `run_id`（运行标识），正式运行不原地覆盖；同时保存可读日志、结构化指标、资源占用、环境、代码同步状态和输出清单。
+4. **最小区分性调试**：失败时先复现并分类，再寻找第一个异常边界，设计能区分候选原因的最小测试；一次只改一个因素并新建运行。连续三次修复仍失败就停止并记录阻塞。
+5. **科学验证**：`completed-technical`（技术完成）不等于 `verified-scientific`（科学验证完成）。验证阶段检查声明的种子、基线公平性、数据划分、指标可重算性、不确定性，以及实验是否真正对应方法声称的机制；通过后才标记为 `paper-ready`（可进入论文）。
+
+实验模式按成本和目的拆开：`pilot`（低成本试跑）用于发现配置级错误，`full`（主实验）回答核心假设，`ablation`（消融）拆解贡献，`robustness`（稳健性）和 `efficiency`（效率）验证边界，`reproduction`（复现）确认外部结果，`debug`（调试）定位故障。实验输出的是证据和 `experiment_request.json`（实验请求），可以触发想法修订，但不会偷偷改写 Idea Skill 的原始契约。
+
+## Writing Skill 的来源与适配
+
+本仓库中的 `ai-research-writing-skill`（AI 研究写作技能）是基于上游仓库 [jin-s13/ai-research-writing-skill](https://github.com/jin-s13/ai-research-writing-skill) 的本地适配版本，不把它重新宣称为原创项目。上游 README 和其 schema（结构定义文件）中的 `$id` 都明确指向该仓库。
+
+本仓库保留上游的核心写作约束：先建立 claim-evidence map（论断—证据映射），禁止编造引用、数字和实验结论，生成 LaTeX/BibTeX（论文排版与参考文献格式）及编译检查产物，并把人的判断保留在关键决策环节。在此基础上做了三类适配：
+
+- 对接本仓库的 `research_state.json`、`idea_contract.yaml`、`experiment_plan.json`、`verification_report.json` 和 `claim_evidence.json`，让想法、实验和论文共享同一套状态与证据边界。
+- 对实验缺口只生成结构化的 `experiment_request.json`（实验请求），交回 `research-experiment-lab` 执行；写作技能本身不设计、启动或调试实验，避免把推测写成结果。
+- 将论文图表工作指向独立仓库 [paper-figures-skill](https://github.com/threeing3/paper-figures-skill)，写作技能负责 claim、caption（图注）、LaTeX 引用和证据绑定，不把绘图工具重复打包进来。
+
+因此，三者的职责边界是：Idea Skill 负责选择“值得验证什么”，Experiment Skill 负责产生“能否支持它的证据”，Writing Skill 负责把“已经验证的证据”组织成可检查的论文叙事。
+
 ## 共享协议
 
 跨技能文件统一保存在项目根目录：
