@@ -11,9 +11,10 @@ Evaluate in this order:
 3. **Mechanism identifiability**: Can an experiment distinguish the claimed mechanism from extra capacity, data, compute, prompting, retrieval, or engineering?
 4. **Simple-baseline survival**: Would a cheap heuristic, stronger prompt, larger context, retrieval baseline, or matched-compute baseline plausibly erase the claimed gain?
 5. **Novelty and collision resistance**: Is the remaining differentiator meaningful, and would it survive discovery of a near-simultaneous paper?
-6. **Soundness**: Are assumptions coherent and claims falsifiable? Is there a credible evaluation path?
-7. **Excitement**: If true, would the result change capability, understanding, practice, evaluation, or future research?
-8. **Pilot information gain**: Does the cheapest pilot strongly update belief in the mechanism rather than merely produce another metric?
+6. **Mechanism lineage**: Is this a genuinely new family or material causal revision, and are prior family failures still active?
+7. **Soundness**: Are assumptions coherent and claims falsifiable? Is there a credible evaluation path?
+8. **Excitement**: If true, would the result change capability, understanding, practice, evaluation, or future research?
+9. **Pilot information gain**: Does the cheapest pilot strongly update belief in the mechanism rather than merely produce another metric?
 
 ## Scored dimensions
 
@@ -45,6 +46,9 @@ Mark a gate `pass`, `unresolved`, or `fail`:
 - required data, compute, or evaluation access is unavailable;
 - the central claim depends on leakage, invalid measurement, or unethical data use;
 - the contribution type does not support the intended claims.
+- the proposal is a cosmetic variant of a failed or occupied mechanism family;
+- an inherited family failure remains unresolved;
+- the pilot's minimum prerequisites are mutually unsatisfiable under current data, compute, budget, or permissions.
 
 An unresolved or failed fatal gate blocks `experiment-ready`.
 
@@ -121,6 +125,8 @@ Promote only when:
 - novelty and recall confidence are recorded;
 - a discriminating pilot exists;
 - reviewer attacks have named evidence requirements;
+- the mechanism family, structured signatures, material delta, inherited failures, and cold anti-reskin verdict are recorded;
+- `scripts/check_idea_lineage.py` passes and the pilot prerequisites are jointly satisfiable;
 - the user explicitly selects the idea.
 
 ## Background–Motivation–Method coherence gate

@@ -27,7 +27,9 @@ elapsed time or an informal log message.
 After every condition-based check:
 
 1. Read the current `research_state.json`, experiment state, plan revision,
-   idea ID and idea revision.
+   idea ID, idea revision, mechanism family, and mechanism-signature hash.
+   Read the latest prelaunch reconciliation report and require it to match the
+   current plan and idea contract.
 2. Verify the active task with fresh artifacts and the proving command for its
    gate.
 3. If the task is technically and scientifically allowed to advance, select
@@ -36,6 +38,11 @@ After every condition-based check:
    `task-transition` event, and launch it through the configured backend.
 5. If no task is eligible, record `no-eligible-task` once and stop polling until
    the next scheduled check.
+
+Before step 3, reject any graph whose prerequisites are unsatisfied or cyclic.
+Classify the block using `references/prelaunch-reconciliation.md`; do not keep
+polling an external system for a contradiction that only a plan revision or
+user authorization can resolve.
 
 Never stop merely because a pilot, seed, or gate passed when the task graph has
 an eligible successor. Never invent a successor, change a hypothesis, or
@@ -172,6 +179,7 @@ Append at least these events when applicable:
 `instance-disk-expanded`,
 `download-progress`, `download-stalled`, `download-resumed`,
 `download-accepted`, `download-retry-exhausted`, `task-recovery`,
+`prelaunch-reconciled`, `prelaunch-blocked`, `family-failure-inherited`,
 `no-eligible-task`, and `campaign-blocked`.
 
 Every lifecycle or recovery event must include timestamp, experiment ID,

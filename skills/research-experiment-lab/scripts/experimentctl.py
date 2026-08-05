@@ -45,12 +45,16 @@ def initialize(args: argparse.Namespace) -> None:
     for relative in ("runs", "analysis", "logs"):
         (experiment_dir / relative).mkdir(parents=True, exist_ok=False)
     plan: dict[str, Any] = {
-        "schema_version": "research-experiment/plan-v1",
+        "schema_version": "research-experiment/plan-v2",
         "experiment_id": experiment_id,
         "plan_revision": 1,
         "mode": args.mode,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
+        "idea_contract_sha256": "",
+        "mechanism_family_id": "",
+        "mechanism_signature_sha256": "",
+        "inherited_failure_ids": [],
         "research_question": args.research_question,
         "hypothesis": "",
         "mechanism_prediction": "",
@@ -65,6 +69,17 @@ def initialize(args: argparse.Namespace) -> None:
         "failure_thresholds": [],
         "stop_conditions": [],
         "confounders_and_controls": [],
+        "prelaunch": {
+            "required_gates": [
+                "anti-reskin",
+                "mechanism-identifiability",
+                "simple-baseline-survival",
+                "data-feasibility",
+            ],
+            "constraints": [],
+            "lineage_check_report": "",
+            "last_reconciled_at": None,
+        },
         "autonomy": {
             "enabled": False,
             "idea_event_cursor": None,

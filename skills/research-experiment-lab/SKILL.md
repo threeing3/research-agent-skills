@@ -16,6 +16,7 @@ Read only the references needed for the task:
 | Task | Read first |
 |---|---|
 | New pilot or full campaign | `references/experiment-design.md`, `references/state-and-artifacts.md` |
+| Novel-method prelaunch or revised idea | `references/prelaunch-reconciliation.md` plus the new-pilot references |
 | AutoDL console, lifecycle, or other SSH execution | `references/autodl-operations.md`, `references/autodl-console-playbook.md`, `references/logging-and-statistics.md` |
 | Autonomous multi-step campaign | `references/autonomy-orchestration.md` |
 | Failed or anomalous run | `references/systematic-experiment-debugging.md` |
@@ -27,11 +28,17 @@ Read only the references needed for the task:
 1. Locate project-root `research_state.json`.
 2. Require a selected idea contract for novel-method work. Reproduction and
    diagnostic modes may instead cite an explicit research question.
+   For novel-method work, require a passed `research-idea/v4` anti-reskin gate,
+   mechanism family ID, mechanism-signature hash, and resolved inherited
+   failure ledger.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
    and failure thresholds, stop conditions, budget, and confounders before
    observing formal results.
+   Declare evidenced minimum prerequisites and verify that they are jointly
+   satisfiable. A smaller run that cannot possibly pass the frozen scientific
+   gate is not an eligible pilot.
 5. For an autonomously continuing campaign, declare a durable task graph in
    `experiment_plan.json.tasks`, including dependencies, gates, successors,
    retry limits, download limits, lifecycle permissions, and exact commands.
@@ -39,6 +46,9 @@ Read only the references needed for the task:
 6. Create every long run with `scripts/experimentctl.py new-run` before
    launching it. Refuse a long run if its record directory or readable log
    cannot be created.
+7. Before the first novel-method run and after every idea revision, run
+   `scripts/prelaunch_reconcile.py`. Preserve the report and refuse launch when
+   lineage, identity, inherited-failure, constraint, or task-graph checks fail.
 
 Supported modes are `pilot`, `full`, `ablation`, `robustness`, `efficiency`,
 `reproduction`, and `debug`.
@@ -91,6 +101,9 @@ Before every launch and scheduled check, reconcile the active idea ID,
 revision, and contract hash with `research-idea-lab`; a material idea revision
 stales queued tasks, preserves prior evidence, and requires a new plan revision
 and immutable run IDs rather than an in-place change.
+Also reconcile the mechanism family and signature hash. A renamed idea with the
+same failed mechanism remains blocked until `research-idea-lab` resolves the
+family failure; do not treat it as a fresh campaign.
 
 ## Logging Contract
 
@@ -122,7 +135,10 @@ Apply `references/systematic-experiment-debugging.md` before changing code:
 5. Implement one fix locally and create a new run.
 
 Do not tune away a negative scientific result. After three failed fixes for
-one symptom, stop and request architectural discussion.
+one symptom, stop and request architectural discussion. Do not count renaming,
+backbone swaps, optimizer swaps, or adding a training wrapper around the same
+target as architectural progress. Return these as an `idea-revision-request`
+with the inherited family evidence.
 
 ## Verify and Aggregate
 

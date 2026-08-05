@@ -2,6 +2,11 @@
 
 Use fresh evidence for every completion claim.
 
+For novel-method work, first require a passing prelaunch reconciliation tied
+to the exact idea-contract hash, mechanism family, mechanism-signature hash,
+and experiment-plan revision. A later rename or idea revision never repairs a
+failed gate retroactively.
+
 For autonomously continuing campaigns, the proving evidence must also show that
 the task graph, idea revision, dataset/split identity, and lifecycle permission
 were current at launch. A successor may start only after the predecessor's

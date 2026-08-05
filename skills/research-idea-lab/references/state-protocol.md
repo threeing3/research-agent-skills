@@ -23,7 +23,9 @@ research_state/
   review_patterns/logs/openreview-<venue-id>-<run-id>.log
   review_patterns/browser_import/<venue-id>/page-<offset>.json
   ideas/idea_pool.json
+  ideas/mechanism_families.json
   ideas/<idea-id>/idea_contract.yaml
+  ideas/<idea-id>/lineage_check.json
   ideas/<idea-id>/debate/debate_state.json
   ideas/<idea-id>/debate/cross_examination.yaml
   ideas/<idea-id>/debate/adversarial_review.yaml
@@ -58,7 +60,7 @@ research_state/
 
 Ownership:
 
-- `research-idea-lab`: literature, public reviewer-pattern library, ideation sessions, role debate, idea pool, novelty decisions, idea contracts.
+- `research-idea-lab`: literature, public reviewer-pattern library, ideation sessions, role debate, idea pool, mechanism-family and failure lineage, novelty decisions, idea contracts.
 - `research-experiment-lab`: pilot and full experiment plans, immutable runs, logs, synchronization, debugging, aggregation, and verification.
 - `ai-research-writing-skill`: paper state, claims, prose, publication assets, review, and submission.
 

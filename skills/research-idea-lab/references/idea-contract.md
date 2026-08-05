@@ -3,11 +3,41 @@
 Create `research_state/ideas/<idea-id>/idea_contract.yaml`:
 
 ```yaml
-schema_version: research-idea/v3
+schema_version: research-idea/v4
 idea_id: videoqa-example
 revision: 1
 status: experiment-ready
 title: ""
+lineage:
+  family_id: ""
+  relation_to_family: new-family
+  parent_idea_id: null
+  parent_revision: null
+  delta_from_parent:
+    causal_axes_changed: []
+    unchanged_axes: []
+    new_discriminating_prediction: ""
+  inherited_failures: []
+problem_signature:
+  task: ""
+  documented_failure: ""
+  target_variable: ""
+  operating_setting: ""
+mechanism_signature:
+  state: ""
+  observation: ""
+  action: ""
+  learning_signal: ""
+  supervision_source: ""
+  causal_operator: ""
+  intervention: ""
+  claimed_capability: ""
+evaluation_signature:
+  unit_of_analysis: ""
+  dataset_access: []
+  primary_outcome: ""
+  required_counterfactual: ""
+  strongest_simple_baseline: ""
 problem: ""
 problem_half_life: ""
 core_hypothesis: ""
@@ -113,6 +143,16 @@ experiment_entry:
   compute_budget: ""
   information_gain: ""
 blockers: []
+anti_reskin_gate:
+  status: pass
+  review_context_policy: cold
+  proposer_model_family: ""
+  reviewer_model_family: ""
+  independence_valid: true
+  mechanism_signature_sha256: ""
+  unresolved_failure_ids: []
+  verdict: new-family
+  report: ""
 decision:
   selected_by_user: false
   selected_at: ""
@@ -120,4 +160,8 @@ decision:
 
 The contract is an evidence-bearing handoff, not a promise of novelty or acceptance. Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans.
 
-Treat existing `research-idea/v2` contracts as readable legacy records. Migrate one to v3 only when materially revising that idea; do not bulk-rewrite historical contracts.
+Treat existing `research-idea/v2` and `research-idea/v3` contracts as readable
+legacy records. Migrate one to v4 only when materially revising or promoting
+that idea; do not bulk-rewrite historical contracts. Run
+`scripts/check_idea_lineage.py` before experiment handoff and store its report
+beside the contract.

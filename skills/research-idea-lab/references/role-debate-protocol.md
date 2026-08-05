@@ -96,7 +96,7 @@ Do not impose a fixed candidate count. Stop a role when new lenses yield only du
 
 ### 2. Cluster before discussion
 
-The Chair clusters proposals by problem, operative mechanism, and claimed capability. Merge only true duplicates; preserve distinct causal mechanisms even when titles or tasks are similar.
+The Chair clusters proposals by problem, operative mechanism, and claimed capability. Compare them with the persistent mechanism-family registry before assigning new IDs. Merge true duplicates and cosmetic variants; preserve distinct causal mechanisms even when titles or tasks are similar. A backbone, optimizer, training wrapper, acronym, or dataset change alone does not create a new family.
 
 Keep rejected and dominated candidates with reasons. Do not show proposer identity during comparative scoring when it is not needed.
 
@@ -133,6 +133,12 @@ The Adversarial Reviewer receives the proposals, cross-examination, closest work
 
 Do not infer a fatal issue from a single review comment or from rejection status alone.
 
+For a revision of a previously failed family, perform the anti-reskin portion
+as a cold review: expose the frozen contract, family ledger, closest work, and
+prior verification reports, but not proposer discussion history or desired
+outcome. The reviewer must identify the changed causal axis and new separating
+observation. If neither exists, return `cosmetic-variant`.
+
 ### 5. Bounded rebuttal and revision
 
 The originating proposer receives only the structured attacks and supporting evidence. It may:
@@ -146,6 +152,8 @@ The originating proposer receives only the structured attacks and supporting evi
 Default to one rebuttal. Permit one additional round only if new verified evidence changes a factual premise. A second round that merely restates arguments must terminate.
 
 A material mechanism revision creates a new candidate revision and invalidates stale novelty, reviewer, and pilot judgments.
+A cosmetic revision remains attached to the parent and cannot reset failed
+gates, debate rounds, or experiment eligibility.
 
 ### 6. Chair adjudication
 
@@ -191,6 +199,8 @@ Stop debate when:
 - two consecutive turns add no new evidence, attack, revision, or candidate;
 - the remaining dispute is a user preference;
 - the question requires an experiment rather than more argument.
+- two consecutive revisions change no causal axis or discriminating prediction;
+- one family has accumulated two scientific failures and the researcher has not explicitly reopened it.
 
 Escalate to search rather than debate for factual novelty disputes. Escalate to the user for a target, risk, resource, or contribution choice that would materially change the direction.
 
