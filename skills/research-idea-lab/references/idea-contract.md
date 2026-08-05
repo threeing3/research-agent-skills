@@ -3,7 +3,7 @@
 Create `research_state/ideas/<idea-id>/idea_contract.yaml`:
 
 ```yaml
-schema_version: research-idea/v4
+schema_version: research-idea/v5
 idea_id: videoqa-example
 revision: 1
 status: experiment-ready
@@ -40,6 +40,25 @@ evaluation_signature:
   strongest_simple_baseline: ""
 problem: ""
 problem_half_life: ""
+industry_problem:
+  status: not_applicable
+  normalized_failure: ""
+  system_boundary: ""
+  signal_ids: []
+  independent_organizations: []
+  independent_recurrence_count: null
+  single_source_exception: ""
+  production_impact_vector:
+    task_failure: null
+    human_intervention: null
+    latency: null
+    token_or_monetary_cost: null
+    security_or_privacy: null
+  cross_system_evidence: []
+  reproduction_readiness: null
+  public_reproduction_path: ""
+  academic_gap_status: unsearched
+  scientific_question: ""
 core_hypothesis: ""
 mechanism: ""
 contribution:
@@ -47,6 +66,23 @@ contribution:
   primary_claim: ""
   fallback_claim: ""
   venue_fit: ""
+publication_case:
+  status: unresolved
+  target_venues_or_tracks: []
+  submission_horizon: ""
+  contribution_type: ""
+  one_sentence_knowledge_claim: ""
+  exact_difference_from_closest_work: ""
+  minimum_publishable_evidence: []
+  public_reproduction_or_artifact_path: ""
+  required_baselines: []
+  required_generalization: []
+  required_failure_analysis: []
+  strongest_reviewer_attacks: []
+  collision_resistant_claim: ""
+  fallback_contribution: ""
+  fallback_venue_or_track: ""
+  blockers: []
 source_domain:
   field: ""
   transferable_principle: ""
@@ -105,6 +141,7 @@ evaluation_rubric:
     testability: {score: 0, confidence: low, evidence: ""}
     evaluation_completeness: {score: 0, confidence: low, evidence: ""}
     feasibility: {score: 0, confidence: low, evidence: ""}
+    publication_package_readiness: {score: 0, confidence: low, evidence: ""}
     salvage_value: {score: 0, confidence: low, evidence: ""}
 mechanism_identifiability:
   strongest_alternative: ""
@@ -174,8 +211,8 @@ decision:
 
 The contract is an evidence-bearing handoff, not a promise of novelty or acceptance. Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans.
 
-Treat existing `research-idea/v2` and `research-idea/v3` contracts as readable
-legacy records. Migrate one to v4 only when materially revising or promoting
+Treat existing `research-idea/v2`, `research-idea/v3`, and `research-idea/v4`
+contracts as readable legacy records. Migrate one to v5 only when materially revising or promoting
 that idea; do not bulk-rewrite historical contracts. Run
 `scripts/check_idea_lineage.py` before experiment handoff and store its report
 beside the contract.

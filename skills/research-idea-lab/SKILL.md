@@ -1,6 +1,6 @@
 ---
 name: research-idea-lab
-description: Discover, discuss, score, and adversarially vet novel research ideas for ML/AI, especially VideoQA and long-video understanding. Use when mapping a field, running structured multi-role brainstorming and debate, finding open problems, transferring mechanisms from other disciplines, checking whether an idea has already been done, comparing an idea against real reviewer rejection patterns, refreshing an existing idea pool with newly published work, or preparing an idea for pilot or full experimental validation.
+description: Discover, discuss, score, and adversarially vet publication-oriented research ideas for ML/AI, especially VideoQA, long-video understanding, agents, and fast-moving industrial AI problems. Use when mapping a field, mining production failures and practitioner signals, translating industry problems into publishable scientific questions, running structured multi-role brainstorming and debate, finding open problems, transferring mechanisms from other disciplines, checking whether an idea has already been done, comparing an idea against real reviewer rejection patterns, refreshing an existing idea pool, or preparing an idea for pilot or full experimental validation.
 ---
 
 # Research Idea Lab
@@ -17,7 +17,12 @@ Treat ideation as literature-grounded hypothesis discovery, not free-form brains
 4. Read `references/novelty-workflow.md` and `references/idea-evaluation-rubric.md`.
 5. Read `references/cross-domain-transfer.md` when generating or evaluating transferred ideas. For VideoQA work also read `references/videoqa-lenses.md`.
 6. Read `references/reviewer-pattern-workflow.md` when building, refreshing, or querying the rejection-pattern library.
-7. Read `references/ai-venue-scope.json` and reject sources outside its approved AI venue families. Preserve its source-type roles: main conferences calibrate reviewer attacks; workshops scout emerging ideas; journals inform soundness and revision; position tracks inform agendas and framing.
+7. Read `references/ai-venue-scope.json` and reject scholarly venue sources outside
+   its approved AI venue families. Preserve its source-type roles: main conferences
+   calibrate reviewer attacks; workshops scout emerging ideas; journals inform
+   soundness and revision; position tracks inform agendas and framing. Apply the
+   separate source policy in `references/industry-to-paper-workflow.md` to industry
+   signals.
 8. Use `scripts/openreview_public_corpus.py` for OpenReview coverage probes, public-corpus collection, browser-safe page plans, and browser-verified JSON ingest. Probe before collecting a new venue or year.
 9. When generating, substantially revising, or debating ideas, read `references/role-debate-protocol.md` and `references/role-artifact-schemas.md`.
 10. Before creating a candidate, revising a failed idea, or promoting an idea,
@@ -26,12 +31,20 @@ Treat ideation as literature-grounded hypothesis discovery, not free-form brains
 11. When comparing serious candidates or deciding whether a pilot is informative,
     read `references/research-process-metrics.md`. Use its four-check core plus only
     the triggered conditional metrics; never turn the panel into an acceptance score.
+12. When the topic is fast-moving, industry-led, agent-related, or explicitly
+    publication-first, read `references/industry-to-paper-workflow.md`. Treat industry
+    evidence as problem evidence, then apply its publication-first gate before
+    promotion.
 
 ## Workflow
 
 ### 1. Define the search boundary
 
-Record the target problem, tasks, datasets, method families, adjacent fields, date range, exclusions, and available compute. Separate the user's claims from assumptions.
+Record the target problem, tasks, datasets, method families, adjacent fields, date
+range, exclusions, available compute, intended venue families, contribution types,
+and submission horizon. Separate the user's claims from assumptions. For an
+industry-led topic, also record the production boundary, public reproduction
+constraints, and which private evidence is unavailable.
 
 ### 2. Search before converging
 
@@ -42,6 +55,10 @@ In `baseline` mode, build a field map and the first candidate pool in the same r
 - Expand terminology, abbreviations, task aliases, mechanism names, and adversarial phrasings.
 - Follow backward and forward citations around the closest papers.
 - Search adjacent disciplines for structurally matching problems and mechanisms, not merely shared vocabulary.
+- For industry-led topics, run a separate production-signal lane across engineering
+  reports, incident reviews, changelogs, issue trackers, benchmark failure analyses,
+  and practitioner reports. Normalize and deduplicate source lineages using
+  `references/industry-to-paper-workflow.md`.
 - Continue until query saturation: two consecutive materially different query families add no new close-work cluster. A hard time or access limit must be recorded, never hidden.
 
 In `incremental` mode:
@@ -50,13 +67,22 @@ In `incremental` mode:
 - Re-run saved high-risk novelty queries and inspect newly citing/cited close work.
 - Re-score affected ideas. Do not silently preserve a novelty verdict after conflicting work appears.
 
-Save search provenance and update `literature/field_snapshot.json` plus `literature/search_history.jsonl`.
+Save scholarly search provenance in `literature/field_snapshot.json` and
+`literature/search_history.jsonl`. Save industry scan provenance separately in
+`industry/scan_manifest.json` and `industry/signals.jsonl`; do not mix practitioner
+claims into the scholarly novelty corpus.
 
 ### 3. Generate candidates continuously
 
 Generate candidates while mapping the field. Do not impose a fixed count. Stop only when additional lenses yield duplicates, trivial variants, or ideas dominated by existing work.
 
 Use problem-first, contradiction, boundary/failure, simplicity, composition/decomposition, abstraction-shift, changed-assumption, stakeholder, and cross-domain transfer lenses. Treat cross-domain transfer as a first-class innovation source, but follow `references/cross-domain-transfer.md`: require a structural mapping, a target-domain adoption search, broken-assumption analysis, and a falsifiable prediction. A renamed source method or surface analogy is not innovation.
+
+For an industry-origin candidate, require an observed failure, normalized system
+boundary, independent recurrence or unusually strong public evidence, scholarly gap,
+falsifiable claim, public evaluation path, and target contribution type. Reject a
+vendor-specific bug fix or product workaround that does not yield transferable
+knowledge.
 
 For a new candidate pool, follow `references/role-debate-protocol.md`:
 
@@ -87,6 +113,9 @@ For every serious candidate:
 - Search the exact proposed mechanism, weaker and stronger variants, synonyms, component combinations, source-domain terms, target-domain terms, and the claimed outcome.
 - Identify the closest work and compare problem, mechanism, supervision, data, evaluation, and claimed contribution.
 - Search failed attempts and limitations; distinguish genuinely open, partially attempted, stale-tool dead end, and plausibly fundamental barrier.
+- For an industry-origin claim, challenge source independence, denominator quality,
+  vendor incentives, version specificity, cross-system persistence, and public
+  reproducibility. Search for evidence that the problem has already disappeared.
 - Classify contribution as capability-unlocking, problem-solving, empirical discovery, resource/benchmark, reframing, or incremental extension.
 - Separate `soundness` from `excitement`; a plausible method can still be unimportant, and an exciting claim can still be unsupported.
 - Test mechanism identifiability: specify an observation that distinguishes the proposed mechanism from capacity, data, compute, prompting, retrieval, and implementation confounders.
@@ -108,6 +137,12 @@ Apply the gates and scoring anchors in `references/idea-evaluation-rubric.md`. R
 Require:
 
 - a contribution-type fit judgment;
+- a passed publication-first gate with a target venue or track, one-sentence
+  knowledge claim, minimum evidence package, public reproduction path, submission
+  horizon, and strongest reviewer attacks;
+- for industry-origin candidates, the independent recurrence count, production-impact
+  vector, cross-system persistence matrix, reproduction-readiness rating, and
+  academic-gap status from `references/industry-to-paper-workflow.md`;
 - problem half-life and benchmark half-life;
 - mechanism identifiability;
 - simple-baseline survival;
@@ -126,7 +161,10 @@ Require:
 - no unresolved high-severity diagnostic blind spot, unfair baseline comparison,
   unsupported central claim, or missing central kill rule.
 
-Use scores to compare candidates, not to manufacture precision. A candidate with unresolved fatal novelty, feasibility, ethics, or mechanism gates cannot become `experiment-ready`.
+Use scores to compare candidates, not to manufacture precision or predict acceptance.
+A candidate with an unresolved publication-first, novelty, feasibility, ethics, or
+mechanism gate cannot become `experiment-ready`. Industry importance never offsets a
+fatal scientific or publication-package weakness.
 
 ### 6. Discuss and promote
 
@@ -134,6 +172,9 @@ Present the field map and provisional candidates together. For each candidate st
 
 - two-sentence problem and mechanism;
 - why it matters;
+- whether the problem is scholarly-origin, industry-origin, or jointly evidenced;
+- target venue or track, contribution type, one-sentence paper claim, and minimum
+  publishable evidence package;
 - closest prior work and exact distinction;
 - cross-domain source, if any;
 - soundness, excitement, novelty, feasibility, and impact risks;
@@ -167,6 +208,9 @@ user reviews it.
 
 - Distinguish metadata-only evidence, abstract-level evidence, and full-text-verified evidence.
 - Rank evidence sources: primary papers, official reviewer criteria and public reviews, systematic syntheses, then informal experience posts. Use experience posts only to generate hypotheses or queries, never as decisive novelty evidence.
+- Within industry evidence, rank public incidents and measured production studies
+  above engineering narratives, reproducible issue reports, practitioner posts, and
+  marketing claims. Do not let multiple reposts masquerade as independent evidence.
 - Do not fabricate papers, identifiers, quotes, results, or novelty certainty.
 - Use only publicly readable reviewer records; preserve source identifiers and attribution, do not infer reviewer identities, and do not republish full review text.
 - Never pass OpenReview credentials on the command line or store them in project state. If anti-bot verification blocks guest access, record the challenge and use an explicitly authorized local environment token or browser session; never bypass access controls.

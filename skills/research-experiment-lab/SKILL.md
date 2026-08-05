@@ -28,9 +28,10 @@ Read only the references needed for the task:
 1. Locate project-root `research_state.json`.
 2. Require a selected idea contract for novel-method work. Reproduction and
    diagnostic modes may instead cite an explicit research question.
-   For novel-method work, require a passed `research-idea/v4` anti-reskin gate,
-   mechanism family ID, mechanism-signature hash, and resolved inherited
-   failure ledger.
+   For novel-method work, require a passed `research-idea/v5` publication case
+   and anti-reskin gate, mechanism family ID, mechanism-signature hash, and
+   resolved inherited failure ledger. Treat v2-v4 contracts as historical and
+   require migration before a new or materially revised campaign.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success

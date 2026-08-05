@@ -23,6 +23,7 @@ identifiers into `experiment_plan.json`:
 Reject the handoff when:
 
 - the idea is not `experiment-ready` or was not explicitly selected;
+- the publication-first gate did not pass or still has blockers;
 - the anti-reskin gate did not pass;
 - any inherited failure is unresolved;
 - the idea revision, family, contract hash, or mechanism hash differs;
@@ -39,6 +40,7 @@ Add a `prelaunch` object to the plan:
 ```json
 {
   "required_gates": [
+    "publication-first",
     "anti-reskin",
     "mechanism-identifiability",
     "simple-baseline-survival",

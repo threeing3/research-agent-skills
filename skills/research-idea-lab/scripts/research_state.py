@@ -18,6 +18,7 @@ def init(root: Path) -> None:
     base = root / "research_state"
     for relative in (
         "literature",
+        "industry",
         "ideation_sessions",
         "review_patterns",
         "ideas",
@@ -35,6 +36,8 @@ def init(root: Path) -> None:
             "active_idea_id": None,
             "paths": {
                 "field_snapshot": "research_state/literature/field_snapshot.json",
+                "industry_scan_manifest": "research_state/industry/scan_manifest.json",
+                "industry_signals": "research_state/industry/signals.jsonl",
                 "ideation_sessions": "research_state/ideation_sessions",
                 "review_patterns": "research_state/review_patterns",
                 "idea_pool": "research_state/ideas/idea_pool.json",
@@ -49,6 +52,8 @@ def init(root: Path) -> None:
     state = json.loads(index.read_text(encoding="utf-8"))
     paths = state.setdefault("paths", {})
     required_paths = {
+        "industry_scan_manifest": "research_state/industry/scan_manifest.json",
+        "industry_signals": "research_state/industry/signals.jsonl",
         "ideation_sessions": "research_state/ideation_sessions",
         "review_patterns": "research_state/review_patterns",
     }

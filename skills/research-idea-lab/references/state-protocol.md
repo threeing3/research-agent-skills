@@ -7,6 +7,8 @@ research_state.json
 research_state/
   literature/field_snapshot.json
   literature/search_history.jsonl
+  industry/scan_manifest.json
+  industry/signals.jsonl
   ideation_sessions/<session-id>/session.json
   ideation_sessions/<session-id>/evidence_packet.json
   ideation_sessions/<session-id>/native_candidates.yaml
@@ -47,6 +49,8 @@ research_state/
   "active_idea_id": null,
     "paths": {
       "field_snapshot": "research_state/literature/field_snapshot.json",
+      "industry_scan_manifest": "research_state/industry/scan_manifest.json",
+      "industry_signals": "research_state/industry/signals.jsonl",
       "ideation_sessions": "research_state/ideation_sessions",
       "review_patterns": "research_state/review_patterns",
     "idea_pool": "research_state/ideas/idea_pool.json",
@@ -60,7 +64,9 @@ research_state/
 
 Ownership:
 
-- `research-idea-lab`: literature, public reviewer-pattern library, ideation sessions, role debate, idea pool, mechanism-family and failure lineage, novelty decisions, idea contracts.
+- `research-idea-lab`: literature, public industry-signal records, public
+  reviewer-pattern library, ideation sessions, role debate, idea pool,
+  mechanism-family and failure lineage, novelty decisions, idea contracts.
 - `research-experiment-lab`: pilot and full experiment plans, immutable runs, logs, synchronization, debugging, aggregation, and verification.
 - `ai-research-writing-skill`: paper state, claims, prose, publication assets, review, and submission.
 

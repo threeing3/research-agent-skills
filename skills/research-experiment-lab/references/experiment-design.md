@@ -16,6 +16,8 @@ Define one campaign around an idea revision or reproduction question. Record:
 - confounders and controls.
 - mechanism family, mechanism-signature hash, inherited failure IDs, and the
   passed anti-reskin report;
+- passed publication case, target venue or track, minimum publishable evidence,
+  and public reproduction or artifact path;
 - evidenced prerequisite constraints whose available values make every frozen
   scientific threshold attainable.
 

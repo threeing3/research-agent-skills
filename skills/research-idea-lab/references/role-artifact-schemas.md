@@ -85,6 +85,7 @@ Allowed session statuses:
   "system_assumptions": [],
   "compute_constraints": {},
   "field_snapshot": {"path": "", "coverage_end": ""},
+  "industry_snapshot": {"manifest": "", "signals": "", "coverage_end": ""},
   "evidence": [
     {
       "evidence_id": "E001",
@@ -115,6 +116,7 @@ candidates:
   - idea_id: ""
     revision: 1
     origin: native
+    evidence_origin: scholarly
     title: ""
     family_id: ""
     relation_to_family: new-family
@@ -135,6 +137,10 @@ candidates:
     simple_pilot_concept: ""
     kill_condition: ""
     expected_reviewer_attack: ""
+    industry_signal_ids: []
+    target_venues_or_tracks: []
+    one_sentence_knowledge_claim: ""
+    minimum_publishable_evidence: []
     uncertainty: []
     transfer_card: null
 ```
@@ -194,6 +200,15 @@ fatal_gates:
     status: unresolved
     evidence_ids: []
     repair_required: ""
+publication_case:
+  status: unresolved
+  target_venues_or_tracks: []
+  contribution_type: ""
+  one_sentence_knowledge_claim: ""
+  minimum_publishable_evidence: []
+  public_reproduction_or_artifact_path: ""
+  strongest_reviewer_attacks: []
+  blockers: []
 anti_reskin:
   review_context_policy: cold
   independence_valid: false
@@ -259,6 +274,12 @@ anti_reskin_gate:
   relation_to_family: ""
   unresolved_failure_ids: []
   report: ""
+publication_first_gate:
+  status: unresolved
+  target_venues_or_tracks: []
+  one_sentence_knowledge_claim: ""
+  minimum_publishable_evidence: []
+  blockers: []
 kill_conditions: []
 fallback_contribution: ""
 process_metrics:
@@ -296,5 +317,7 @@ Log evidence refreshes, role starts and completions, candidate creation, merges,
 - The Chair is the sole canonical writer for ideation sessions, idea-pool transitions, debate state, and the research-state index.
 - Worker agents may create temporary outputs only when the Chair provides a bounded path; the Chair validates and promotes them.
 - `idea_pool.json` remains the complete candidate registry, including parked and rejected candidates.
-- New idea contracts use `research-idea/v3`. Treat existing `research-idea/v2` contracts as readable legacy records and migrate only when materially revising that idea.
+- New idea contracts use `research-idea/v5`. Treat existing `research-idea/v2`,
+  `research-idea/v3`, and `research-idea/v4` contracts as readable legacy records and
+  migrate only when materially revising that idea.
 - A debate decision does not set `experiment-ready`. That transition requires passed fatal gates and explicit user selection.

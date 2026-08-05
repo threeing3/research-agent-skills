@@ -7,14 +7,16 @@ Use this rubric after field mapping and before experiment handoff. Keep `soundne
 Evaluate in this order:
 
 1. **Problem durability**: Is the problem important, real, and likely to remain relevant long enough to finish the work?
-2. **Contribution fit**: Is the intended contribution a method, capability, empirical discovery, benchmark/resource, reframing, or theory/analysis contribution? Would the target venue recognize that contribution type?
-3. **Mechanism identifiability**: Can an experiment distinguish the claimed mechanism from extra capacity, data, compute, prompting, retrieval, or engineering?
-4. **Simple-baseline survival**: Would a cheap heuristic, stronger prompt, larger context, retrieval baseline, or matched-compute baseline plausibly erase the claimed gain?
-5. **Novelty and collision resistance**: Is the remaining differentiator meaningful, and would it survive discovery of a near-simultaneous paper?
-6. **Mechanism lineage**: Is this a genuinely new family or material causal revision, and are prior family failures still active?
-7. **Soundness**: Are assumptions coherent and claims falsifiable? Is there a credible evaluation path?
-8. **Excitement**: If true, would the result change capability, understanding, practice, evaluation, or future research?
-9. **Pilot information gain**: Does the cheapest pilot strongly update belief in the mechanism rather than merely produce another metric?
+2. **Problem evidence**: For an industry-origin problem, is the failure recurring or unusually well documented, bounded, current, and publicly approximable?
+3. **Contribution fit**: Is the intended contribution a method, capability, empirical discovery, benchmark/resource, reframing, or theory/analysis contribution? Would the target venue recognize that contribution type?
+4. **Publication case**: Can the idea become a legible one-sentence knowledge claim with a feasible minimum evidence package for a named venue or track and submission horizon?
+5. **Mechanism identifiability**: Can an experiment distinguish the claimed mechanism from extra capacity, data, compute, prompting, retrieval, or engineering?
+6. **Simple-baseline survival**: Would a cheap heuristic, stronger prompt, larger context, retrieval baseline, or matched-compute baseline plausibly erase the claimed gain?
+7. **Novelty and collision resistance**: Is the remaining differentiator meaningful, and would it survive discovery of a near-simultaneous paper?
+8. **Mechanism lineage**: Is this a genuinely new family or material causal revision, and are prior family failures still active?
+9. **Soundness**: Are assumptions coherent and claims falsifiable? Is there a credible evaluation path?
+10. **Excitement**: If true, would the result change capability, understanding, practice, evaluation, or future research?
+11. **Pilot information gain**: Does the cheapest pilot strongly update belief in the mechanism rather than merely produce another metric?
 
 ## Scored dimensions
 
@@ -32,6 +34,7 @@ Score each dimension from 0 to 4 with a short evidence note and confidence.
 | Testability | no decisive feasible test | indirect test | cheap falsifying or discriminating test |
 | Evaluation completeness | unsuitable evidence | core benchmark only | direct metrics, strong baselines, generalization, failures |
 | Feasibility | unavailable data/compute | possible with material risk | feasible within stated resources |
+| Publication package readiness | no venue-legible claim or evidence path | plausible venue and partial package | named venue/track, crisp claim, feasible minimum evidence, and artifact path |
 | Salvage value | failed hypothesis yields little | reusable artifact or lesson | multiple publishable outcomes or durable resource |
 
 Scores compare candidates; they are not probabilities or acceptance predictions.
@@ -45,7 +48,11 @@ Mark a gate `pass`, `unresolved`, or `fail`:
 - the idea loses to an obvious simple or matched-budget baseline;
 - required data, compute, or evaluation access is unavailable;
 - the central claim depends on leakage, invalid measurement, or unethical data use;
-- the contribution type does not support the intended claims.
+- the contribution type does not support the intended claims;
+- no target venue or track recognizes the proposed contribution, or the central
+  minimum evidence package cannot be produced within the stated submission horizon;
+- an industry-origin problem is supported only by duplicated anecdotes, depends on
+  inaccessible private evidence, or cannot be translated into transferable knowledge;
 - the proposal is a cosmetic variant of a failed or occupied mechanism family;
 - an inherited family failure remains unresolved;
 - the pilot's minimum prerequisites are mutually unsatisfiable under current data, compute, budget, or permissions.
@@ -122,12 +129,18 @@ Promote only when:
 
 - all fatal gates pass;
 - contribution type and primary claim are explicit;
+- the publication-first gate passes with target venue or track, submission horizon,
+  one-sentence knowledge claim, minimum publishable evidence, and a public
+  reproduction or artifact path;
+- every industry-origin candidate records its normalized failure, source lineage,
+  independent recurrence, impact vector, cross-system evidence, reproduction
+  readiness, and academic-gap status;
 - novelty and recall confidence are recorded;
 - a discriminating pilot exists;
 - reviewer attacks have named evidence requirements;
 - the mechanism family, structured signatures, material delta, inherited failures, and cold anti-reskin verdict are recorded;
 - `scripts/check_idea_lineage.py` passes and the pilot prerequisites are jointly satisfiable;
-- the user explicitly selects the idea.
+- the user explicitly selects the idea;
 - the four core process checks and only the triggered conditional metrics in
   `research-process-metrics.md` include raw counts, denominators, evidence,
   assumptions, and missingness;

@@ -22,7 +22,7 @@ SPEC.loader.exec_module(MODULE)
 
 def idea_contract() -> dict:
     return {
-        "schema_version": "research-idea/v4",
+        "schema_version": "research-idea/v5",
         "idea_id": "idea-1",
         "revision": 2,
         "status": "experiment-ready",
@@ -35,6 +35,7 @@ def idea_contract() -> dict:
         "problem_signature": {"task": "VideoQA"},
         "mechanism_signature": {"action": "temporal query", "intervention": "matched substitution"},
         "evaluation_signature": {"unit_of_analysis": "video-question"},
+        "publication_case": {"status": "pass", "blockers": []},
         "anti_reskin_gate": {"status": "pass", "independence_valid": True},
     }
 
@@ -116,6 +117,17 @@ class PrelaunchReconcileTests(unittest.TestCase):
             result = run(*write_fixture(Path(directory), cyclic=True))
             self.assertEqual(result.returncode, 1)
             self.assertIn("contains a cycle", result.stdout)
+
+    def test_unresolved_publication_case_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            contract_path, plan_path = write_fixture(root)
+            contract = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+            contract["publication_case"]["status"] = "unresolved"
+            contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
+            result = run(contract_path, plan_path)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("publication-first-gate", result.stdout)
 
 
 if __name__ == "__main__":

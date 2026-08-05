@@ -18,7 +18,13 @@ import yaml
 
 
 OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
-REQUIRED_GATES = {"anti-reskin", "mechanism-identifiability", "simple-baseline-survival", "data-feasibility"}
+REQUIRED_GATES = {
+    "publication-first",
+    "anti-reskin",
+    "mechanism-identifiability",
+    "simple-baseline-survival",
+    "data-feasibility",
+}
 
 
 def now() -> str:
@@ -129,11 +135,13 @@ def main() -> int:
         plan = read_json(plan_path)
         lineage = contract.get("lineage") if isinstance(contract.get("lineage"), dict) else {}
         gate = contract.get("anti_reskin_gate") if isinstance(contract.get("anti_reskin_gate"), dict) else {}
+        publication = contract.get("publication_case") if isinstance(contract.get("publication_case"), dict) else {}
         decision = contract.get("decision") if isinstance(contract.get("decision"), dict) else {}
 
-        checks.append(check_result("idea-schema", contract.get("schema_version") == "research-idea/v4", str(contract.get("schema_version"))))
+        checks.append(check_result("idea-schema", contract.get("schema_version") == "research-idea/v5", str(contract.get("schema_version"))))
         checks.append(check_result("idea-experiment-ready", contract.get("status") == "experiment-ready", str(contract.get("status"))))
         checks.append(check_result("idea-user-selected", decision.get("selected_by_user") is True, str(decision.get("selected_by_user"))))
+        checks.append(check_result("publication-first-gate", publication.get("status") == "pass" and publication.get("blockers") in ([], None), repr(publication.get("status"))))
         checks.append(check_result("anti-reskin-gate", gate.get("status") == "pass" and gate.get("independence_valid") is True and gate.get("review_context_policy") == "cold", repr(gate.get("status"))))
 
         inherited = lineage.get("inherited_failures", []) if isinstance(lineage, dict) else []

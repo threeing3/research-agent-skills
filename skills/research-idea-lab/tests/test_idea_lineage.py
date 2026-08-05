@@ -20,7 +20,7 @@ SPEC.loader.exec_module(MODULE)
 
 def contract() -> dict:
     payload = {
-        "schema_version": "research-idea/v4",
+        "schema_version": "research-idea/v5",
         "idea_id": "idea-1",
         "revision": 1,
         "status": "experiment-ready",
@@ -58,6 +58,22 @@ def contract() -> dict:
             "primary_outcome": "fixed-budget accuracy",
             "required_counterfactual": "matched alternative action",
             "strongest_simple_baseline": "temporal distance",
+        },
+        "industry_problem": {
+            "status": "not_applicable",
+        },
+        "publication_case": {
+            "status": "pass",
+            "target_venues_or_tracks": ["ICLR main track"],
+            "submission_horizon": "next complete submission cycle",
+            "contribution_type": "empirical discovery",
+            "one_sentence_knowledge_claim": "Controlled evidence substitution isolates action-value estimation failures in VideoQA search.",
+            "exact_difference_from_closest_work": "Separates action value from temporal proximity under matched evidence.",
+            "minimum_publishable_evidence": ["controlled study", "matched baseline"],
+            "public_reproduction_or_artifact_path": "public fixture and evaluation code",
+            "strongest_reviewer_attacks": ["proxy task", "baseline strength"],
+            "collision_resistant_claim": "controlled failure analysis",
+            "blockers": [],
         },
         "anti_reskin_gate": {
             "status": "pass",
@@ -100,6 +116,49 @@ class IdeaLineageTests(unittest.TestCase):
         result = run(payload)
         self.assertEqual(result.returncode, 1)
         self.assertIn("cosmetic-variant cannot pass", result.stdout)
+
+    def test_unresolved_publication_case_blocks(self) -> None:
+        payload = contract()
+        payload["publication_case"]["status"] = "unresolved"
+        result = run(payload)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("publication_case.status must be pass", result.stdout)
+
+    def test_single_industry_source_needs_exception(self) -> None:
+        payload = contract()
+        payload["industry_problem"] = {
+            "status": "supported",
+            "normalized_failure": "tool errors compound across long tasks",
+            "system_boundary": "public coding-agent tasks",
+            "signal_ids": ["IND-001"],
+            "independent_organizations": ["example-org"],
+            "independent_recurrence_count": 1,
+            "single_source_exception": "",
+            "reproduction_readiness": 3,
+            "public_reproduction_path": "public trace replay",
+            "scientific_question": "Can early trajectory signals predict unrecoverable failure?",
+        }
+        result = run(payload)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("single_source_exception is required", result.stdout)
+
+    def test_supported_industry_problem_with_two_sources_passes(self) -> None:
+        payload = contract()
+        payload["industry_problem"] = {
+            "status": "supported",
+            "normalized_failure": "tool errors compound across long tasks",
+            "system_boundary": "public coding-agent tasks",
+            "signal_ids": ["IND-001", "IND-002"],
+            "independent_organizations": ["org-a", "org-b"],
+            "independent_recurrence_count": 2,
+            "single_source_exception": "",
+            "reproduction_readiness": 3,
+            "public_reproduction_path": "public trace replay",
+            "scientific_question": "Can early trajectory signals predict unrecoverable failure?",
+        }
+        payload["anti_reskin_gate"]["mechanism_signature_sha256"] = MODULE.signature(payload)
+        result = run(payload)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

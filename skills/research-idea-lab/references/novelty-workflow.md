@@ -36,6 +36,12 @@ Rank evidence:
 
 Use informal sources to discover objections and search terms, not to establish novelty or venue policy.
 
+For fast-moving industrial topics, run the separate evidence lane in
+`industry-to-paper-workflow.md`. Industry sources may establish a production failure,
+impact boundary, or reproducibility lead. They do not establish scholarly novelty.
+Search public disclosures of allegedly common industry techniques because industry
+practice may still be relevant prior art even when it is not a peer-reviewed paper.
+
 ## Candidate comparison
 
 Compare candidates with `idea-evaluation-rubric.md`. Keep soundness and excitement separate. Include importance, problem half-life, mechanism identifiability, novelty evidence, closest-work distance, collision resistance, simple-baseline survival, pilot information gain, resource cost, reviewer attacks, and salvage value. Scores summarize evidence; they never replace it or override fatal gates.

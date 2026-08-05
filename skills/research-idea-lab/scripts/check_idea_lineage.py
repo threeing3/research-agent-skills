@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate mechanism lineage and emit a deterministic anti-reskin report."""
+"""Validate idea handoff gates and emit a deterministic readiness report."""
 
 from __future__ import annotations
 
@@ -83,8 +83,8 @@ def validate(contract: dict[str, Any]) -> tuple[list[str], list[str], str]:
     failures: list[str] = []
     warnings: list[str] = []
     schema = contract.get("schema_version")
-    if schema != "research-idea/v4":
-        failures.append(f"schema_version must be research-idea/v4, found {schema!r}")
+    if schema != "research-idea/v5":
+        failures.append(f"schema_version must be research-idea/v5, found {schema!r}")
 
     lineage = contract.get("lineage")
     if not isinstance(lineage, dict):
@@ -146,6 +146,82 @@ def validate(contract: dict[str, Any]) -> tuple[list[str], list[str], str]:
     if gate.get("unresolved_failure_ids") not in ([], None):
         failures.append("anti_reskin_gate.unresolved_failure_ids must be empty")
 
+    publication = contract.get("publication_case")
+    if not isinstance(publication, dict):
+        failures.append("publication_case must be a mapping")
+        publication = {}
+    if publication.get("status") != "pass":
+        failures.append("publication_case.status must be pass")
+    for field in (
+        "submission_horizon",
+        "contribution_type",
+        "one_sentence_knowledge_claim",
+        "exact_difference_from_closest_work",
+        "public_reproduction_or_artifact_path",
+        "collision_resistant_claim",
+    ):
+        if not publication.get(field):
+            failures.append(f"publication_case.{field} is required")
+    for field in (
+        "target_venues_or_tracks",
+        "minimum_publishable_evidence",
+    ):
+        value = publication.get(field)
+        if not isinstance(value, list) or not value:
+            failures.append(f"publication_case.{field} must be a non-empty list")
+    attacks = publication.get("strongest_reviewer_attacks")
+    if not isinstance(attacks, list) or len(attacks) < 2:
+        failures.append(
+            "publication_case.strongest_reviewer_attacks must contain at least two attacks"
+        )
+    if publication.get("blockers") not in ([], None):
+        failures.append("publication_case.blockers must be empty")
+
+    industry = contract.get("industry_problem")
+    if not isinstance(industry, dict):
+        failures.append("industry_problem must be a mapping")
+        industry = {}
+    industry_status = industry.get("status")
+    if industry_status not in {"not_applicable", "supported", "unresolved"}:
+        failures.append(
+            "industry_problem.status must be not_applicable, supported, or unresolved"
+        )
+    if industry_status == "unresolved":
+        failures.append("industry_problem.status cannot be unresolved at handoff")
+    if industry_status == "supported":
+        for field in (
+            "normalized_failure",
+            "system_boundary",
+            "public_reproduction_path",
+            "scientific_question",
+        ):
+            if not industry.get(field):
+                failures.append(f"industry_problem.{field} is required when supported")
+        signal_ids = industry.get("signal_ids")
+        if not isinstance(signal_ids, list) or not signal_ids:
+            failures.append("industry_problem.signal_ids must be a non-empty list when supported")
+        organizations = industry.get("independent_organizations")
+        if not isinstance(organizations, list) or not organizations:
+            failures.append(
+                "industry_problem.independent_organizations must be non-empty when supported"
+            )
+        elif len(organizations) < 2 and not industry.get("single_source_exception"):
+            failures.append(
+                "industry_problem.single_source_exception is required with fewer than two independent organizations"
+            )
+        recurrence = industry.get("independent_recurrence_count")
+        if type(recurrence) is not int or recurrence < 1:
+            failures.append(
+                "industry_problem.independent_recurrence_count must be a positive integer"
+            )
+        elif isinstance(organizations, list) and recurrence != len(set(organizations)):
+            failures.append(
+                "industry_problem.independent_recurrence_count must match unique independent_organizations"
+            )
+        readiness = industry.get("reproduction_readiness")
+        if type(readiness) is not int or not 0 <= readiness <= 4:
+            failures.append("industry_problem.reproduction_readiness must be an integer from 0 to 4")
+
     digest = signature(contract)
     recorded = gate.get("mechanism_signature_sha256")
     if recorded and recorded != digest:
@@ -172,7 +248,7 @@ def main() -> int:
         contract = load_yaml(contract_path)
         failures, warnings, digest = validate(contract)
         report = {
-            "schema_version": "research-idea/lineage-check-v1",
+            "schema_version": "research-idea/lineage-check-v2",
             "contract": str(contract_path),
             "idea_id": contract.get("idea_id"),
             "idea_revision": contract.get("revision"),
