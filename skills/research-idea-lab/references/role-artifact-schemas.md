@@ -116,6 +116,11 @@ candidates:
     revision: 1
     origin: native
     title: ""
+    family_id: ""
+    relation_to_family: new-family
+    problem_signature: {}
+    mechanism_signature: {}
+    evaluation_signature: {}
     target_problem: ""
     documented_failure: ""
     importance: ""
@@ -189,6 +194,16 @@ fatal_gates:
     status: unresolved
     evidence_ids: []
     repair_required: ""
+anti_reskin:
+  review_context_policy: cold
+  independence_valid: false
+  family_id: ""
+  relation_to_family: ""
+  causal_axes_changed: []
+  inherited_failure_ids: []
+  unresolved_failure_ids: []
+  mechanism_signature_sha256: ""
+  verdict: unresolved
 attacks:
   - attack_id: A001
     dimension: novelty
@@ -238,6 +253,12 @@ unresolved_attacks: []
 minority_arguments: []
 required_next_evidence: []
 cheapest_discriminating_pilot_concept: ""
+anti_reskin_gate:
+  status: unresolved
+  family_id: ""
+  relation_to_family: ""
+  unresolved_failure_ids: []
+  report: ""
 kill_conditions: []
 fallback_contribution: ""
 user_selection_required: true

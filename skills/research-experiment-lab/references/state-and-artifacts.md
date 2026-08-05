@@ -9,6 +9,7 @@ research_state/
     <experiment-id>/
       experiment_plan.json
       experiment_state.json
+      prelaunch_reconciliation.json
       runs/<run-id>/records/
       analysis/
         run_index.csv
@@ -20,6 +21,8 @@ research_state/
 
 `experiment_state.json` links the idea ID and revision, plan revision, active
 runs, stage, budget consumption, blockers, and verified evidence paths.
+For novel-method work it also links the mechanism family ID,
+mechanism-signature hash, and latest passing prelaunch reconciliation report.
 
 For autonomously continuing campaigns, `experiment_plan.json` also contains a
 durable `tasks` array. Each task records dependencies, required gates, successor
