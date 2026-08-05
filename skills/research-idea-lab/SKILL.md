@@ -23,6 +23,9 @@ Treat ideation as literature-grounded hypothesis discovery, not free-form brains
 10. Before creating a candidate, revising a failed idea, or promoting an idea,
     read `references/anti-reskin-protocol.md`. Treat mechanism families and
     inherited failures as canonical state; titles and acronyms are not lineage.
+11. When comparing serious candidates or deciding whether a pilot is informative,
+    read `references/research-process-metrics.md`. Use its four-check core plus only
+    the triggered conditional metrics; never turn the panel into an acceptance score.
 
 ## Workflow
 
@@ -113,7 +116,15 @@ Require:
 - reviewer attack and required-evidence matrices.
 - a passed anti-reskin gate with no unresolved inherited family failure;
 - a prerequisite satisfiability statement showing that the cheapest pilot can
-  meet its minimum data, compute, budget, and permission requirements.
+  meet its minimum data, compute, budget, and permission requirements;
+- the four core research-process checks when triggered: failure-mode diagnosis,
+  baseline resource parity, multi-candidate rank stability, and multi-reviewer
+  disagreement;
+- conditional metrics only under the triggers in
+  `references/research-process-metrics.md`, with raw counts, denominators, and
+  explicit `not_applicable` or `not_assessable` reasons;
+- no unresolved high-severity diagnostic blind spot, unfair baseline comparison,
+  unsupported central claim, or missing central kill rule.
 
 Use scores to compare candidates, not to manufacture precision. A candidate with unresolved fatal novelty, feasibility, ethics, or mechanism gates cannot become `experiment-ready`.
 
@@ -128,7 +139,10 @@ Present the field map and provisional candidates together. For each candidate st
 - soundness, excitement, novelty, feasibility, and impact risks;
 - cheapest discriminating pilot;
 - top reviewer attacks and evidence that would neutralize them;
-- conditions that would kill or revise it.
+- conditions that would kill or revise it;
+- the four core checks plus only the triggered conditional metrics from
+  `references/research-process-metrics.md`, emphasizing diagnostic blind spots and
+  sensitivity rather than a composite score.
 
 The researcher chooses what to pursue. Promote only an explicitly selected,
 sufficiently specified idea with a passed anti-reskin gate to

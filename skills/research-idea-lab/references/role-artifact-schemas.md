@@ -261,6 +261,20 @@ anti_reskin_gate:
   report: ""
 kill_conditions: []
 fallback_contribution: ""
+process_metrics:
+  profile: core-plus-conditional/v1
+  core_checks:
+    diagnostic_failure_mode_coverage: {status: not_assessable, value: null, numerator: null, denominator: null, blind_spots: []}
+    baseline_resource_parity: {status: not_applicable, dimensions: {}}
+    ranking_stability_rate: {status: not_applicable, value: null, scenarios: 0, flip_radius: null}
+    reviewer_disagreement_index: {status: not_applicable, by_dimension: {}}
+  conditional_metrics:
+    rival_separation_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, exceptions: []}
+    novel_cluster_yield: {status: not_applicable, by_query_family: []}
+    counter_evidence_query_coverage: {status: not_applicable, value: null, numerator: null, denominator: null}
+    practical_sensitivity_ratio: {status: not_applicable, value: null, assumptions: []}
+    claim_evidence_binding_rate: {status: not_applicable, value: null, numerator: null, denominator: null}
+    kill_and_salvage_branch_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, missing_branches: []}
 user_selection_required: true
 decided_at: ""
 ```

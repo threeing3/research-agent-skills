@@ -128,6 +128,21 @@ Promote only when:
 - the mechanism family, structured signatures, material delta, inherited failures, and cold anti-reskin verdict are recorded;
 - `scripts/check_idea_lineage.py` passes and the pilot prerequisites are jointly satisfiable;
 - the user explicitly selects the idea.
+- the four core process checks and only the triggered conditional metrics in
+  `research-process-metrics.md` include raw counts, denominators, evidence,
+  assumptions, and missingness;
+- no high-severity diagnostic blind spot, unfair or unknown central baseline,
+  unsupported central background/motivation claim, or missing central kill rule
+  remains unresolved.
+
+## Research-process metric dashboard
+
+Use `research-process-metrics.md` after the fatal gates and before promotion. Always
+inspect DFMC; inspect BRPV for superiority or efficiency claims, RSR/flip radius for
+multi-candidate comparisons, and RDI for multi-reviewer ratings. Report RSC, NCY,
+CEQC, PSR, CEBR, or KSBC only when its documented trigger applies. Do not sum or
+average them. Interpret each metric beside its raw inputs and high-severity exceptions.
+A perfect aggregate cannot repair one unresolved central exception.
 
 ## Background–Motivation–Method coherence gate
 
