@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from experiment_common import atomic_json, now, read_json
+from experiment_common import atomic_json, now, read_json, sha256_file
 
 
 OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
@@ -32,10 +32,61 @@ def main() -> int:
     args = parser.parse_args()
     experiment_dir = args.experiment_dir.resolve()
     checks: list[dict[str, Any]] = []
+    plan: dict[str, Any] = {}
+    state: dict[str, Any] = {}
+    plan_path = experiment_dir / "experiment_plan.json"
+    state_path = experiment_dir / "experiment_state.json"
     try:
-        plan = read_json(experiment_dir / "experiment_plan.json")
-        state_path = experiment_dir / "experiment_state.json"
+        plan = read_json(plan_path)
         state = read_json(state_path)
+        checks.append(
+            result(
+                "plan-schema",
+                plan.get("schema_version") == "research-experiment/plan-v2",
+                repr(plan.get("schema_version")),
+            )
+        )
+        checks.append(
+            result(
+                "state-schema",
+                state.get("schema_version") == "research-experiment/state-v1",
+                repr(state.get("schema_version")),
+            )
+        )
+        identities = (
+            (
+                "experiment-id",
+                isinstance(plan.get("experiment_id"), str)
+                and bool(plan.get("experiment_id"))
+                and plan.get("experiment_id") == state.get("experiment_id") == experiment_dir.name,
+                f"plan={plan.get('experiment_id')!r} state={state.get('experiment_id')!r} dir={experiment_dir.name!r}",
+            ),
+            (
+                "plan-revision",
+                isinstance(plan.get("plan_revision"), int)
+                and not isinstance(plan.get("plan_revision"), bool)
+                and int(plan["plan_revision"]) >= 1
+                and plan.get("plan_revision") == state.get("plan_revision"),
+                f"plan={plan.get('plan_revision')!r} state={state.get('plan_revision')!r}",
+            ),
+            (
+                "idea-id",
+                isinstance(plan.get("idea_id"), str)
+                and bool(plan.get("idea_id"))
+                and plan.get("idea_id") == state.get("idea_id"),
+                f"plan={plan.get('idea_id')!r} state={state.get('idea_id')!r}",
+            ),
+            (
+                "idea-revision",
+                isinstance(plan.get("idea_revision"), int)
+                and not isinstance(plan.get("idea_revision"), bool)
+                and int(plan["idea_revision"]) >= 1
+                and plan.get("idea_revision") == state.get("idea_revision"),
+                f"plan={plan.get('idea_revision')!r} state={state.get('idea_revision')!r}",
+            ),
+        )
+        for name, identity_passed, evidence in identities:
+            checks.append(result(name, identity_passed, evidence))
         required_runs = plan.get("required_runs")
         checks.append(result("required-runs-declared", isinstance(required_runs, list) and bool(required_runs), str(required_runs)))
         manifests: dict[tuple[Any, ...], tuple[dict[str, Any], Path]] = {}
@@ -114,10 +165,25 @@ def main() -> int:
         checks.append(result("verification-readable", False, f"{type(exc).__name__}: {exc}"))
 
     passed = all(item["passed"] for item in checks)
+    stage = (
+        "paper-ready"
+        if passed and args.promote_paper_ready
+        else "verified-scientific"
+        if passed
+        else "blocked"
+    )
     report = {
-        "schema_version": "research-experiment/experiment-verification-v1",
+        "schema_version": "research-experiment/experiment-verification-v2",
         "verified_at": now(),
+        "experiment_id": plan.get("experiment_id"),
+        "plan_revision": plan.get("plan_revision"),
+        "idea_id": plan.get("idea_id"),
+        "idea_revision": plan.get("idea_revision"),
+        "idea_contract_sha256": plan.get("idea_contract_sha256"),
+        "experiment_plan_sha256": sha256_file(plan_path) if plan_path.is_file() else None,
+        "stage": stage,
         "passed": passed,
+        "blockers": [item["name"] for item in checks if not item["passed"]],
         "checks": checks,
     }
     atomic_json(experiment_dir / "verification_report.json", report)
@@ -125,8 +191,7 @@ def main() -> int:
         print(f"[{'PASS' if item['passed'] else 'FAIL'}] {item['name']}: {item['evidence']}")
     print(f"EXPERIMENT VERIFICATION: {'PASS' if passed else 'FAIL'}")
     if passed:
-        state = read_json(experiment_dir / "experiment_state.json")
-        state["stage"] = "paper-ready" if args.promote_paper_ready else "verified-scientific"
+        state["stage"] = stage
         state["updated_at"] = now()
         state["verified_evidence"] = [
             "verification_report.json",

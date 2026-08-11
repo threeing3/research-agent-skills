@@ -14,9 +14,10 @@
 
 ```text
 idea_contract.yaml
+  → idea_state_consistency.json
   → experiment_plan.json
   → verification_report.json
-  → claim_evidence.json
+  → research_handoff.json
   → paper_state.json
 ```
 
@@ -24,15 +25,17 @@ idea_contract.yaml
 
 ## Versioning（版本控制）
 
-所有跨阶段文件都必须包含 `schema_version`、`project_id`、来源 ID、来源 revision 和 `updated_at`。想法机制发生实质变化时递增 `idea_contract.revision`；实验技能发现哈希或 revision 过期时，必须阻止新运行并发出 revision request。
+跨阶段文件必须包含 `schema_version`，并携带其协议规定的来源 ID、revision（修订号）和 SHA-256（内容哈希）。`project_id` 与 `updated_at` 只在对应 schema 要求时强制存在。想法机制发生实质变化时递增 `idea_contract.revision`；实验技能发现哈希、revision 或生命周期过期时，必须阻止新运行并发出 revision request。
 
 ## State index（状态索引）
 
-`research_state.json` 只是索引，不存放完整证据。它记录当前阶段、活动想法、活动实验、论文状态路径和最新 revision。详细日志、指标和运行输出保存在各自实验目录。
+`research_state.json` 只是索引，不存放完整证据。它记录当前阶段、活动想法、活动实验、关键路径和最新 revision。`phase` 允许项目使用更细粒度的非空阶段名。详细日志、指标和运行输出保存在各自目录。
 
 ## Handoff（交接）
 
 - 写作技能可以提出 `experiment_request.json`，但不得启动实验。
 - 实验技能可以提出 `idea_revision_request.json`，但不得直接修改想法契约。
-- 写作技能只能把 `verified-scientific` 或明确标注限制的结果写入论文论断。
+- 新实验必须引用通过的 `research-idea/state-consistency-v2` 报告；契约不是 `active`、想法池不再是 `experiment-ready`，或任一哈希过期时禁止启动。
+- 共享状态下的写作交接使用 `ai-research-writing/research-handoff-v2`，并核对活动 ID、契约与计划哈希、`paper-ready` 阶段及 v2 验证报告；仅字段存在不算完成交接。
+- 非共享状态的独立写作项目可继续读取 v1 交接，但不能借此绕过共享状态核验。
 - 失败、负结果、缺失证据和阻塞项必须保留，不能为了论文故事删除。

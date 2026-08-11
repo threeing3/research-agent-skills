@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import subprocess
 import sys
@@ -26,6 +27,57 @@ def run(name: str, *args: object) -> subprocess.CompletedProcess[str]:
 class ExperimentLabTests(unittest.TestCase):
     def make_project(self, root: Path) -> None:
         (root / "research_state/logs").mkdir(parents=True)
+        ideas = root / "research_state" / "ideas"
+        contract_path = ideas / "idea-1" / "idea_contract.yaml"
+        contract_path.parent.mkdir(parents=True)
+        pool_path = ideas / "idea_pool.json"
+        pool_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-idea-pool/v1",
+                    "updated_at": "fixture",
+                    "ideas": [{"id": "idea-1", "status": "experiment-ready"}],
+                }
+            ),
+            encoding="utf-8",
+        )
+        contract_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-idea/v4",
+                    "idea_id": "idea-1",
+                    "revision": 1,
+                    "status": "experiment-ready",
+                    "lifecycle": {
+                        "validity": "active",
+                        "current_pool_status": "experiment-ready",
+                        "invalidation_reason": None,
+                        "superseded_by_revision": None,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        contract_hash = hashlib.sha256(contract_path.read_bytes()).hexdigest()
+        (ideas / "idea_state_consistency.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-idea/state-consistency-v2",
+                    "passed": True,
+                    "pool_sha256": hashlib.sha256(pool_path.read_bytes()).hexdigest(),
+                    "records": [
+                        {
+                            "idea_id": "idea-1",
+                            "pool_status": "experiment-ready",
+                            "contract_revision": 1,
+                            "contract_sha256": contract_hash,
+                            "lifecycle_validity": "active",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
         (root / "research_state.json").write_text(
             json.dumps(
                 {
@@ -33,7 +85,12 @@ class ExperimentLabTests(unittest.TestCase):
                     "revision": 0,
                     "phase": "ideation",
                     "active_idea_id": "idea-1",
-                    "paths": {"events": "research_state/logs/research_events.jsonl"},
+                    "paths": {
+                        "events": "research_state/logs/research_events.jsonl",
+                        "idea_pool": "research_state/ideas/idea_pool.json",
+                        "idea_state_consistency": "research_state/ideas/idea_state_consistency.json",
+                        "experiments": "research_state/experiments",
+                    },
                     "updated_at": "fixture",
                 }
             ),
@@ -112,6 +169,15 @@ class ExperimentLabTests(unittest.TestCase):
             plan = json.loads(plan_path.read_text(encoding="utf-8"))
             plan.update(
                 {
+                    "idea_contract_sha256": hashlib.sha256(
+                        (
+                            root
+                            / "research_state"
+                            / "ideas"
+                            / "idea-1"
+                            / "idea_contract.yaml"
+                        ).read_bytes()
+                    ).hexdigest(),
                     "datasets": ["fixture"],
                     "variants": ["ours"],
                     "metrics": ["accuracy"],
@@ -148,6 +214,22 @@ class ExperimentLabTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             state = json.loads((experiment / "experiment_state.json").read_text(encoding="utf-8"))
             self.assertEqual(state["stage"], "paper-ready")
+            verification = json.loads(
+                (experiment / "verification_report.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                verification["schema_version"],
+                "research-experiment/experiment-verification-v2",
+            )
+            self.assertEqual(verification["experiment_id"], "exp-1")
+            self.assertEqual(verification["plan_revision"], 1)
+            self.assertEqual(verification["idea_id"], "idea-1")
+            self.assertEqual(verification["idea_revision"], 1)
+            self.assertEqual(verification["stage"], "paper-ready")
+            self.assertEqual(
+                verification["experiment_plan_sha256"],
+                hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+            )
 
     def test_paper_ready_evidence_enters_writing_and_videoqa_figure_route(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -161,6 +243,15 @@ class ExperimentLabTests(unittest.TestCase):
             plan = json.loads(plan_path.read_text(encoding="utf-8"))
             plan.update(
                 {
+                    "idea_contract_sha256": hashlib.sha256(
+                        (
+                            root
+                            / "research_state"
+                            / "ideas"
+                            / "idea-1"
+                            / "idea_contract.yaml"
+                        ).read_bytes()
+                    ).hexdigest(),
                     "datasets": ["fixture"],
                     "variants": ["ours"],
                     "metrics": ["accuracy"],
@@ -215,11 +306,13 @@ class ExperimentLabTests(unittest.TestCase):
                 encoding="utf-8",
             )
             handoff = {
-                "schema_version": "ai-research-writing/research-handoff-v1",
+                "schema_version": "ai-research-writing/research-handoff-v2",
                 "source_idea_id": "idea-1",
                 "source_idea_revision": 1,
+                "source_idea_contract_sha256": plan["idea_contract_sha256"],
                 "experiment_id": "exp-1",
                 "experiment_plan_revision": 1,
+                "experiment_plan_sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
                 "research_question": "Does X improve Y?",
                 "paper_type": "empirical VideoQA paper",
                 "target_venue": "CVPR",

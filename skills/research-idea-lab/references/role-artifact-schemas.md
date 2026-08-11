@@ -301,5 +301,9 @@ Log evidence refreshes, role starts and completions, candidate creation, merges,
 - The Chair is the sole canonical writer for ideation sessions, idea-pool transitions, debate state, and the research-state index.
 - Worker agents may create temporary outputs only when the Chair provides a bounded path; the Chair validates and promotes them.
 - `idea_pool.json` remains the complete candidate registry, including parked and rejected candidates.
-- New idea contracts use `research-idea/v3`. Treat existing `research-idea/v2` contracts as readable legacy records and migrate only when materially revising that idea.
+- New idea contracts use `research-idea/v4` and record lifecycle validity plus
+  the current idea-pool status. Treat existing v2/v3 contracts and v4 contracts
+  without lifecycle metadata as readable legacy records; migrate only when
+  materially revising or promoting that idea. Before experiment handoff,
+  preserve a fresh passed `research-idea/state-consistency-v2` report.
 - A debate decision does not set `experiment-ready`. That transition requires passed fatal gates and explicit user selection.

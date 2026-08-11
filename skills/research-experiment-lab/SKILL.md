@@ -29,8 +29,9 @@ Read only the references needed for the task:
 2. Require a selected idea contract for novel-method work. Reproduction and
    diagnostic modes may instead cite an explicit research question.
    For novel-method work, require a passed `research-idea/v4` anti-reskin gate,
-   mechanism family ID, mechanism-signature hash, and resolved inherited
-   failure ledger.
+   an `active` lifecycle whose current pool status is `experiment-ready`, a
+   fresh passed `research-idea/state-consistency-v2` report, mechanism family
+   ID, mechanism-signature hash, and resolved inherited failure ledger.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
@@ -48,7 +49,8 @@ Read only the references needed for the task:
    cannot be created.
 7. Before the first novel-method run and after every idea revision, run
    `scripts/prelaunch_reconcile.py`. Preserve the report and refuse launch when
-   lineage, identity, inherited-failure, constraint, or task-graph checks fail.
+   lifecycle, idea-state freshness, lineage, identity, inherited-failure,
+   constraint, or task-graph checks fail.
 
 Supported modes are `pilot`, `full`, `ablation`, `robustness`, `efficiency`,
 `reproduction`, and `debug`.
@@ -81,6 +83,14 @@ For AutoDL:
    direct resumable remote downloads for large files; preserve `.part` files,
    logs, manifests, and checksums across network failures, and promote or
    extract only after exact size and SHA-256 verification.
+   Before launching any local or remote command, resolve every input path and
+   assert that required files exist; record the resolved path in `command.json`
+   and emit a structured input-missing event instead of allowing an opaque
+   `FileNotFoundError`. After an idea or contract revision, create a fresh
+   immutable run ID for verification, extraction, inference, and training.
+   Older acquisition runs may supply verified bytes, but their manifests and
+   contract hashes must remain historical and must not be reused as the new
+   run's identity.
 7. Use `autodl_backend.py` for preflight, snapshot upload, launch, status,
    record download, and budget-bounded selected-output download. It performs
    no remote deletion.
@@ -154,7 +164,9 @@ Use these stages exactly:
 `draft`, `designed`, `preflight-passed`, `code-synced`, `queued`, `running`,
 `completed-technical`, `verified-scientific`, `paper-ready`, `blocked`.
 
-Only `paper-ready` evidence may enter the unblocked writing handoff.
+Only `paper-ready` evidence with a v2 verification report and matching idea
+contract and experiment-plan hashes may enter an unblocked shared-state writing
+handoff.
 
 ## Ownership and Safety
 

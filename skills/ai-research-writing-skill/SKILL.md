@@ -37,7 +37,7 @@ Choose the smallest route that covers the request. Load only the listed referenc
 For full-paper and submission work:
 
 1. Create `paper_state.json` from the contract in `references/artifacts.md`; declare mode, stage, venue, main TeX, bibliography, required artifacts, blockers, and build record.
-2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
+2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. In a shared-state project, accept only handoff v2 after it reconciles the active idea lifecycle, idea-pool and contract hashes, active experiment, plan hash, `paper-ready` state, and v2 verification identity. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
 3. Establish the story, claim boundaries, and literature position before long-form prose.
 4. For empirical papers, validate the baseline, method-component, experiment-matrix, reproducibility, and long-run logging evidence in `references/empirical-experiment-design.md`. When `research-experiment-lab` state exists, issue a structured experiment request for missing evidence; do not design, launch, debug, or modify experiments from this writing skill.
 5. Follow the two-pass drafting order in `references/workflow.md`: write evidence-bearing core sections first, then finalize framing sections.

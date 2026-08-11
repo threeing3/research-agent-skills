@@ -19,6 +19,7 @@ import yaml
 
 OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
 REQUIRED_GATES = {"anti-reskin", "mechanism-identifiability", "simple-baseline-survival", "data-feasibility"}
+ACTIVE_LIFECYCLE = "active"
 
 
 def now() -> str:
@@ -130,9 +131,27 @@ def main() -> int:
         lineage = contract.get("lineage") if isinstance(contract.get("lineage"), dict) else {}
         gate = contract.get("anti_reskin_gate") if isinstance(contract.get("anti_reskin_gate"), dict) else {}
         decision = contract.get("decision") if isinstance(contract.get("decision"), dict) else {}
+        lifecycle = contract.get("lifecycle") if isinstance(contract.get("lifecycle"), dict) else {}
 
         checks.append(check_result("idea-schema", contract.get("schema_version") == "research-idea/v4", str(contract.get("schema_version"))))
         checks.append(check_result("idea-experiment-ready", contract.get("status") == "experiment-ready", str(contract.get("status"))))
+        lifecycle_declared = isinstance(contract.get("lifecycle"), dict)
+        checks.append(check_result("idea-lifecycle-declared", lifecycle_declared, repr(contract.get("lifecycle"))))
+        lifecycle_active = (
+            lifecycle_declared
+            and lifecycle.get("validity") == ACTIVE_LIFECYCLE
+            and isinstance(lifecycle.get("current_pool_status"), str)
+            and lifecycle["current_pool_status"].startswith("experiment-ready")
+        )
+        checks.append(
+            check_result(
+                "idea-lifecycle-active",
+                lifecycle_active,
+                f"validity={lifecycle.get('validity')!r} pool={lifecycle.get('current_pool_status')!r}",
+            )
+        )
+        if not lifecycle_active:
+            blockers.append("stale-by-idea-lifecycle")
         checks.append(check_result("idea-user-selected", decision.get("selected_by_user") is True, str(decision.get("selected_by_user"))))
         checks.append(check_result("anti-reskin-gate", gate.get("status") == "pass" and gate.get("independence_valid") is True and gate.get("review_context_policy") == "cold", repr(gate.get("status"))))
 
@@ -186,6 +205,71 @@ def main() -> int:
             )
             report_evidence = str(lineage_report_path)
         checks.append(check_result("lineage-check-report", report_valid, report_evidence))
+
+        consistency_value = prelaunch.get("idea_state_consistency_report")
+        consistency_path = None
+        if isinstance(consistency_value, str) and consistency_value:
+            candidate = Path(consistency_value)
+            consistency_path = candidate if candidate.is_absolute() else plan_path.parent / candidate
+        consistency_valid = False
+        consistency_evidence = repr(consistency_value)
+        if consistency_path and consistency_path.is_file():
+            consistency = read_json(consistency_path)
+            records = consistency.get("records")
+            matching = [
+                record
+                for record in records
+                if isinstance(record, dict) and record.get("idea_id") == contract.get("idea_id")
+            ] if isinstance(records, list) else []
+            inferred_pool_path = contract_path.parent.parent / "idea_pool.json"
+            pool_hash_matches = (
+                inferred_pool_path.is_file()
+                and consistency.get("pool_sha256") == file_sha256(inferred_pool_path)
+            )
+            current_pool_status = None
+            pool_identity_matches = False
+            if inferred_pool_path.is_file():
+                current_pool = read_json(inferred_pool_path)
+                pool_rows = current_pool.get("ideas")
+                matching_pool_rows = [
+                    row
+                    for row in pool_rows
+                    if isinstance(row, dict) and row.get("id") == contract.get("idea_id")
+                ] if isinstance(pool_rows, list) else []
+                if len(matching_pool_rows) == 1:
+                    current_pool_status = matching_pool_rows[0].get("status")
+                    pool_identity_matches = (
+                        isinstance(current_pool_status, str)
+                        and current_pool_status.startswith("experiment-ready")
+                        and current_pool_status == lifecycle.get("current_pool_status")
+                    )
+            record = matching[0] if len(matching) == 1 else {}
+            consistency_valid = (
+                consistency.get("schema_version") == "research-idea/state-consistency-v2"
+                and consistency.get("passed") is True
+                and pool_hash_matches
+                and pool_identity_matches
+                and len(matching) == 1
+                and record.get("contract_revision") == contract.get("revision")
+                and record.get("contract_sha256") == contract_hash
+                and record.get("lifecycle_validity") == ACTIVE_LIFECYCLE
+                and record.get("lifecycle_pool_status") == current_pool_status
+                and record.get("pool_status") == current_pool_status
+            )
+            consistency_evidence = (
+                f"{consistency_path}; schema={consistency.get('schema_version')!r}; "
+                f"passed={consistency.get('passed')!r}; pool_hash_matches={pool_hash_matches}; "
+                f"pool_identity_matches={pool_identity_matches}; matching_records={len(matching)}"
+            )
+        checks.append(
+            check_result(
+                "idea-state-consistency-report",
+                consistency_valid,
+                consistency_evidence,
+            )
+        )
+        if not consistency_valid:
+            blockers.append("stale-by-idea-lifecycle")
 
         constraints = prelaunch.get("constraints")
         if not isinstance(constraints, list) or not constraints:

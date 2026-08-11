@@ -6,11 +6,13 @@
   "additionalProperties": false,
   "required": ["schema_version", "research_question", "paper_type", "target_venue", "quantitative", "artifacts", "blockers"],
   "properties": {
-    "schema_version": {"const": "ai-research-writing/research-handoff-v1"},
+    "schema_version": {"enum": ["ai-research-writing/research-handoff-v1", "ai-research-writing/research-handoff-v2"]},
     "source_idea_id": {"type": "string", "minLength": 1},
     "source_idea_revision": {"type": "integer", "minimum": 1},
+    "source_idea_contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "experiment_id": {"type": "string", "minLength": 1},
     "experiment_plan_revision": {"type": "integer", "minimum": 1},
+    "experiment_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "research_question": {"type": "string", "minLength": 1},
     "paper_type": {"type": "string", "minLength": 1},
     "target_venue": {"type": "string", "minLength": 1},
@@ -39,6 +41,10 @@
     }
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "ai-research-writing/research-handoff-v2"}}, "required": ["schema_version"]},
+      "then": {"required": ["source_idea_id", "source_idea_revision", "source_idea_contract_sha256", "experiment_id", "experiment_plan_revision", "experiment_plan_sha256"]}
+    },
     {
       "if": {"properties": {"quantitative": {"const": true}}},
       "then": {"properties": {"artifacts": {"required": ["project_inventory", "analysis", "decision", "experiment_inventory", "numeric_evidence"]}}}
