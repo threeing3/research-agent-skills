@@ -1,5 +1,20 @@
 {
   "schema_version": "ai-openreview-venues/v2",
+  "scope": {
+    "applies_to": [
+      "public-reviewer-corpus",
+      "review-and-rejection-calibration",
+      "target-venue-expectations"
+    ],
+    "does_not_restrict": [
+      "general-literature-discovery",
+      "cross-domain-transfer",
+      "mechanism-scouting",
+      "dataset-and-benchmark-discovery",
+      "theory-sources"
+    ],
+    "external_source_rule": "Allow high-quality inspectable primary sources outside these venue families for discovery and transfer; do not use them as matched AI venue review calibration."
+  },
   "policy": {
     "main_conferences_allowed": true,
     "workshops_allowed": true,

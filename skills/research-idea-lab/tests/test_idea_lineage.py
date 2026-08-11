@@ -24,6 +24,14 @@ def contract() -> dict:
         "idea_id": "idea-1",
         "revision": 1,
         "status": "experiment-ready",
+        "lifecycle": {
+            "validity": "active",
+            "current_pool_status": "experiment-ready",
+            "invalidated_at": None,
+            "invalidated_by_event_id": None,
+            "invalidation_reason": None,
+            "superseded_by_revision": None,
+        },
         "lineage": {
             "family_id": "family-1",
             "relation_to_family": "new-family",
@@ -100,6 +108,14 @@ class IdeaLineageTests(unittest.TestCase):
         result = run(payload)
         self.assertEqual(result.returncode, 1)
         self.assertIn("cosmetic-variant cannot pass", result.stdout)
+
+    def test_invalidated_contract_blocks_handoff(self) -> None:
+        payload = contract()
+        payload["lifecycle"]["validity"] = "invalidated"
+        payload["lifecycle"]["current_pool_status"] = "rejected"
+        result = run(payload)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("only an active contract can be handed off", result.stdout)
 
 
 if __name__ == "__main__":

@@ -38,6 +38,7 @@ def init(root: Path) -> None:
                 "ideation_sessions": "research_state/ideation_sessions",
                 "review_patterns": "research_state/review_patterns",
                 "idea_pool": "research_state/ideas/idea_pool.json",
+                "idea_state_consistency": "research_state/ideas/state_consistency.json",
                 "experiments": "research_state/experiments",
                 "paper_state": "research_state/paper/paper_state.json",
                 "events": "research_state/logs/research_events.jsonl"
@@ -51,6 +52,7 @@ def init(root: Path) -> None:
     required_paths = {
         "ideation_sessions": "research_state/ideation_sessions",
         "review_patterns": "research_state/review_patterns",
+        "idea_state_consistency": "research_state/ideas/state_consistency.json",
     }
     missing_paths = {
         key: value for key, value in required_paths.items() if key not in paths

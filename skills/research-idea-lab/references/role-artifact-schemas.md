@@ -23,6 +23,7 @@ research_state/
     <session-id>/
       session.json
       evidence_packet.json
+      opportunity_map.yaml
       native_candidates.yaml
       cross_domain_candidates.yaml
       candidate_clusters.yaml
@@ -49,6 +50,8 @@ Use the session directory for divergent generation and clustering across multipl
   "session_id": "20260731-videoqa-memory",
   "revision": 1,
   "status": "evidence-frozen",
+  "work_mode": "explore",
+  "coverage_mode": "baseline",
   "execution_mode": "isolated-agent",
   "research_question": "",
   "target_domains": ["VideoQA"],
@@ -71,7 +74,9 @@ Use the session directory for divergent generation and clustering across multipl
 
 Allowed session statuses:
 
-`framing`, `evidence-frozen`, `divergent-generation`, `clustering`, `cross-examination`, `adversarial-review`, `rebuttal`, `chair-adjudication`, `user-decision`, `completed`, `blocked`.
+`framing`, `opportunity-mapping`, `evidence-frozen`, `divergent-generation`, `clustering`, `development`, `cross-examination`, `adversarial-review`, `rebuttal`, `chair-adjudication`, `user-decision`, `completed`, `blocked`.
+
+Allowed work modes are `explore`, `develop`, and `gate`. In `explore`, set strict-review role runs to `not-requested` unless the user explicitly enters `gate`; do not manufacture empty adversarial artifacts.
 
 ## Evidence packet
 
@@ -261,6 +266,20 @@ anti_reskin_gate:
   report: ""
 kill_conditions: []
 fallback_contribution: ""
+process_metrics:
+  profile: core-plus-conditional/v1
+  core_checks:
+    diagnostic_failure_mode_coverage: {status: not_assessable, value: null, numerator: null, denominator: null, blind_spots: []}
+    baseline_resource_parity: {status: not_applicable, dimensions: {}}
+    ranking_stability_rate: {status: not_applicable, value: null, scenarios: 0, flip_radius: null}
+    reviewer_disagreement_index: {status: not_applicable, by_dimension: {}}
+  conditional_metrics:
+    rival_separation_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, exceptions: []}
+    novel_cluster_yield: {status: not_applicable, by_query_family: []}
+    counter_evidence_query_coverage: {status: not_applicable, value: null, numerator: null, denominator: null}
+    practical_sensitivity_ratio: {status: not_applicable, value: null, assumptions: []}
+    claim_evidence_binding_rate: {status: not_applicable, value: null, numerator: null, denominator: null}
+    kill_and_salvage_branch_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, missing_branches: []}
 user_selection_required: true
 decided_at: ""
 ```

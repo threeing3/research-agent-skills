@@ -128,10 +128,28 @@ Promote only when:
 - the mechanism family, structured signatures, material delta, inherited failures, and cold anti-reskin verdict are recorded;
 - `scripts/check_idea_lineage.py` passes and the pilot prerequisites are jointly satisfiable;
 - the user explicitly selects the idea.
+- the four core process checks and only the triggered conditional metrics in
+  `research-process-metrics.md` include raw counts, denominators, evidence,
+  assumptions, and missingness;
+- no high-severity rival lacks a separating test, no central failure mode lacks a
+  diagnostic, no superiority claim relies on an unfair or unknown baseline, every
+  central background/motivation claim is evidence-bound, and the central negative
+  outcome has a kill or revision rule.
+
+## Research-process metric dashboard
+
+Use `research-process-metrics.md` after the fatal gates and before promotion. Always
+inspect DFMC; inspect BRPV for superiority or efficiency claims, RSR/flip radius for
+multi-candidate comparisons, and RDI for multi-reviewer ratings. Report RSC, NCY,
+CEQC, PSR, CEBR, or KSBC only when its documented trigger applies. Do not sum or
+average them. Interpret each metric beside its raw inputs and high-severity exceptions.
+A perfect aggregate cannot repair one unresolved central exception.
 
 ## Background–Motivation–Method coherence gate
 
-Before promotion, write the idea as a three-part chain: `Background → Motivation → Method`.
+Before promotion, write the idea as a three-part chain:
+
+`Background → Motivation → Method`
 
 Score each link from 0 to 4 with evidence. These are readiness scores, not probabilities.
 
@@ -142,7 +160,13 @@ Score each link from 0 to 4 with evidence. These are readiness scores, not proba
 | Method alignment | method is a renamed component or unrelated trick | plausible response with unresolved causal gaps | each method choice directly targets a named failure and yields a falsifiable prediction |
 | Method novelty | occupied or unsearched | partial distinction | clear differentiator that survives close-work and collision checks |
 
-Also score `background_to_motivation`, `motivation_to_method`, and `method_to_evaluation` from 0 to 4. Use:
+Also score three mappings from 0 to 4:
+
+- `background_to_motivation`: does the background evidence make the motivation necessary?
+- `motivation_to_method`: does the method address the stated motivation rather than a different problem?
+- `method_to_evaluation`: can the planned experiment distinguish the method from capacity, data, prompting, retrieval, or implementation confounds?
+
+Use the following readiness index only after the fatal gates pass:
 
 ```text
 base = 0.20*background + 0.25*motivation + 0.25*method_alignment + 0.15*method_novelty + 0.15*evaluation_fit
@@ -150,4 +174,14 @@ coherence = min(background_to_motivation, motivation_to_method, method_to_evalua
 idea_readiness = 0.70*base + 0.30*coherence
 ```
 
-Any dimension or mapping below 2 blocks `experiment-ready`. Scores below 2.5 are exploratory only; 2.5–3.2 allows a bounded pilot; ≥3.2 with all links ≥3 and passed fatal gates is eligible for user-selected experiment design. Store the three one-sentence statements, six scores, evidence notes, and weakest link. Never present the index as an acceptance probability.
+`evaluation_fit` is the existing evaluation-completeness score normalized to 0–4. The minimum-link rule is intentional: a polished method cannot compensate for an invented background, and a strong motivation cannot compensate for a method that does not test it.
+
+Promotion guidance:
+
+- Any of the four dimensions below 2: `revise` or `park`, never `experiment-ready`.
+- Any mapping below 2: rewrite the chain and specify the missing evidence or intervention.
+- `idea_readiness < 2.5`: exploratory only; run literature or framing work, not a long experiment.
+- `2.5 ≤ idea_readiness < 3.2`: allow a bounded pilot with explicit kill criteria.
+- `idea_readiness ≥ 3.2`, all links ≥ 3, and fatal gates pass: eligible for user-selected experiment design.
+
+Always store the one-sentence background, one-sentence motivation, one-sentence method, the six scores, evidence notes, and the weakest link beside the numeric index. Do not report the index as a probability of acceptance.

@@ -9,6 +9,7 @@ research_state/
   literature/search_history.jsonl
   ideation_sessions/<session-id>/session.json
   ideation_sessions/<session-id>/evidence_packet.json
+  ideation_sessions/<session-id>/opportunity_map.yaml
   ideation_sessions/<session-id>/native_candidates.yaml
   ideation_sessions/<session-id>/cross_domain_candidates.yaml
   ideation_sessions/<session-id>/candidate_clusters.yaml
@@ -26,6 +27,7 @@ research_state/
   ideas/mechanism_families.json
   ideas/<idea-id>/idea_contract.yaml
   ideas/<idea-id>/lineage_check.json
+  ideas/state_consistency.json
   ideas/<idea-id>/debate/debate_state.json
   ideas/<idea-id>/debate/cross_examination.yaml
   ideas/<idea-id>/debate/adversarial_review.yaml
@@ -45,11 +47,12 @@ research_state/
   "revision": 0,
   "phase": "ideation",
   "active_idea_id": null,
-    "paths": {
-      "field_snapshot": "research_state/literature/field_snapshot.json",
-      "ideation_sessions": "research_state/ideation_sessions",
-      "review_patterns": "research_state/review_patterns",
+  "paths": {
+    "field_snapshot": "research_state/literature/field_snapshot.json",
+    "ideation_sessions": "research_state/ideation_sessions",
+    "review_patterns": "research_state/review_patterns",
     "idea_pool": "research_state/ideas/idea_pool.json",
+    "idea_state_consistency": "research_state/ideas/state_consistency.json",
     "experiments": "research_state/experiments",
     "paper_state": "research_state/paper/paper_state.json",
     "events": "research_state/logs/research_events.jsonl"
@@ -65,6 +68,25 @@ Ownership:
 - `ai-research-writing-skill`: paper state, claims, prose, publication assets, review, and submission.
 
 Writers must read the current `revision`, write detailed artifacts first, then atomically update the index only if the expected revision still matches. Append an event for every transition. Never let one stage erase another stage's keys.
+
+## Idea modes and status ownership
+
+Record one work mode in every ideation session:
+
+- `explore` may create provisional seeds and write `raw` or `developing` candidates. It may not write `rejected` or `experiment-ready`.
+- `develop` may write `developing`, `screened`, `novelty-risk`, `discussion-active`, `gate-ready`, or `parked`. It may not write `rejected` or `experiment-ready`.
+- `gate` may write any current-state status after running the applicable strict checks.
+
+`research_state/ideas/idea_pool.json` is the canonical current status. A candidate may receive a canonical idea ID when it is selected for development or has a stable problem/mechanism signature; provisional exploration seeds remain in the session artifact.
+
+An idea contract is an evidence-bearing handoff snapshot issued at `experiment-ready`, not the canonical current status. New or materially revised contracts must contain the lifecycle block in `references/idea-contract.md`. When later literature or verified evidence moves the pool entry away from `experiment-ready`:
+
+1. update the pool status;
+2. set the contract lifecycle to `invalidated` or `superseded` without rewriting its historical scientific content;
+3. append a transition event with the evidence and reason;
+4. run `scripts/check_idea_state_consistency.py` and store the report at `ideas/state_consistency.json`.
+
+Legacy contracts without lifecycle metadata remain readable. Do not bulk-rewrite them. The consistency checker must flag a legacy contract whose issued status conflicts with the current pool so it cannot be handed to experiments silently.
 
 During multi-role ideation, the Chair is the sole canonical writer. Worker roles return structured artifacts to the Chair or write only to an explicitly bounded temporary path. Use `references/role-artifact-schemas.md` for session and debate artifacts.
 
