@@ -1,163 +1,176 @@
 ---
 name: research-idea-lab
-description: Discover, discuss, score, and adversarially vet novel research ideas for ML/AI, especially VideoQA and long-video understanding. Use when mapping a field, running structured multi-role brainstorming and debate, finding open problems, transferring mechanisms from other disciplines, checking whether an idea has already been done, comparing an idea against real reviewer rejection patterns, refreshing an existing idea pool with newly published work, or preparing an idea for pilot or full experimental validation.
+description: Discover, develop, rescue, compare, and, only when explicitly requested, strictly vet novel ML/AI research ideas, especially for VideoQA and long-video understanding. Use for field mapping, finding directions or open problems, turning rough seeds into testable mechanisms, cross-domain transfer, checking related work, refreshing an idea pool, scoring or ranking ideas, and preparing a selected idea for experimental validation, including requests such as 找方向, 还有没有 idea, 继续想, 救方向, 严格评分, or 选题排序. Default vague direction-finding and rescue requests to exploration; do not enter strict rejection, ranking, or experiment-readiness gates unless the user explicitly asks for them.
 ---
 
 # Research Idea Lab
 
-Treat ideation as literature-grounded hypothesis discovery, not free-form brainstorming.
+Treat ideation as literature-grounded hypothesis discovery. Separate possibility generation from development and strict judgment so early uncertainty does not become premature rejection.
+
+## Interaction Contract
+
+- Return useful candidates before process narration.
+- Ask at most one blocking question in a turn. If a bounded assumption permits useful work, state it and continue.
+- Do not ask for routine mode changes or skill handoffs. Route silently when the requested work remains within scope.
+- Ask before a long or costly experiment, a material scope expansion, use of private text in search, or a choice that would materially change the research target.
+- Keep advisory uncertainty in the output; do not require a reply. Request a decision only for a blocking truthfulness, permission, cost, ethics, or venue-compliance issue.
+- Never run strict review merely because an idea is rough, crowded, or missing evidence.
+
+## Choose One Work Mode
+
+Select exactly one primary mode per request. When intent is mixed, use the least severe mode that still returns the requested artifact; never silently escalate to `gate`.
+
+### `explore` — default for finding possibilities
+
+Use for vague directions, “find ideas,” “what else can be done,” field scouting, repeated direction search, open problems, and early cross-domain transfer.
+
+- Generate and diversify before judging.
+- Do not score, rank, reject, inherit fatal family failures, run full anti-reskin review, or set `experiment-ready`.
+- A literature collision creates a differentiation or rescue task, not an automatic dead end.
+
+### `develop` — improve a chosen or rough direction
+
+Use when the user selects a candidate, provides one rough idea, asks to concretize a mechanism, or wants to rescue a crowded or previously failed direction without requesting strict scoring.
+
+- Separate current weakness from development potential.
+- Label uncertainty as `needs-search`, `needs-mechanism`, or `needs-evidence`.
+- Try a material rescue route before recommending a pivot. Do not write `rejected` in this mode.
+
+### `gate` — strict comparison and experiment admission
+
+Use only when the user explicitly requests scoring, ranking, strict review, an investment decision, an abandon decision, a final novelty verdict, or promotion to experimental validation.
+
+- Run the full literature, anti-reskin, reviewer-pattern, fatal-gate, and lineage workflow.
+- Only this mode may set `rejected` or `experiment-ready`.
+- A low current-readiness score does not erase development potential. Use `abandon` only when no testable central claim remains after a documented rescue attempt.
 
 ## Start
 
-1. Locate the project root. Keep all state under `<project-root>/research_state/` and the index at `<project-root>/research_state.json`.
-2. Read `references/state-protocol.md` and inspect existing state before searching.
-3. Select the search mode:
-   - `baseline`: no trustworthy field snapshot exists, the scope changed materially, or the user requests a complete remap.
-   - `incremental`: a deep snapshot exists; search from its `coverage_end` through today, plus backward citation checks for any new close work.
-4. Read `references/novelty-workflow.md` and `references/idea-evaluation-rubric.md`.
-5. Read `references/cross-domain-transfer.md` when generating or evaluating transferred ideas. For VideoQA work also read `references/videoqa-lenses.md`.
-6. Read `references/reviewer-pattern-workflow.md` when building, refreshing, or querying the rejection-pattern library.
-7. Read `references/ai-venue-scope.json` and reject sources outside its approved AI venue families. Preserve its source-type roles: main conferences calibrate reviewer attacks; workshops scout emerging ideas; journals inform soundness and revision; position tracks inform agendas and framing.
-8. Use `scripts/openreview_public_corpus.py` for OpenReview coverage probes, public-corpus collection, browser-safe page plans, and browser-verified JSON ingest. Probe before collecting a new venue or year.
-9. When generating, substantially revising, or debating ideas, read `references/role-debate-protocol.md` and `references/role-artifact-schemas.md`.
-10. Before creating a candidate, revising a failed idea, or promoting an idea,
-    read `references/anti-reskin-protocol.md`. Treat mechanism families and
-    inherited failures as canonical state; titles and acronyms are not lineage.
+1. Locate the project root. Keep state under `<project-root>/research_state/` and the index at `<project-root>/research_state.json`.
+2. Read `references/state-protocol.md` and inspect current state before writing.
+3. Choose `explore`, `develop`, or `gate`; record the mode and assumptions in the session artifact.
+4. Choose the coverage mode:
+   - `baseline`: no trustworthy field snapshot exists, the scope changed materially, or the user requests a remap.
+   - `incremental`: a trustworthy snapshot exists; search from its `coverage_end` through today with an overlap window.
+5. Load only mode-relevant references:
+   - For `explore`: read `references/exploration-workflow.md` and `references/opportunity-map.md`.
+   - For `develop`: read those two files plus `references/novelty-workflow.md`; read `references/cross-domain-transfer.md` when transfer is relevant.
+   - For `gate`: additionally read `references/idea-evaluation-rubric.md`, `references/anti-reskin-protocol.md`, `references/role-debate-protocol.md`, `references/role-artifact-schemas.md`, and `references/idea-contract.md`.
+   - Read `references/research-process-metrics.md` only for strict candidate comparison or pilot-information decisions.
+   - Read `references/reviewer-pattern-workflow.md` and `references/ai-venue-scope.json` only when building or querying the public reviewer-pattern corpus or calibrating a target venue.
+   - For VideoQA, read `references/videoqa-lenses.md`.
 
 ## Workflow
 
-### 1. Define the search boundary
+### 1. Define the boundary and opportunity map
 
-Record the target problem, tasks, datasets, method families, adjacent fields, date range, exclusions, and available compute. Separate the user's claims from assumptions.
+Record the target problem, tasks, evidence available, constraints, adjacent fields, date range, exclusions, and compute. Separate user claims from assumptions.
 
-### 2. Search before converging
+In `explore`, a partial `Background → Motivation → Method` chain is allowed. Record missing links and use them to diversify candidates. Require the complete, falsifiable chain only before `gate-ready` or `experiment-ready`.
 
-In `baseline` mode, build a field map and the first candidate pool in the same run:
+Build or update an opportunity map with:
 
-- Search surveys, seminal work, direct competitors, current papers, negative results, limitations, and relevant benchmarks.
-- Search multiple scholarly indexes when available. Record unavailable sources and reduced recall.
-- Expand terminology, abbreviations, task aliases, mechanism names, and adversarial phrasings.
-- Follow backward and forward citations around the closest papers.
-- Search adjacent disciplines for structurally matching problems and mechanisms, not merely shared vocabulary.
-- Continue until query saturation: two consecutive materially different query families add no new close-work cluster. A hard time or access limit must be recorded, never hidden.
+- what existing work covers;
+- what settings, mechanisms, evidence, or stakeholders remain under-tested;
+- why the gap may be actionable now;
+- at least one differentiation or rescue route per close-work cluster;
+- the evidence that would close or preserve each opportunity.
 
-In `incremental` mode:
+Save reusable maps under the current ideation session and update `literature/field_snapshot.json` only with verified evidence.
 
-- Search from the last trustworthy `coverage_end`, with a small overlap window.
-- Re-run saved high-risk novelty queries and inspect newly citing/cited close work.
-- Re-score affected ideas. Do not silently preserve a novelty verdict after conflicting work appears.
+### 2. Search to the depth required by the mode
 
-Save search provenance and update `literature/field_snapshot.json` plus `literature/search_history.jsonl`.
+For `explore`, search until opportunity sufficiency: the evidence supports 3–5 coherent, materially different candidate cards and another query is unlikely to change which candidates deserve development. If honest constraints support fewer, return the supported candidates plus the exact missing search or evidence route; never return an empty rejection-only answer.
 
-### 3. Generate candidates continuously
+For `develop`, search the selected mechanism, its strongest alternative, close work, failed attempts, and at least one rescue path. Stop when the next decision-relevant uncertainty is explicit.
 
-Generate candidates while mapping the field. Do not impose a fixed count. Stop only when additional lenses yield duplicates, trivial variants, or ideas dominated by existing work.
+For `gate`, use full baseline or incremental search. Continue until two consecutive materially different query families add no new close-work cluster, or record the hard time/access limit. Re-run saved kill queries and verify close work through primary sources.
 
-Use problem-first, contradiction, boundary/failure, simplicity, composition/decomposition, abstraction-shift, changed-assumption, stakeholder, and cross-domain transfer lenses. Treat cross-domain transfer as a first-class innovation source, but follow `references/cross-domain-transfer.md`: require a structural mapping, a target-domain adoption search, broken-assumption analysis, and a falsifiable prediction. A renamed source method or surface analogy is not innovation.
+The venue list in `references/ai-venue-scope.json` limits reviewer-pattern and venue-calibration evidence only. It must not exclude high-quality primary literature from adjacent fields used for mechanism discovery, cross-domain transfer, datasets, or theory.
 
-For a new candidate pool, follow `references/role-debate-protocol.md`:
+Record source, date, query, evidence depth, and recall limits. Never claim that search proves nobody has done an idea.
 
-- let the Native Innovator and Cross-Domain Transfer Researcher generate independently from permission-scoped evidence;
-- preserve proposer isolation until first-round outputs are fixed;
-- let the Chair cluster by problem, mechanism, and claimed capability before discussion;
-- use isolated agents when callable and isolated role passes otherwise, with identical artifacts in both modes;
-- reserve canonical state writes for the Chair.
+### 3. Explore a diverse candidate portfolio
 
-Preserve all candidates in `ideas/idea_pool.json`, including rejected and parked ideas. Use statuses:
-`raw`, `screened`, `novelty-risk`, `discussion-active`, `experiment-ready`, `parked`, `rejected`.
+Follow `references/exploration-workflow.md`.
 
-Before assigning a new idea ID, compare its problem, mechanism, and evaluation
-signatures against `ideas/mechanism_families.json`. Classify it as a new
-family, material same-family revision, adjacent family, or cosmetic variant.
-Do not admit a cosmetic variant as a new candidate. Inherit all family-level
-scientific failures and require the exact material delta specified in
-`references/anti-reskin-protocol.md`.
+- Target at least six raw seeds internally, then return 3–5 coherent candidates that differ materially across problem, mechanism, supervision, evidence, contribution type, or source domain.
+- Use problem-first, contradiction, boundary/failure, simplicity, composition/decomposition, abstraction shift, changed assumption, stakeholder, and cross-domain lenses.
+- Use provisional seed labels in session artifacts. Do not assign a canonical idea ID merely to test a possibility.
+- Run a lightweight signature comparison to merge obvious duplicates and label likely family collisions. Do not inherit fatal failures or run the cold anti-reskin protocol yet.
+- For a crowded or weak seed, produce at least one narrower problem, mechanism change, evidence route, benchmark/setting change, or minimum viable research question before pivoting.
+- Store shortlisted candidates as `raw` or `developing`; exploration may not set `rejected`.
 
-### 4. Run structured debate and adversarial novelty review
+Multi-role generation is optional in `explore`. If used, keep proposing and rescue passes separate from adversarial review, and reserve canonical state writes for the Chair. Do not require a full debate merely to return candidates.
 
-For every serious candidate:
+### 4. Develop a selected candidate
 
-- run cross-examination, then give the Adversarial Reviewer both proposer artifacts, closest-work evidence, kill-query results, and matched reviewer patterns;
-- allow one bounded rebuttal; allow one additional round only when new verified evidence changes a factual premise;
-- send factual disputes back to search rather than resolving them through rhetoric;
-- Write the strongest anticipated rejection: “This is already known because…”.
-- Search the exact proposed mechanism, weaker and stronger variants, synonyms, component combinations, source-domain terms, target-domain terms, and the claimed outcome.
-- Identify the closest work and compare problem, mechanism, supervision, data, evaluation, and claimed contribution.
-- Search failed attempts and limitations; distinguish genuinely open, partially attempted, stale-tool dead end, and plausibly fundamental barrier.
-- Classify contribution as capability-unlocking, problem-solving, empirical discovery, resource/benchmark, reframing, or incremental extension.
-- Separate `soundness` from `excitement`; a plausible method can still be unimportant, and an exciting claim can still be unsupported.
-- Test mechanism identifiability: specify an observation that distinguishes the proposed mechanism from capacity, data, compute, prompting, retrieval, and implementation confounders.
-- Run the simple-baseline survival test and collision-resistance check in `references/idea-evaluation-rubric.md`.
-- Query the reviewer-pattern library when available. Compare matched accepted and rejected work at the same venue, period, area, and contribution type; never infer quality from decision alone.
-- For a shortlisted new family or revision of a failed family, run a cold
-  anti-reskin review from frozen artifacts. Do not expose proposer discussion
-  history or the desired verdict. Record reviewer independence, the mechanism
-  signature hash, inherited failures, and the material-delta verdict.
+Normalize the candidate into problem, documented failure, root challenge, insight, mechanism, assumptions, differentiating prediction, strongest alternative, evidence plan, and limitation.
 
-Never claim proof that nobody has done an idea. Report `novelty_confidence`, `recall_confidence`, occupied components, remaining differentiator, and kill queries. Verify identifiers and any quoted evidence.
+Compare problem, mechanism, and evaluation signatures against `ideas/mechanism_families.json`. Treat inherited failures as repair obligations and search clues, not automatic rejection. State the material delta required to survive the closest family failure.
 
-The Chair adjudicates with `survive`, `revise`, `park`, `reject`, or `novelty-risk`. Do not decide by majority vote or average away a fatal gate. For shortlisted or costly candidates, instantiate temporary novelty, mechanism, evaluation, and venue-review lenses; do not turn them into permanent roles by default.
+Produce:
 
-### 5. Score evidence, not enthusiasm
+- the current weakness and development potential separately;
+- closest-work deltas and remaining novelty unknowns;
+- at least one material rescue route;
+- the minimum discriminating pilot question, without designing or running the experiment;
+- a recommendation to continue development, park, pivot, search, or request strict review.
 
-Apply the gates and scoring anchors in `references/idea-evaluation-rubric.md`. Record evidence and uncertainty for each dimension; never hide a fatal gate behind a high average.
+Set `gate-ready` only when the central claim is testable, the mechanism is specified, a strongest alternative exists, and the required evidence is identifiable. Do not score or reject unless the user explicitly enters `gate`.
+
+### 5. Run the strict gate
+
+Load every strict reference listed under `Start`. Use the structured debate and anti-reskin protocols for shortlisted candidates, not the whole raw portfolio.
 
 Require:
 
-- a contribution-type fit judgment;
-- problem half-life and benchmark half-life;
-- mechanism identifiability;
-- simple-baseline survival;
-- collision resistance;
-- the information gain of the cheapest pilot;
-- reviewer attack and required-evidence matrices.
-- a passed anti-reskin gate with no unresolved inherited family failure;
-- a prerequisite satisfiability statement showing that the cheapest pilot can
-  meet its minimum data, compute, budget, and permission requirements.
+- closest-work subtraction and novelty/recall confidence;
+- problem, mechanism, supervision, data, evaluation, and contribution comparison;
+- contribution-type fit, problem and benchmark half-life;
+- mechanism identifiability and a separating observation;
+- strongest-simple-baseline survival and collision resistance;
+- a cheapest discriminating pilot with satisfiable prerequisites;
+- reviewer attack and required-evidence matrices;
+- a passed cold anti-reskin gate with no unresolved inherited family failure;
+- all applicable fatal gates and triggered process diagnostics.
 
-Use scores to compare candidates, not to manufacture precision. A candidate with unresolved fatal novelty, feasibility, ethics, or mechanism gates cannot become `experiment-ready`.
+Send factual disputes back to search. Keep `soundness` and `excitement` separate. Scores summarize evidence and may not compensate for a fatal gate.
 
-### 6. Discuss and promote
+The Chair may decide `survive`, `revise`, `park`, `reject`, or `novelty-risk`. Before `reject`, record at least one attempted material rescue route unless the claim is non-testable, unethical, permission-blocked, or impossible under explicit hard constraints.
 
-Present the field map and provisional candidates together. For each candidate state:
+### 6. Return the mode-appropriate artifact
 
-- two-sentence problem and mechanism;
-- why it matters;
-- closest prior work and exact distinction;
-- cross-domain source, if any;
-- soundness, excitement, novelty, feasibility, and impact risks;
-- cheapest discriminating pilot;
-- top reviewer attacks and evidence that would neutralize them;
-- conditions that would kill or revise it.
+For `explore`, return in this order:
 
-The researcher chooses what to pursue. Promote only an explicitly selected,
-sufficiently specified idea with a passed anti-reskin gate to
-`experiment-ready`, then create `ideas/<idea-id>/idea_contract.yaml` using
-`references/idea-contract.md`. Run `scripts/check_idea_lineage.py` and preserve
-its report before handoff. Recommend a `pilot` or `full` entry mode without
-designing or running the experiment.
+1. assumptions and opportunity snapshot;
+2. 3–5 candidate cards;
+3. material-diversity summary;
+4. rescue routes and minimum viable research questions;
+5. recommended candidates to develop;
+6. at most one optional next question.
 
-### 7. Coordinate downstream
+For `develop`, return the optimized candidate, current weakness, development potential, closest-work delta, rescue route, minimum discriminating question, and recommended next state.
 
-Append state transitions to `logs/research_events.jsonl`.
-`research-experiment-lab` owns all experiment design, execution, debugging,
-aggregation, and verification. Handoff the family ID, mechanism-signature hash,
-lineage-check report, and inherited failure IDs with the idea revision. If
-verified experimental evidence contradicts the mechanism, add a family failure
-entry before reviewing a revision request and move the idea back to
-`discussion-active` or `rejected`. If new literature occupies the
-differentiator, set `novelty-risk` and block new long experiments until the
-user reviews it.
+For `gate`, return the verdict first, then search basis, closest-work table, strict risks, scores, confidence, repair conditions, rescue attempt, and promotion decision.
+
+The researcher chooses what to pursue. Promote only an explicitly selected, sufficiently specified idea with a passed gate to `experiment-ready`. Create `ideas/<idea-id>/idea_contract.yaml` from `references/idea-contract.md`, run `scripts/check_idea_lineage.py`, then run `scripts/check_idea_state_consistency.py` before experiment handoff.
+
+### 7. Coordinate state and downstream work
+
+Use these current-state statuses: `raw`, `developing`, `screened`, `novelty-risk`, `discussion-active`, `gate-ready`, `experiment-ready`, `parked`, and `rejected`.
+
+Treat `ideas/idea_pool.json` as the canonical current status. Treat an idea contract as an evidence-bearing handoff snapshot. When later literature or verified experiments move an `experiment-ready` idea to another status, invalidate or supersede the contract lifecycle, append an event, and run `scripts/check_idea_state_consistency.py`. Preserve historical scientific content; do not bulk-rewrite old contracts.
+
+`research-experiment-lab` owns experiment design, execution, debugging, aggregation, and verification. Handoff the family ID, mechanism-signature hash, lineage report, inherited failure IDs, and active contract lifecycle. Do not run experiments in this skill.
 
 ## Integrity
 
-- Distinguish metadata-only evidence, abstract-level evidence, and full-text-verified evidence.
-- Rank evidence sources: primary papers, official reviewer criteria and public reviews, systematic syntheses, then informal experience posts. Use experience posts only to generate hypotheses or queries, never as decisive novelty evidence.
-- Do not fabricate papers, identifiers, quotes, results, or novelty certainty.
-- Use only publicly readable reviewer records; preserve source identifiers and attribution, do not infer reviewer identities, and do not republish full review text.
-- Never pass OpenReview credentials on the command line or store them in project state. If anti-bot verification blocks guest access, record the challenge and use an explicitly authorized local environment token or browser session; never bypass access controls.
-- Do not run experiments in this skill.
-- Do not overwrite another stage's detailed state.
-- Store structured claims, evidence, attacks, concessions, and decisions; never store private chain-of-thought.
-- Let only the Chair write canonical ideation and debate state when multiple roles or agents are active.
+- Distinguish metadata-only, abstract-level, and full-text-verified evidence.
+- Prefer primary papers and artifacts, official criteria and public reviews, then systematic syntheses. Use informal posts only to generate hypotheses or search terms.
+- Do not fabricate papers, identifiers, quotes, results, reviewer reactions, or novelty certainty.
+- Use only publicly readable reviewer records; preserve source identifiers, do not infer reviewer identities, and do not republish full reviews.
+- Never pass OpenReview credentials on the command line or store them in project state. Record access challenges; never bypass access controls.
+- Do not overwrite another stage's detailed state or store private chain-of-thought.
+- Let only the Chair write canonical ideation/debate state when multiple roles or agents are active.
 - Use `scripts/research_state.py` for initialization and revision-safe index updates.

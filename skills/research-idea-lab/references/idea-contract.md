@@ -7,6 +7,13 @@ schema_version: research-idea/v4
 idea_id: videoqa-example
 revision: 1
 status: experiment-ready
+lifecycle:
+  validity: active
+  current_pool_status: experiment-ready
+  invalidated_at: null
+  invalidated_by_event_id: null
+  invalidation_reason: null
+  superseded_by_revision: null
 title: ""
 lineage:
   family_id: ""
@@ -142,6 +149,20 @@ experiment_entry:
   confounders: []
   compute_budget: ""
   information_gain: ""
+process_metrics:
+  profile: core-plus-conditional/v1
+  core_checks:
+    diagnostic_failure_mode_coverage: {status: not_assessable, value: null, numerator: null, denominator: null, blind_spots: []}
+    baseline_resource_parity: {status: not_applicable, dimensions: {}}
+    ranking_stability_rate: {status: not_applicable, value: null, scenarios: 0, flip_radius: null}
+    reviewer_disagreement_index: {status: not_applicable, by_dimension: {}}
+  conditional_metrics:
+    rival_separation_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, exceptions: []}
+    novel_cluster_yield: {status: not_applicable, by_query_family: []}
+    counter_evidence_query_coverage: {status: not_applicable, value: null, numerator: null, denominator: null}
+    practical_sensitivity_ratio: {status: not_applicable, value: null, assumptions: []}
+    claim_evidence_binding_rate: {status: not_applicable, value: null, numerator: null, denominator: null}
+    kill_and_salvage_branch_coverage: {status: not_applicable, value: null, numerator: null, denominator: null, missing_branches: []}
 blockers: []
 anti_reskin_gate:
   status: pass
@@ -158,10 +179,20 @@ decision:
   selected_at: ""
 ```
 
-The contract is an evidence-bearing handoff, not a promise of novelty or acceptance. Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans.
+The contract is an evidence-bearing handoff snapshot, not a promise of novelty or acceptance and not the canonical current status. `status` records the state at issuance. `lifecycle` records whether that snapshot remains usable:
+
+- `active`: the idea pool still says `experiment-ready`; the contract may be handed to experiments after all checks pass.
+- `invalidated`: later literature, evidence, permissions, ethics, or experiment results block the issued handoff.
+- `superseded`: a newer contract revision replaces this one.
+
+When invalidating or superseding a contract, update only its lifecycle metadata and preserve the historical scientific content. Set `current_pool_status`, timestamp and event identifier, the concrete reason, and the replacement revision when applicable. Append the same transition to `logs/research_events.jsonl`.
+
+Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans. Before experiment handoff, require an `active` lifecycle, run `scripts/check_idea_lineage.py`, then run `scripts/check_idea_state_consistency.py` against the project state.
 
 Treat existing `research-idea/v2` and `research-idea/v3` contracts as readable
 legacy records. Migrate one to v4 only when materially revising or promoting
 that idea; do not bulk-rewrite historical contracts. Run
 `scripts/check_idea_lineage.py` before experiment handoff and store its report
 beside the contract.
+
+Existing v4 contracts without `lifecycle` are also readable legacy snapshots. Do not bulk-rewrite them. If the current pool no longer says `experiment-ready`, the state-consistency check must fail until an explicit lifecycle decision is recorded.

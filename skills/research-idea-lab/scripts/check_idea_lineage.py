@@ -39,6 +39,7 @@ EVALUATION_FIELDS = (
     "required_counterfactual",
     "strongest_simple_baseline",
 )
+LIFECYCLE_STATES = {"active", "invalidated", "superseded"}
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
@@ -85,6 +86,28 @@ def validate(contract: dict[str, Any]) -> tuple[list[str], list[str], str]:
     schema = contract.get("schema_version")
     if schema != "research-idea/v4":
         failures.append(f"schema_version must be research-idea/v4, found {schema!r}")
+
+    lifecycle = contract.get("lifecycle")
+    if lifecycle is None:
+        warnings.append(
+            "lifecycle metadata is missing; run the state-consistency check before handoff"
+        )
+    elif not isinstance(lifecycle, dict):
+        failures.append("lifecycle must be a mapping")
+    else:
+        validity = lifecycle.get("validity")
+        if validity not in LIFECYCLE_STATES:
+            failures.append(
+                f"lifecycle.validity must be one of {sorted(LIFECYCLE_STATES)}"
+            )
+        elif validity != "active":
+            failures.append(
+                f"contract lifecycle is {validity}; only an active contract can be handed off"
+            )
+        if lifecycle.get("current_pool_status") != "experiment-ready":
+            failures.append(
+                "lifecycle.current_pool_status must be experiment-ready for handoff"
+            )
 
     lineage = contract.get("lineage")
     if not isinstance(lineage, dict):
@@ -177,6 +200,7 @@ def main() -> int:
             "idea_id": contract.get("idea_id"),
             "idea_revision": contract.get("revision"),
             "family_id": (contract.get("lineage") or {}).get("family_id"),
+            "lifecycle_validity": (contract.get("lifecycle") or {}).get("validity"),
             "mechanism_signature_sha256": digest,
             "passed": not failures,
             "failures": failures,
