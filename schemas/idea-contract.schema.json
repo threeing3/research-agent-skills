@@ -4,19 +4,60 @@
   "title": "Research Idea Contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "project_id", "idea_id", "revision", "status", "title", "problem", "core_hypothesis", "mechanism", "experiment_entry"],
+  "required": ["schema_version", "idea_id", "revision", "status", "title", "problem", "core_hypothesis", "mechanism", "experiment_entry"],
   "properties": {
-    "schema_version": {"const": "research-idea/v3"},
+    "schema_version": {"enum": ["research-idea/v2", "research-idea/v3", "research-idea/v4"]},
     "project_id": {"type": "string", "minLength": 1},
     "idea_id": {"type": "string", "minLength": 1},
     "revision": {"type": "integer", "minimum": 1},
-    "status": {"enum": ["raw", "screened", "novelty-risk", "discussion-active", "experiment-ready", "parked", "rejected"]},
+    "status": {"enum": ["raw", "developing", "screened", "novelty-risk", "discussion-active", "gate-ready", "experiment-ready", "parked", "rejected"]},
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validity", "current_pool_status"],
+      "properties": {
+        "validity": {"enum": ["active", "invalidated", "superseded"]},
+        "current_pool_status": {"type": "string", "minLength": 1},
+        "invalidated_at": {"type": ["string", "null"]},
+        "invalidated_by_event_id": {"type": ["string", "null"]},
+        "invalidation_reason": {"type": ["string", "null"]},
+        "superseded_by_revision": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
     "title": {"type": "string", "minLength": 1},
     "problem": {"type": "string", "minLength": 1},
     "core_hypothesis": {"type": "string", "minLength": 1},
     "mechanism": {"type": "string", "minLength": 1},
+    "problem_half_life": {"type": "string"},
+    "lineage": {"type": "object"},
+    "problem_signature": {"type": "object"},
+    "mechanism_signature": {"type": "object"},
+    "evaluation_signature": {"type": "object"},
+    "contribution": {"type": "object"},
+    "source_domain": {"type": "object"},
+    "target_domain": {"type": "string"},
+    "ideation": {"type": "object"},
+    "debate": {"type": "object"},
+    "closest_work": {"type": "array", "items": {"type": "object"}},
     "novelty": {"type": "object"},
+    "evaluation_rubric": {"type": "object"},
+    "mechanism_identifiability": {"type": "object"},
+    "simple_baseline_survival": {"type": "object"},
+    "reviewer_patterns": {"type": "object"},
+    "reviewer_attack_matrix": {"type": "array", "items": {"type": "object"}},
     "evaluation": {"type": "object"},
-    "experiment_entry": {"type": "object", "required": ["recommended_mode", "cheapest_test"], "properties": {"recommended_mode": {"type": "string"}, "cheapest_test": {"type": "string"}}}
+    "experiment_entry": {
+      "type": "object",
+      "required": ["recommended_mode", "cheapest_test"],
+      "properties": {
+        "recommended_mode": {"enum": ["pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"]},
+        "cheapest_test": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "process_metrics": {"type": "object"},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "anti_reskin_gate": {"type": "object"},
+    "decision": {"type": "object"}
   }
 }

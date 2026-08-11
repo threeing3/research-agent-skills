@@ -4,15 +4,28 @@
   "title": "Research State Index",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "project_id", "revision", "phase", "paths", "updated_at"],
+  "required": ["schema_version", "revision", "phase", "paths", "updated_at"],
   "properties": {
     "schema_version": {"const": "research-state/v1"},
     "project_id": {"type": "string", "minLength": 1},
     "revision": {"type": "integer", "minimum": 0},
-    "phase": {"enum": ["ideation", "experiment", "writing", "submission", "blocked"]},
+    "phase": {"type": "string", "minLength": 1},
     "active_idea_id": {"type": ["string", "null"]},
     "active_experiment_id": {"type": ["string", "null"]},
-    "paths": {"type": "object", "additionalProperties": {"type": "string"}},
-    "updated_at": {"type": "string", "format": "date-time"}
+    "paths": {
+      "type": "object",
+      "properties": {
+        "events": {"type": "string", "minLength": 1},
+        "experiments": {"type": "string", "minLength": 1},
+        "field_snapshot": {"type": "string", "minLength": 1},
+        "idea_pool": {"type": "string", "minLength": 1},
+        "idea_state_consistency": {"type": "string", "minLength": 1},
+        "ideation_sessions": {"type": "string", "minLength": 1},
+        "paper_state": {"type": "string", "minLength": 1},
+        "review_patterns": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "updated_at": {"type": "string", "minLength": 1}
   }
 }

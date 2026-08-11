@@ -78,6 +78,7 @@ def initialize(args: argparse.Namespace) -> None:
             ],
             "constraints": [],
             "lineage_check_report": "",
+            "idea_state_consistency_report": "",
             "last_reconciled_at": None,
         },
         "autonomy": {

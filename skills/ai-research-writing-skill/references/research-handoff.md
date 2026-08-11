@@ -4,7 +4,15 @@ Use this when an upstream system has already completed research planning, experi
 
 The upstream system must export evidence, not writing prompts. The skill remains the canonical source for story construction, drafting, figures, citations, review, revision, LaTeX, and completion gates.
 
-When the project-root `research_state.json` exists, read it before accepting a handoff. Require `source_idea_id`, `source_idea_revision`, `experiment_id`, and `experiment_plan_revision` to match active state. Require the linked experiment stage to be `paper-ready` and its verification report to pass. Treat revision mismatch, `novelty-risk`, incomplete experiment verification, and unresolved kill conditions as blockers.
+When the project-root `research_state.json` exists, read it before accepting a
+handoff and require `ai-research-writing/research-handoff-v2`. Reconcile the
+source idea with `active_idea_id`, its v4 contract revision and SHA-256, its
+`active` lifecycle, the current experiment-ready idea-pool row, and a fresh
+passed `research-idea/state-consistency-v2` report. Reconcile the experiment
+with `active_experiment_id`, plan revision and SHA-256, `paper-ready` state, and
+a passed `research-experiment/experiment-verification-v2` report carrying the
+same identities and hashes. Treat any mismatch, lifecycle invalidation,
+incomplete verification, or unresolved kill condition as a blocker.
 
 ## Handoff Contract
 
@@ -12,11 +20,13 @@ Create `research_handoff.json` using `research-handoff.schema.json`. Paths are r
 
 ```json
 {
-  "schema_version": "ai-research-writing/research-handoff-v1",
+  "schema_version": "ai-research-writing/research-handoff-v2",
   "source_idea_id": "videoqa-example",
   "source_idea_revision": 1,
+  "source_idea_contract_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   "experiment_id": "videoqa-example-full",
   "experiment_plan_revision": 1,
+  "experiment_plan_sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
   "research_question": "Does method X improve metric Y under condition Z?",
   "paper_type": "empirical ML paper",
   "target_venue": "ICML",
@@ -37,7 +47,12 @@ Create `research_handoff.json` using `research-handoff.schema.json`. Paths are r
 }
 ```
 
-For quantitative work, `experiment_inventory` and numeric-evidence v2 are required. A handoff may retain blockers for inspection, but full-paper drafting must use `--require-unblocked`. Exploratory partial writing must carry every blocker into `paper_state.json` and weaken affected claims.
+For quantitative work, `experiment_inventory` and numeric-evidence v2 are
+required. A handoff may retain blockers for inspection, but full-paper drafting
+must use `--require-unblocked`. Exploratory partial writing must carry every
+blocker into `paper_state.json` and weaken affected claims. Standalone projects
+without `research_state.json` may still read the legacy v1 handoff; the presence
+of shared state always activates the stricter v2 reconciliation.
 
 Validate before drafting:
 

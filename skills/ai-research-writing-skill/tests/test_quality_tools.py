@@ -504,6 +504,184 @@ class ResearchHandoffTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def _write_shared_state_project(
+        self,
+        root: Path,
+        *,
+        lifecycle_validity: str = "active",
+        experiment_stage: str = "paper-ready",
+        verification_passed: bool = True,
+    ) -> Path:
+        ideas = root / "research_state" / "ideas"
+        experiment = root / "research_state" / "experiments" / "exp-1"
+        analysis = experiment / "analysis"
+        contract_path = ideas / "idea-1" / "idea_contract.yaml"
+        contract_path.parent.mkdir(parents=True)
+        analysis.mkdir(parents=True)
+        pool_status = "experiment-ready" if lifecycle_validity == "active" else "rejected"
+        pool_path = ideas / "idea_pool.json"
+        pool_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-idea-pool/v1",
+                    "updated_at": "fixture",
+                    "ideas": [{"id": "idea-1", "status": pool_status}],
+                }
+            ),
+            encoding="utf-8",
+        )
+        contract = {
+            "schema_version": "research-idea/v4",
+            "idea_id": "idea-1",
+            "revision": 1,
+            "status": "experiment-ready",
+            "lifecycle": {
+                "validity": lifecycle_validity,
+                "current_pool_status": pool_status,
+                "invalidation_reason": "fixture invalidation" if lifecycle_validity != "active" else None,
+                "superseded_by_revision": None,
+            },
+        }
+        contract_path.write_text(json.dumps(contract), encoding="utf-8")
+        contract_hash = hashlib.sha256(contract_path.read_bytes()).hexdigest()
+        consistency_path = ideas / "idea_state_consistency.json"
+        consistency_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-idea/state-consistency-v2",
+                    "passed": True,
+                    "pool_sha256": hashlib.sha256(pool_path.read_bytes()).hexdigest(),
+                    "records": [
+                        {
+                            "idea_id": "idea-1",
+                            "pool_status": pool_status,
+                            "contract_revision": 1,
+                            "contract_sha256": contract_hash,
+                            "lifecycle_validity": lifecycle_validity,
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        plan_path = experiment / "experiment_plan.json"
+        plan_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-experiment/plan-v2",
+                    "experiment_id": "exp-1",
+                    "plan_revision": 1,
+                    "idea_id": "idea-1",
+                    "idea_revision": 1,
+                    "idea_contract_sha256": contract_hash,
+                }
+            ),
+            encoding="utf-8",
+        )
+        plan_hash = hashlib.sha256(plan_path.read_bytes()).hexdigest()
+        (experiment / "experiment_state.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-experiment/state-v1",
+                    "experiment_id": "exp-1",
+                    "plan_revision": 1,
+                    "idea_id": "idea-1",
+                    "idea_revision": 1,
+                    "stage": experiment_stage,
+                }
+            ),
+            encoding="utf-8",
+        )
+        (experiment / "verification_report.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-experiment/experiment-verification-v2",
+                    "experiment_id": "exp-1",
+                    "plan_revision": 1,
+                    "idea_id": "idea-1",
+                    "idea_revision": 1,
+                    "idea_contract_sha256": contract_hash,
+                    "experiment_plan_sha256": plan_hash,
+                    "stage": experiment_stage,
+                    "passed": verification_passed,
+                    "blockers": [] if verification_passed else ["fixture-failure"],
+                    "checks": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        (analysis / "run_index.csv").write_text("run_id,status\nrun-1,verified\n", encoding="utf-8")
+        (analysis / "metric_summary.csv").write_text("metric,mean\nscore,0.9\n", encoding="utf-8")
+        (root / "research_state.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-state/v1",
+                    "revision": 1,
+                    "phase": "writing",
+                    "active_idea_id": "idea-1",
+                    "active_experiment_id": "exp-1",
+                    "paths": {
+                        "idea_pool": "research_state/ideas/idea_pool.json",
+                        "idea_state_consistency": "research_state/ideas/idea_state_consistency.json",
+                        "experiments": "research_state/experiments",
+                    },
+                    "updated_at": "fixture",
+                }
+            ),
+            encoding="utf-8",
+        )
+        evidence = root / "evidence"
+        evidence.mkdir()
+        for name in ("project.md", "analysis.md", "decision.md", "experiments.md"):
+            (evidence / name).write_text("Verified evidence.\n", encoding="utf-8")
+        (root / "results.json").write_text('{"score": 0.9}\n', encoding="utf-8")
+        (root / "numeric_evidence.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "ai-research-writing/numeric-evidence-v2",
+                    "entries": [
+                        {
+                            "value": 0.9,
+                            "source": "results.json",
+                            "selector": {"kind": "json-pointer", "pointer": "/score"},
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        handoff_path = root / "research_handoff.json"
+        handoff_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "ai-research-writing/research-handoff-v2",
+                    "source_idea_id": "idea-1",
+                    "source_idea_revision": 1,
+                    "source_idea_contract_sha256": contract_hash,
+                    "experiment_id": "exp-1",
+                    "experiment_plan_revision": 1,
+                    "experiment_plan_sha256": plan_hash,
+                    "research_question": "Does X improve Y?",
+                    "paper_type": "empirical ML paper",
+                    "target_venue": "ICML",
+                    "quantitative": True,
+                    "artifacts": {
+                        "project_inventory": "evidence/project.md",
+                        "analysis": "evidence/analysis.md",
+                        "decision": "evidence/decision.md",
+                        "experiment_inventory": "evidence/experiments.md",
+                        "numeric_evidence": "numeric_evidence.json",
+                        "experiment_verification": "research_state/experiments/exp-1/verification_report.json",
+                        "run_index": "research_state/experiments/exp-1/analysis/run_index.csv",
+                        "metric_summary": "research_state/experiments/exp-1/analysis/metric_summary.csv",
+                    },
+                    "blockers": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return handoff_path
+
     def test_quantitative_handoff_with_registry_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -568,64 +746,67 @@ class ResearchHandoffTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("another iteration", result.stdout)
 
-    def test_shared_state_handoff_requires_verified_experiment_linkage(self) -> None:
+    def test_shared_state_handoff_reconciles_active_lifecycle_and_hashes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "research_state.json").write_text(
-                json.dumps({"schema_version": "research-state/v1", "revision": 1}),
-                encoding="utf-8",
-            )
-            (root / "results.json").write_text('{"score": 0.9}\n', encoding="utf-8")
-            (root / "numeric_evidence.json").write_text(
-                json.dumps(
-                    {
-                        "schema_version": "ai-research-writing/numeric-evidence-v2",
-                        "entries": [{
-                            "value": 0.9,
-                            "source": "results.json",
-                            "selector": {"kind": "json-pointer", "pointer": "/score"},
-                        }],
-                    }
-                ),
-                encoding="utf-8",
-            )
-            artifacts = {
-                "project_inventory": "evidence/project.md",
-                "analysis": "evidence/analysis.md",
-                "decision": "evidence/decision.md",
-                "experiment_inventory": "evidence/experiments.md",
-                "numeric_evidence": "numeric_evidence.json",
-                "experiment_verification": "evidence/verification.json",
-                "run_index": "evidence/run_index.csv",
-                "metric_summary": "evidence/metric_summary.csv",
-            }
-            self._write_handoff(root, quantitative=True, artifacts=artifacts)
-            (root / "evidence/verification.json").write_text(
-                json.dumps({"passed": True}),
-                encoding="utf-8",
-            )
-            handoff_path = root / "research_handoff.json"
-            result = run_script("check_research_handoff.py", root)
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("source_idea_id", result.stderr)
-
-            handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
-            handoff.update(
-                {
-                    "source_idea_id": "idea-1",
-                    "source_idea_revision": 1,
-                    "experiment_id": "exp-1",
-                    "experiment_plan_revision": 1,
-                }
-            )
-            handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+            self._write_shared_state_project(root)
             result = run_script("check_research_handoff.py", root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-            (root / "evidence/verification.json").write_text(
-                json.dumps({"passed": False}),
-                encoding="utf-8",
-            )
+    def test_shared_state_handoff_rejects_legacy_presence_only_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            handoff_path = self._write_shared_state_project(root)
+            handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+            handoff["schema_version"] = "ai-research-writing/research-handoff-v1"
+            handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("shared-state handoff schema_version", result.stderr)
+
+    def test_shared_state_handoff_rejects_non_active_idea(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root, lifecycle_validity="invalidated")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("not experiment-ready", result.stderr)
+
+    def test_shared_state_handoff_rejects_stale_active_id(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root)
+            state_path = root / "research_state.json"
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            state["active_idea_id"] = "idea-2"
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("active idea mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_non_paper_ready_experiment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root, experiment_stage="verified-scientific")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("experiment state stage mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_plan_hash_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            handoff_path = self._write_shared_state_project(root)
+            handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+            handoff["experiment_plan_sha256"] = "0" * 64
+            handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("experiment plan SHA-256 mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_failed_verification(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root, verification_passed=False)
             result = run_script("check_research_handoff.py", root)
             self.assertEqual(result.returncode, 2)
             self.assertIn("passed: true", result.stderr)

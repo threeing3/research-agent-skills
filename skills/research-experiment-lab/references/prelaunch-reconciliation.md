@@ -6,8 +6,9 @@ an impossible experimental gate from consuming compute.
 
 ## Required handoff
 
-Read the canonical idea contract and lineage-check report. Copy these immutable
-identifiers into `experiment_plan.json`:
+Read the canonical idea contract, idea-state consistency report, and
+lineage-check report. Copy these immutable identifiers into
+`experiment_plan.json`:
 
 ```json
 {
@@ -22,7 +23,11 @@ identifiers into `experiment_plan.json`:
 
 Reject the handoff when:
 
-- the idea is not `experiment-ready` or was not explicitly selected;
+- the contract lifecycle is missing, `invalidated`, or `superseded`;
+- the idea or current idea-pool state is not `experiment-ready`, or the idea
+  was not explicitly selected;
+- the `research-idea/state-consistency-v2` report is absent, failed, or its
+  idea-contract or idea-pool SHA-256 no longer matches current files;
 - the anti-reskin gate did not pass;
 - any inherited failure is unresolved;
 - the idea revision, family, contract hash, or mechanism hash differs;
@@ -58,6 +63,7 @@ Add a `prelaunch` object to the plan:
     }
   ],
   "lineage_check_report": "research_state/ideas/example/lineage_check.json",
+  "idea_state_consistency_report": "research_state/ideas/idea_state_consistency.json",
   "last_reconciled_at": ""
 }
 ```
@@ -97,6 +103,8 @@ Freshly recompute:
 - constraint values backed by current manifests or preflight records;
 - task dependency eligibility;
 - current idea revision and user selection.
+- current idea lifecycle, pool status, contract hash, and pool hash against the
+  referenced state-consistency report.
 
 Store the report under the experiment directory and reference it from the run
 manifest. A stale or failed report blocks `new-run`, snapshot deployment, and
@@ -110,6 +118,8 @@ AutoDL lifecycle actions for novel-method work.
 - `technically-blocked`: implementation or infrastructure failed while the
   scientific design remains satisfiable;
 - `stale-by-idea-revision`: the canonical idea changed after reconciliation.
+- `stale-by-idea-lifecycle`: the contract is no longer active or the referenced
+  idea-state consistency report no longer represents current files.
 
 Do not reclassify a scientific or lineage blocker as technical to keep an
 autonomous campaign moving.

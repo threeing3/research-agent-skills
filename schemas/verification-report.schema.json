@@ -4,16 +4,31 @@
   "title": "Experiment Verification Report",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "project_id", "experiment_id", "plan_revision", "stage", "runs", "claims", "blockers"],
+  "required": ["schema_version", "verified_at", "experiment_id", "plan_revision", "idea_id", "idea_revision", "idea_contract_sha256", "experiment_plan_sha256", "stage", "passed", "blockers", "checks"],
   "properties": {
-    "schema_version": {"const": "research-experiment/verification-v1"},
-    "project_id": {"type": "string"},
-    "experiment_id": {"type": "string"},
-    "plan_revision": {"type": "integer", "minimum": 1},
-    "stage": {"enum": ["completed-technical", "verified-scientific", "paper-ready", "blocked"]},
-    "runs": {"type": "array", "items": {"type": "object"}},
-    "claims": {"type": "array", "items": {"type": "object", "required": ["claim_id", "status"]}},
+    "schema_version": {"const": "research-experiment/experiment-verification-v2"},
+    "verified_at": {"type": "string", "minLength": 1},
+    "experiment_id": {"type": ["string", "null"]},
+    "plan_revision": {"type": ["integer", "null"], "minimum": 1},
+    "idea_id": {"type": ["string", "null"]},
+    "idea_revision": {"type": ["integer", "null"], "minimum": 1},
+    "idea_contract_sha256": {"type": ["string", "null"], "pattern": "^$|^[0-9a-f]{64}$"},
+    "experiment_plan_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "stage": {"enum": ["verified-scientific", "paper-ready", "blocked"]},
+    "passed": {"type": "boolean"},
     "blockers": {"type": "array", "items": {"type": "string"}},
-    "idea_revision_request": {"type": ["object", "null"]}
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "passed", "evidence"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "passed": {"type": "boolean"},
+          "evidence": {"type": "string"}
+        }
+      }
+    }
   }
 }

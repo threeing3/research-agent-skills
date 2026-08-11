@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -32,6 +33,14 @@ def load_yaml(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path} must contain a YAML mapping")
     return value
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def resolve_state_root(path: Path) -> Path:
@@ -93,6 +102,8 @@ def validate(state_root: Path) -> dict[str, Any]:
                     "idea_id": fallback_id,
                     "pool_status": (pool.get(fallback_id) or {}).get("status"),
                     "contract_status": None,
+                    "contract_revision": None,
+                    "contract_sha256": sha256_file(contract_path),
                     "lifecycle_validity": None,
                     "lifecycle_pool_status": None,
                     "contract": str(contract_path.relative_to(state_root.parent)),
@@ -183,6 +194,8 @@ def validate(state_root: Path) -> dict[str, Any]:
                 "idea_id": idea_id,
                 "pool_status": pool_status,
                 "contract_status": issued_status,
+                "contract_revision": contract.get("revision"),
+                "contract_sha256": sha256_file(contract_path),
                 "lifecycle_validity": validity,
                 "lifecycle_pool_status": lifecycle_pool_status,
                 "contract": str(contract_path.relative_to(state_root.parent)),
@@ -196,8 +209,10 @@ def validate(state_root: Path) -> dict[str, Any]:
             )
 
     return {
-        "schema_version": "research-idea/state-consistency-v1",
+        "schema_version": "research-idea/state-consistency-v2",
         "state_root": str(state_root),
+        "pool": str(pool_path.relative_to(state_root.parent)),
+        "pool_sha256": sha256_file(pool_path),
         "pool_updated_at": pool_document.get("updated_at"),
         "passed": not failures,
         "counts": {

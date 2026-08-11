@@ -189,6 +189,11 @@ When invalidating or superseding a contract, update only its lifecycle metadata 
 
 Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans. Before experiment handoff, require an `active` lifecycle, run `scripts/check_idea_lineage.py`, then run `scripts/check_idea_state_consistency.py` against the project state.
 
+Preserve its `research-idea/state-consistency-v2` report. The report binds the
+current idea pool and every discovered contract by SHA-256 and records each
+contract revision; any later file change makes that report stale for experiment
+prelaunch and writing handoff.
+
 Treat existing `research-idea/v2` and `research-idea/v3` contracts as readable
 legacy records. Migrate one to v4 only when materially revising or promoting
 that idea; do not bulk-rewrite historical contracts. Run

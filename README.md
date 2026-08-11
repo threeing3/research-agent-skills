@@ -136,7 +136,7 @@ Idea Skill 的产出不是一串未经筛选的灵感，而是逐步收敛的研
 `research-experiment-lab` 的定位不是“让 AI 多跑几个实验”，而是把一个已经选中的研究想法，转换成边界清楚、过程可审计、结论可复核的证据。它遵循一条单向证据链：
 
 ```text
-idea_contract.yaml → experiment_plan.json → 不可变 run → verification_report.json → 写作交接
+idea_contract.yaml → idea_state_consistency.json → experiment_plan.json → 不可变 run → verification_report.json → research_handoff.json
 ```
 
 具体设计分成五层：
@@ -155,7 +155,7 @@ idea_contract.yaml → experiment_plan.json → 不可变 run → verification_r
 
 本仓库保留上游的核心写作约束：先建立 claim-evidence map（论断—证据映射），禁止编造引用、数字和实验结论，生成 LaTeX/BibTeX（论文排版与参考文献格式）及编译检查产物，并把人的判断保留在关键决策环节。在此基础上做了三类适配：
 
-- 对接本仓库的 `research_state.json`、`idea_contract.yaml`、`experiment_plan.json`、`verification_report.json` 和 `claim_evidence.json`，让想法、实验和论文共享同一套状态与证据边界。
+- 对接本仓库的 `research_state.json`、`idea_contract.yaml`、`idea_state_consistency.json`、`experiment_plan.json`、`verification_report.json` 和 `research_handoff.json`，让想法、实验和论文共享同一套状态、生命周期与证据边界。
 - 对实验缺口只生成结构化的 `experiment_request.json`（实验请求），交回 `research-experiment-lab` 执行；写作技能本身不设计、启动或调试实验，避免把推测写成结果。
 - 将论文图表工作指向独立仓库 [paper-figures-skill](https://github.com/threeing3/paper-figures-skill)，写作技能负责 claim、caption（图注）、LaTeX 引用和证据绑定，不把绘图工具重复打包进来。
 
@@ -169,6 +169,8 @@ idea_contract.yaml → experiment_plan.json → 不可变 run → verification_r
 research_state.json
 research_state/
 ├── ideas/<idea-id>/idea_contract.yaml
+├── ideas/idea_pool.json
+├── ideas/idea_state_consistency.json
 ├── experiments/<experiment-id>/experiment_plan.json
 ├── experiments/<experiment-id>/verification_report.json
 └── paper/claim_evidence.json
@@ -178,9 +180,10 @@ research_state/
 
 ```text
 idea_contract.yaml
+  → idea_state_consistency.json
   → experiment_plan.json
   → verification_report.json
-  → claim_evidence.json
+  → research_handoff.json
   → paper_state.json
 ```
 
