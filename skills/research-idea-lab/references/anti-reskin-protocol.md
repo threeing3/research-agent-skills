@@ -1,8 +1,12 @@
 # Anti-Reskin and Mechanism-Lineage Protocol
 
-Use this protocol before creating a candidate, materially revising an idea, or
-handing an idea to experiments. The unit of memory is the mechanism family,
-not the title, acronym, model name, or revision number.
+Use the full protocol only for a stable selected idea during focused `novelty`
+review, a user-requested `gate`, or formal experiment promotion. During
+`explore` and early `develop`, run only the lightweight signature and
+target-domain collision checks in `exploration-workflow.md`; do not require a
+family verdict, inherit fatal failures, or run a cold review before returning a
+candidate. The unit of durable memory is the mechanism family, not the title,
+acronym, model name, or revision number.
 
 ## Mechanism family
 
@@ -71,7 +75,7 @@ the semantic family decision.
 
 ## Classify the relationship
 
-Classify every proposal as exactly one of:
+After a proposal has a stable problem/mechanism signature, classify it as exactly one of:
 
 - `new-family`: a different target failure or causal mechanism;
 - `same-family-material-revision`: the family is unchanged, but at least one
@@ -91,8 +95,18 @@ produce a new separating observation:
 - narrowing the claim without changing the failed mechanism.
 
 Do not add a cosmetic variant to the candidate pool as a new idea. Attach it
-to the existing family as an implementation option, fail its
-`anti_reskin_gate`, and keep the idea `parked` or `rejected`.
+to the existing family as an implementation option. During exploration, keep
+developing or park it without issuing a strict verdict. During focused novelty
+review or `gate`, it cannot pass the formal `anti_reskin_gate` as a new
+mechanism.
+
+An implementation repair is not a cosmetic research proposal. When the
+problem, causal mechanism, and distinguishing prediction are unchanged, keep
+the same idea revision, increment the implementation revision in the
+validation alignment, and attach the new evidence to that implementation. A
+material change to a causal axis creates a mechanism revision; a change to the
+central failure explanation or solution principle creates a linked derived
+idea.
 
 ## Inherit failures
 
@@ -157,10 +171,11 @@ narrative is not independent.
 
 ## Stop rules
 
-- Allow one bounded rebuttal and at most one further material revision after
-  new verified evidence changes a premise.
+- Do not impose a fixed scientific rescue count. Continue only when new
+  evidence, a material causal revision, or a justified implementation repair
+  changes what the next validation can learn.
 - After two scientifically failed revisions in one family, require explicit
-  researcher review before another candidate from that family can proceed.
+  researcher alignment before another validation from that family can proceed.
 - Stop when two consecutive revisions change no causal axis or discriminating
   prediction.
 - Do not spend GPU compute to decide whether a revision is merely cosmetic.
@@ -170,12 +185,15 @@ remain attached and the reason for reopening must be recorded.
 
 ## Promotion gate
 
-An idea may become `experiment-ready` only when:
+An idea may become `experiment-ready` through focused `novelty` review or a
+user-requested full `gate` only when:
 
 - its family relationship is recorded;
 - the structured signatures are complete;
 - all inherited failures are resolved or explicitly not applicable;
 - a cold reviewer marks the change material and `independence_valid=true`;
 - the mechanism-signature hash is recorded;
+- target-domain novelty is `supported` with a declared boundary, coverage end,
+  and recall confidence;
 - the proposed pilot's prerequisites are jointly satisfiable under current
   data, compute, budget, and permissions.

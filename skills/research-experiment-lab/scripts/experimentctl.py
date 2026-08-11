@@ -13,6 +13,7 @@ from experiment_common import append_jsonl, atomic_json, now, read_json, require
 
 
 MODES = {"pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"}
+ADMISSION_MODES = {"exploratory-validation", "formal", "diagnostic"}
 
 
 def update_project_index(root: Path, experiment_id: str) -> None:
@@ -39,6 +40,16 @@ def initialize(args: argparse.Namespace) -> None:
     experiment_id = require_id(args.experiment_id, "experiment_id")
     if args.mode not in MODES:
         raise ValueError(f"mode must be one of {sorted(MODES)}")
+    admission_mode = args.admission_mode or ("formal" if args.idea_id else "diagnostic")
+    if admission_mode not in ADMISSION_MODES:
+        raise ValueError(f"admission_mode must be one of {sorted(ADMISSION_MODES)}")
+    if admission_mode == "exploratory-validation":
+        if not args.idea_id or not isinstance(args.idea_revision, int):
+            raise ValueError("exploratory-validation requires idea_id and idea_revision")
+        if not isinstance(args.implementation_revision, int):
+            raise ValueError("exploratory-validation requires implementation_revision")
+        if not args.validation_alignment or not args.validation_alignment_sha256:
+            raise ValueError("exploratory-validation requires validation alignment path and SHA-256")
     experiment_dir = root / "research_state" / "experiments" / experiment_id
     if experiment_dir.exists():
         raise ValueError(f"experiment already exists; do not overwrite it: {experiment_dir}")
@@ -46,12 +57,22 @@ def initialize(args: argparse.Namespace) -> None:
         (experiment_dir / relative).mkdir(parents=True, exist_ok=False)
     plan: dict[str, Any] = {
         "schema_version": "research-experiment/plan-v2",
+        "admission_mode": admission_mode,
         "experiment_id": experiment_id,
         "plan_revision": 1,
         "mode": args.mode,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
+        "implementation_revision": args.implementation_revision,
         "idea_contract_sha256": "",
+        "validation_alignment": (
+            {
+                "artifact": args.validation_alignment,
+                "sha256": args.validation_alignment_sha256,
+            }
+            if args.validation_alignment
+            else None
+        ),
         "mechanism_family_id": "",
         "mechanism_signature_sha256": "",
         "inherited_failure_ids": [],
@@ -79,6 +100,7 @@ def initialize(args: argparse.Namespace) -> None:
             "constraints": [],
             "lineage_check_report": "",
             "idea_state_consistency_report": "",
+            "validation_alignment_check_report": "",
             "last_reconciled_at": None,
         },
         "autonomy": {
@@ -108,6 +130,7 @@ def initialize(args: argparse.Namespace) -> None:
         },
         "budget": {
             "gpu_types": [],
+            "max_direct_cost_cny": 100,
             "max_parallel_runs": 1,
             "max_wall_time_hours": 24,
             "max_retry_per_failure": 2,
@@ -123,6 +146,8 @@ def initialize(args: argparse.Namespace) -> None:
         "experiment_id": experiment_id,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
+        "implementation_revision": args.implementation_revision,
+        "admission_mode": admission_mode,
         "plan_revision": 1,
         "stage": "designed",
         "active_runs": [],
@@ -145,6 +170,7 @@ def initialize(args: argparse.Namespace) -> None:
             "event": "experiment-created",
             "experiment_id": experiment_id,
             "mode": args.mode,
+            "admission_mode": admission_mode,
             "idea_id": args.idea_id,
             "idea_revision": args.idea_revision,
         },
@@ -179,6 +205,8 @@ def new_run(args: argparse.Namespace) -> None:
         "plan_revision": plan.get("plan_revision"),
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
+        "implementation_revision": plan.get("implementation_revision"),
+        "admission_mode": plan.get("admission_mode", "formal"),
         "mode": plan.get("mode"),
         "variant": args.variant,
         "dataset": args.dataset,
@@ -230,8 +258,12 @@ def main() -> int:
     init_parser.add_argument("project_root", type=Path)
     init_parser.add_argument("--experiment-id", required=True)
     init_parser.add_argument("--mode", required=True)
+    init_parser.add_argument("--admission-mode", choices=sorted(ADMISSION_MODES))
     init_parser.add_argument("--idea-id")
     init_parser.add_argument("--idea-revision", type=int)
+    init_parser.add_argument("--implementation-revision", type=int)
+    init_parser.add_argument("--validation-alignment")
+    init_parser.add_argument("--validation-alignment-sha256")
     init_parser.add_argument("--research-question", default="")
     init_parser.set_defaults(func=initialize)
 

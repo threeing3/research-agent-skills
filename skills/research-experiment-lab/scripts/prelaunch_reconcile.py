@@ -133,6 +133,10 @@ def main() -> int:
         decision = contract.get("decision") if isinstance(contract.get("decision"), dict) else {}
         lifecycle = contract.get("lifecycle") if isinstance(contract.get("lifecycle"), dict) else {}
 
+        admission_mode = plan.get("admission_mode", "formal")
+        checks.append(check_result("formal-admission-mode", admission_mode == "formal", repr(admission_mode)))
+        if admission_mode != "formal":
+            blockers.append("wrong-prelaunch-protocol")
         checks.append(check_result("idea-schema", contract.get("schema_version") == "research-idea/v4", str(contract.get("schema_version"))))
         checks.append(check_result("idea-experiment-ready", contract.get("status") == "experiment-ready", str(contract.get("status"))))
         lifecycle_declared = isinstance(contract.get("lifecycle"), dict)
@@ -154,6 +158,26 @@ def main() -> int:
             blockers.append("stale-by-idea-lifecycle")
         checks.append(check_result("idea-user-selected", decision.get("selected_by_user") is True, str(decision.get("selected_by_user"))))
         checks.append(check_result("anti-reskin-gate", gate.get("status") == "pass" and gate.get("independence_valid") is True and gate.get("review_context_policy") == "cold", repr(gate.get("status"))))
+
+        if contract.get("contract_profile") == "staged-novelty/v1":
+            novelty_review = contract.get("novelty_review") if isinstance(contract.get("novelty_review"), dict) else {}
+            target_boundary = contract.get("target_domain_boundary") if isinstance(contract.get("target_domain_boundary"), dict) else {}
+            novelty_supported = (
+                novelty_review.get("status") == "supported"
+                and bool(novelty_review.get("coverage_end"))
+                and novelty_review.get("recall_confidence") in {"low", "medium", "high"}
+                and bool(target_boundary.get("task"))
+                and bool(target_boundary.get("problem_setting"))
+            )
+            checks.append(
+                check_result(
+                    "focused-target-novelty",
+                    novelty_supported,
+                    f"status={novelty_review.get('status')!r} coverage_end={novelty_review.get('coverage_end')!r}",
+                )
+            )
+            if not novelty_supported:
+                blockers.append("novelty-not-supported")
 
         inherited = lineage.get("inherited_failures", []) if isinstance(lineage, dict) else []
         unresolved = [str(item.get("failure_id")) for item in inherited if isinstance(item, dict) and item.get("status") == "unresolved"]

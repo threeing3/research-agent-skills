@@ -15,6 +15,7 @@ Read only the references needed for the task:
 
 | Task | Read first |
 |---|---|
+| User-approved pre-gate idea validation | `references/exploratory-validation.md`, `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | New pilot or full campaign | `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | Novel-method prelaunch or revised idea | `references/prelaunch-reconciliation.md` plus the new-pilot references |
 | AutoDL console, lifecycle, or other SSH execution | `references/autodl-operations.md`, `references/autodl-console-playbook.md`, `references/logging-and-statistics.md` |
@@ -26,12 +27,23 @@ Read only the references needed for the task:
 ## Entry Contract
 
 1. Locate project-root `research_state.json`.
-2. Require a selected idea contract for novel-method work. Reproduction and
-   diagnostic modes may instead cite an explicit research question.
-   For novel-method work, require a passed `research-idea/v4` anti-reskin gate,
-   an `active` lifecycle whose current pool status is `experiment-ready`, a
-   fresh passed `research-idea/state-consistency-v2` report, mechanism family
-   ID, mechanism-signature hash, and resolved inherited failure ledger.
+2. Declare `admission_mode` as `exploratory-validation`, `formal`, or
+   `diagnostic`.
+   - `exploratory-validation` requires a frozen, user-approved
+     `research-idea/validation-alignment-v1` artifact and its SHA-256. It does
+     not require an idea contract or full novelty gate. Run
+     `scripts/check_validation_alignment.py`; refuse launch when the artifact,
+     user approval, realization evidence, intervention evidence, stop
+     conditions, or approved budget do not match the plan.
+   - `formal` novel-method work requires a selected `research-idea/v4`
+     contract, an `active` lifecycle whose current pool status is
+     `experiment-ready`, a fresh passed
+     `research-idea/state-consistency-v2` report, mechanism family ID,
+     mechanism-signature hash, resolved inherited failures, and the applicable
+     anti-reskin gate. New `staged-novelty/v1` contracts must record focused
+     target-domain novelty as `supported`.
+   - `diagnostic` and reproduction work may instead cite an explicit research
+     question when they make no novel-method or paper-ready claim.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
@@ -47,10 +59,11 @@ Read only the references needed for the task:
 6. Create every long run with `scripts/experimentctl.py new-run` before
    launching it. Refuse a long run if its record directory or readable log
    cannot be created.
-7. Before the first novel-method run and after every idea revision, run
-   `scripts/prelaunch_reconcile.py`. Preserve the report and refuse launch when
-   lifecycle, idea-state freshness, lineage, identity, inherited-failure,
-   constraint, or task-graph checks fail.
+7. Before every exploratory validation round, run
+   `scripts/check_validation_alignment.py`. Before the first formal
+   novel-method run and after every idea revision, run
+   `scripts/prelaunch_reconcile.py`. Preserve the applicable report and refuse
+   launch when its checks fail.
 
 Supported modes are `pilot`, `full`, `ablation`, `robustness`, `efficiency`,
 `reproduction`, and `debug`.
@@ -115,6 +128,12 @@ Also reconcile the mechanism family and signature hash. A renamed idea with the
 same failed mechanism remains blocked until `research-idea-lab` resolves the
 family failure; do not treat it as a fresh campaign.
 
+User approval is per validation round, not a blanket permission to invent the
+next scientific experiment. Within one approved alignment and its CNY/time
+envelope, run predeclared tasks without repeated confirmation. After a result,
+diagnose and propose the next revision autonomously, but require a fresh
+alignment before launching another scientific round.
+
 ## Logging Contract
 
 Every run must preserve:
@@ -144,6 +163,20 @@ Apply `references/systematic-experiment-debugging.md` before changing code:
 4. Record one root-cause hypothesis and run the smallest discriminating test.
 5. Implement one fix locally and create a new run.
 
+For a novel mechanism, ask first: “Does the program actually implement and
+activate the intended idea?” Check the predeclared activation and intervention
+evidence before interpreting a negative metric. Classify the outcome as:
+
+- `implementation-not-confirmed`;
+- `measurement-inconclusive`;
+- `mechanism-counterevidence`;
+- `supportive-signal`.
+
+Only `mechanism-counterevidence` may update the mechanism hypothesis directly.
+Implementation or measurement failures update their own layer and retain the
+idea. Emit an idea-revision request for a material causal change; do not edit
+the idea silently.
+
 Do not tune away a negative scientific result. After three failed fixes for
 one symptom, stop and request architectural discussion. Do not count renaming,
 backbone swaps, optimizer swaps, or adding a training wrapper around the same
@@ -164,7 +197,9 @@ Use these stages exactly:
 `draft`, `designed`, `preflight-passed`, `code-synced`, `queued`, `running`,
 `completed-technical`, `verified-scientific`, `paper-ready`, `blocked`.
 
-Only `paper-ready` evidence with a v2 verification report and matching idea
+An `exploratory-validation` campaign may end at `verified-diagnostic` but may
+never become `paper-ready`, prove novelty, or directly support a paper-core
+method claim. Only formal `paper-ready` evidence with a v2 verification report and matching idea
 contract and experiment-plan hashes may enter an unblocked shared-state writing
 handoff.
 

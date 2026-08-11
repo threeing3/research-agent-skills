@@ -39,6 +39,7 @@ def main() -> int:
     try:
         plan = read_json(plan_path)
         state = read_json(state_path)
+        admission_mode = plan.get("admission_mode", "formal")
         checks.append(
             result(
                 "plan-schema",
@@ -87,6 +88,13 @@ def main() -> int:
         )
         for name, identity_passed, evidence in identities:
             checks.append(result(name, identity_passed, evidence))
+        checks.append(
+            result(
+                "paper-ready-admission",
+                not args.promote_paper_ready or admission_mode == "formal",
+                f"admission_mode={admission_mode!r} promote={args.promote_paper_ready}",
+            )
+        )
         required_runs = plan.get("required_runs")
         checks.append(result("required-runs-declared", isinstance(required_runs, list) and bool(required_runs), str(required_runs)))
         manifests: dict[tuple[Any, ...], tuple[dict[str, Any], Path]] = {}
@@ -165,15 +173,19 @@ def main() -> int:
         checks.append(result("verification-readable", False, f"{type(exc).__name__}: {exc}"))
 
     passed = all(item["passed"] for item in checks)
+    admission_mode = plan.get("admission_mode", "formal")
     stage = (
         "paper-ready"
         if passed and args.promote_paper_ready
+        else "verified-diagnostic"
+        if passed and admission_mode == "exploratory-validation"
         else "verified-scientific"
         if passed
         else "blocked"
     )
     report = {
         "schema_version": "research-experiment/experiment-verification-v2",
+        "admission_mode": admission_mode,
         "verified_at": now(),
         "experiment_id": plan.get("experiment_id"),
         "plan_revision": plan.get("plan_revision"),

@@ -59,7 +59,7 @@ class ExperimentLabTests(unittest.TestCase):
             encoding="utf-8",
         )
         contract_hash = hashlib.sha256(contract_path.read_bytes()).hexdigest()
-        (ideas / "idea_state_consistency.json").write_text(
+        (ideas / "state_consistency.json").write_text(
             json.dumps(
                 {
                     "schema_version": "research-idea/state-consistency-v2",
@@ -88,7 +88,7 @@ class ExperimentLabTests(unittest.TestCase):
                     "paths": {
                         "events": "research_state/logs/research_events.jsonl",
                         "idea_pool": "research_state/ideas/idea_pool.json",
-                        "idea_state_consistency": "research_state/ideas/idea_state_consistency.json",
+                        "idea_state_consistency": "research_state/ideas/state_consistency.json",
                         "experiments": "research_state/experiments",
                     },
                     "updated_at": "fixture",
@@ -97,17 +97,38 @@ class ExperimentLabTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def create_experiment_and_run(self, root: Path, run_id: str, value: float, exit_code: int = 0) -> Path:
-        experiment = root / "research_state/experiments/exp-1"
+    def create_experiment_and_run(
+        self,
+        root: Path,
+        run_id: str,
+        value: float,
+        exit_code: int = 0,
+        *,
+        experiment_id: str = "exp-1",
+        mode: str = "full",
+        admission_mode: str | None = None,
+    ) -> Path:
+        experiment = root / "research_state" / "experiments" / experiment_id
         if not experiment.exists():
-            result = run(
-                "experimentctl.py", "init", root,
-                "--experiment-id", "exp-1",
-                "--mode", "full",
+            init_args: list[object] = [
+                "init", root,
+                "--experiment-id", experiment_id,
+                "--mode", mode,
                 "--idea-id", "idea-1",
                 "--idea-revision", 1,
                 "--research-question", "Does X improve Y?",
-            )
+            ]
+            if admission_mode is not None:
+                init_args.extend(["--admission-mode", admission_mode])
+            if admission_mode == "exploratory-validation":
+                init_args.extend(
+                    [
+                        "--implementation-revision", 1,
+                        "--validation-alignment", "research_state/ideas/idea-1/validation/align-1.yaml",
+                        "--validation-alignment-sha256", "0" * 64,
+                    ]
+                )
+            result = run("experimentctl.py", *init_args)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         command = {
             "argv": [
@@ -128,7 +149,7 @@ class ExperimentLabTests(unittest.TestCase):
         command_path.write_text(json.dumps(command), encoding="utf-8")
         result = run(
             "experimentctl.py", "new-run", root,
-            "--experiment-id", "exp-1",
+            "--experiment-id", experiment_id,
             "--run-id", run_id,
             "--command-json", command_path,
             "--variant", "ours",
@@ -147,6 +168,53 @@ class ExperimentLabTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
         return run_dir
+
+    def test_exploratory_validation_verifies_diagnostic_but_not_paper_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_project(root)
+            run_dir = self.create_experiment_and_run(
+                root,
+                "probe-1",
+                0.7,
+                experiment_id="exp-probe",
+                mode="pilot",
+                admission_mode="exploratory-validation",
+            )
+            result = run("verify_run.py", run_dir, "--require-metrics")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            experiment = root / "research_state/experiments/exp-probe"
+            plan_path = experiment / "experiment_plan.json"
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan.update(
+                {
+                    "datasets": ["fixture"],
+                    "variants": ["ours"],
+                    "metrics": ["accuracy"],
+                    "seeds": [1],
+                    "required_runs": [
+                        {
+                            "variant": "ours",
+                            "dataset": "fixture",
+                            "split": "val",
+                            "seed": 1,
+                        }
+                    ],
+                    "success_thresholds": [],
+                }
+            )
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            result = run("aggregate_results.py", experiment)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            result = run("verify_experiment.py", experiment)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            report = json.loads(
+                (experiment / "verification_report.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(report["stage"], "verified-diagnostic")
+            result = run("verify_experiment.py", experiment, "--promote-paper-ready")
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("paper-ready-admission", result.stdout)
 
     def test_complete_logged_run_verifies_and_aggregates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

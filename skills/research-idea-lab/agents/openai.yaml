@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Idea Lab"
-  short_description: "Explore, rescue, and strictly gate ML/AI ideas"
-  default_prompt: "Use $research-idea-lab to explore several materially different research directions first, then develop or strictly gate only the candidate I choose."
+  short_description: "Iteratively develop and validate research ideas"
+  default_prompt: "Use $research-idea-lab to generate rough and baseline-grounded ideas, develop the one I choose, and prepare a user-approved low-cost validation."

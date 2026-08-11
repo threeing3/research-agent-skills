@@ -36,19 +36,35 @@
 
 | 技能 | 负责内容 | 可独立使用 |
 |---|---|---|
-| `research-idea-lab` | 文献检索、创新性分析、想法生成、结构化辩论和实验入口 | 是 |
-| `research-experiment-lab` | 实验设计、运行、调试、统计、验证和失败分析 | 是 |
+| `research-idea-lab` | 探索想法、基线改造、持续迭代、目标领域新颖性核查和实验前对齐 | 是 |
+| `research-experiment-lab` | 低成本验证、正式实验、机制实现检查、运行调试、统计和证据验证 | 是 |
 | `ai-research-writing-skill` | 论文故事、论断—证据、章节、引用、图表和投稿检查 | 是 |
 
 论文绘图不包含在本仓库中，请使用独立仓库 [paper-figures-skill](https://github.com/threeing3/paper-figures-skill)。
 
-## Idea Skill 的量化逻辑
+## Idea Skill 的分阶段逻辑
 
-`research-idea-lab`（研究想法技能）不是简单给 idea 打“好/坏”标签，也不是预测论文一定能接收。它先经过硬门槛，再进行多维评分。
+`research-idea-lab`（研究想法技能）默认先寻找和发展可能性，不会在候选刚出现时启动完整审稿、致命门槛或数值打分。完整评分只在使用者明确要求严格评审、排序、投入决策或放弃决策时运行。
 
-### 1. 先过致命门槛
+标准流程是：
 
-以下任一问题为 `fail`（失败）或 `unresolved`（未解决），idea 就不能进入 `experiment-ready`（可实验状态）：
+```text
+探索种子与基线改造候选
+  → 轻量目标领域查重
+  → 持续完善问题、机制和实现版本
+  → 使用者查看对齐卡并批准低成本验证
+  → 检查程序是否真的实现并启用了设想机制
+  → 有潜力后做严格目标领域新颖性核查
+  → 再决定是否进入完整实验和论文主张
+```
+
+想法成熟度分成 `seed`（想法种子）、`developing`（发展中方案）和 `validation-ready`（可验证方案）。种子只需说明具体问题和可能的解决办法；不完整不等于失败，也不会被写成拒绝。每次有明确基线时，3–5 个返回候选中至少包含一个可定位的基线增改或机制组合方向。
+
+严格新颖性核查只给出三种结论：`supported`（现有检索支持目标领域新颖）、`occupied`（目标领域完整等价机制已被占据）或 `uncertain`（证据仍不足）。来源领域已有原理只用于说明思想来源；只有目标领域已经实现完整等价机制，才占据目标领域新颖性。贡献强度、迁移适配价值和实验成熟度分别判断，不能被改写成“不新颖”。
+
+### 1. 完整严格评审才使用致命门槛
+
+当使用者明确要求完整严格评审时，以下任一问题为 `fail`（失败）或 `unresolved`（未解决），想法就不能进入正式 `experiment-ready`（可实验状态）：
 
 - 核心贡献已经被近似工作完整占据；
 - 没有实验能够区分声称的机制和数据、算力、模型规模或提示词差异；
@@ -57,7 +73,7 @@
 - 核心结论依赖数据泄漏、无效测量或不合适的数据使用；
 - 贡献类型与准备声称的论文结论不匹配。
 
-### 2. 再评估 11 个维度
+### 2. 按需评估 11 个维度
 
 每个维度使用 0–4 分，并附带证据和置信度。总分不是概率，也不是录用率预测。
 
@@ -77,7 +93,7 @@
 
 其中 `soundness`（科学可靠性）和 `excitement`（研究意义）必须分开记录：一个 idea 可能可靠但不重要，也可能很吸引人但无法验证。
 
-### 3. 用信息增益选择实验
+### 3. 用信息增益选择验证
 
 系统不优先选择最复杂或最容易跑出好数字的实验，而是选择单位时间和算力下最能区分竞争性解释的 pilot（先导实验）：
 
@@ -88,9 +104,9 @@
 
 量化结果服务于实验决策，不制造虚假的精确感。
 
-### 4. 强制检查“背景—动机—方法”链条
+### 4. 正式升级前检查“背景—动机—方法”链条
 
-一个 idea 要进入实验阶段，不能只有一个漂亮的方法名称。必须先写清楚：
+一个想法要升级为完整实验和论文核心贡献，不能只有一个漂亮的方法名称。必须先写清楚：
 
 ```text
 背景：现实中存在什么问题？
@@ -108,7 +124,7 @@ coherence = min(背景→动机, 动机→方法, 方法→评估)
 idea_readiness = 0.70*base + 0.30*coherence
 ```
 
-任何分项或连接低于 2 分，都不能进入 `experiment-ready`（可实验状态）；总指数低于 2.5 只能继续做检索和框架澄清；2.5–3.2 可以做有明确停止条件的 pilot（先导实验）；达到 3.2 且所有链条至少为 3 分、致命门槛通过后，才允许进入用户选择的实验设计。
+这些分数只服务于使用者明确请求的完整严格评审，不阻止已经对齐的低成本探索性验证。任何分项或连接低于 2 分，都不能进入完整 `experiment-ready`（可实验状态）；2.5–3.2 可以继续做有明确停止条件的探索性验证；达到 3.2 且所有链条至少为 3 分、适用门槛通过后，才适合按完整评审路径升级。
 
 这个公式故意保留最低连接分：方法再漂亮，也不能弥补虚构的背景；动机再强，也不能弥补方法与评估不匹配。
 
@@ -118,16 +134,18 @@ Idea Skill 的产出不是一串未经筛选的灵感，而是逐步收敛的研
 
 ```text
 领域扫描
-  → 候选 idea 池
-  → 最近工作和冲突检索
-  → 结构化辩论与审稿人攻击
-  → 多维评分和致命门槛
-  → 最低成本区分性实验
-  → 用户明确选择
+  → 3–5 个不同成熟度与不同类型的候选
+  → 轻量目标领域查重和救援路线
+  → 选中方向的机制与基线改动蓝图
+  → validation-alignment.yaml
+  → 用户明确批准低成本验证
+  → 严格目标领域新颖性三态核查
+  → 可选的完整评分与审稿人攻击
+  → 用户选择正式升级
   → idea_contract.yaml
 ```
 
-每个 serious idea（严肃候选）至少留下：问题和核心假设、机制与最强替代解释、最近工作和具体差异、新颖性与检索置信度、可杀死机制的结果、最便宜的区分性实验、审稿攻击及所需证据、主贡献和有证据基础的备选贡献。
+候选可以从不完整种子开始。进入验证前必须留下：问题假设、机制假设、基线及准确改动位置、实现版本、最强替代解释、机制启用证据、关闭或打乱机制后的干预证据、三类结果解释、停止条件、成本时间以及使用者批准。实验效果不好时，先区分实现未生效、测量无法区分和机制受到反证；只允许最后一种直接更新机制判断。
 
 使用者可以加入自己的领域见解，例如某类工作在自己的方向中通常不被认可、某个指标容易被质疑、某个基线实际上更强。这些见解应作为带来源和置信度的评估规则加入，而不是直接覆盖论文事实。这样系统会逐渐形成个人化的 idea 评估标准，同时保留可审计的证据链。
 
@@ -136,16 +154,18 @@ Idea Skill 的产出不是一串未经筛选的灵感，而是逐步收敛的研
 `research-experiment-lab` 的定位不是“让 AI 多跑几个实验”，而是把一个已经选中的研究想法，转换成边界清楚、过程可审计、结论可复核的证据。它遵循一条单向证据链：
 
 ```text
-idea_contract.yaml → idea_state_consistency.json → experiment_plan.json → 不可变 run → verification_report.json → research_handoff.json
+validation-alignment.yaml → 低成本探索性验证
+
+idea_contract.yaml → state_consistency.json → 正式 experiment_plan.json → 不可变 run → verification_report.json → research_handoff.json
 ```
 
 具体设计分成五层：
 
-1. **入口门槛**：实验必须绑定 `idea_contract.yaml`（想法契约）或明确的研究问题；没有可检验假设时，先回到 Idea Skill，而不是直接开长实验。
+1. **双入口**：低成本探索性验证绑定使用者批准的 `validation-alignment.yaml`（验证对齐卡），不要求完整想法契约；正式实验才绑定 `idea_contract.yaml`（想法契约）和通过的目标领域新颖性状态。
 2. **预注册与冻结**：执行前固定假设、对比方法、数据集与划分、指标、随机种子、成功/失败阈值、停止条件、预算和潜在混杂因素，避免看到结果后再改规则。
 3. **不可变执行**：每次运行生成新的 `run_id`（运行标识），正式运行不原地覆盖；同时保存可读日志、结构化指标、资源占用、环境、代码同步状态和输出清单。
-4. **最小区分性调试**：失败时先复现并分类，再寻找第一个异常边界，设计能区分候选原因的最小测试；一次只改一个因素并新建运行。连续三次修复仍失败就停止并记录阻塞。
-5. **科学验证**：`completed-technical`（技术完成）不等于 `verified-scientific`（科学验证完成）。验证阶段检查声明的种子、基线公平性、数据划分、指标可重算性、不确定性，以及实验是否真正对应方法声称的机制；通过后才标记为 `paper-ready`（可进入论文）。
+4. **最小区分性调试**：失败时先确认程序是否真的实现并启用了设想机制，再区分实现、测量与机制问题；一次只改一个因素并新建运行。连续三次相同技术修复仍失败就暂停讨论，但不对科研想法设置机械的总迭代次数。
+5. **科学验证**：`completed-technical`（技术完成）不等于 `verified-scientific`（科学验证完成）。探索性验证最多到 `verified-diagnostic`（诊断证据已核验），不能直接进入论文；只有正式计划通过种子、基线公平性、数据划分、指标可重算性、不确定性和机制证据检查后，才标记为 `paper-ready`（可进入论文）。
 
 实验模式按成本和目的拆开：`pilot`（低成本试跑）用于发现配置级错误，`full`（主实验）回答核心假设，`ablation`（消融）拆解贡献，`robustness`（稳健性）和 `efficiency`（效率）验证边界，`reproduction`（复现）确认外部结果，`debug`（调试）定位故障。实验输出的是证据和 `experiment_request.json`（实验请求），可以触发想法修订，但不会偷偷改写 Idea Skill 的原始契约。
 
@@ -155,7 +175,7 @@ idea_contract.yaml → idea_state_consistency.json → experiment_plan.json → 
 
 本仓库保留上游的核心写作约束：先建立 claim-evidence map（论断—证据映射），禁止编造引用、数字和实验结论，生成 LaTeX/BibTeX（论文排版与参考文献格式）及编译检查产物，并把人的判断保留在关键决策环节。在此基础上做了三类适配：
 
-- 对接本仓库的 `research_state.json`、`idea_contract.yaml`、`idea_state_consistency.json`、`experiment_plan.json`、`verification_report.json` 和 `research_handoff.json`，让想法、实验和论文共享同一套状态、生命周期与证据边界。
+- 对接本仓库的 `research_state.json`、`idea_contract.yaml`、`state_consistency.json`、`experiment_plan.json`、`verification_report.json` 和 `research_handoff.json`，让想法、实验和论文共享同一套状态、生命周期与证据边界。
 - 对实验缺口只生成结构化的 `experiment_request.json`（实验请求），交回 `research-experiment-lab` 执行；写作技能本身不设计、启动或调试实验，避免把推测写成结果。
 - 将论文图表工作指向独立仓库 [paper-figures-skill](https://github.com/threeing3/paper-figures-skill)，写作技能负责 claim、caption（图注）、LaTeX 引用和证据绑定，不把绘图工具重复打包进来。
 
@@ -170,7 +190,8 @@ research_state.json
 research_state/
 ├── ideas/<idea-id>/idea_contract.yaml
 ├── ideas/idea_pool.json
-├── ideas/idea_state_consistency.json
+├── ideas/state_consistency.json
+├── ideas/<idea-id>/validation/<alignment-id>.yaml
 ├── experiments/<experiment-id>/experiment_plan.json
 ├── experiments/<experiment-id>/verification_report.json
 └── paper/claim_evidence.json
@@ -179,10 +200,14 @@ research_state/
 标准流转为：
 
 ```text
+validation-alignment.yaml
+  → exploratory-validation experiment_plan.json
+  → verified-diagnostic
+
 idea_contract.yaml
-  → idea_state_consistency.json
-  → experiment_plan.json
-  → verification_report.json
+  → state_consistency.json
+  → formal experiment_plan.json
+  → paper-ready verification_report.json
   → research_handoff.json
   → paper_state.json
 ```

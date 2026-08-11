@@ -32,6 +32,10 @@ structured success thresholds with `metric`, `variant`, `dataset`, `split`,
 
 ## Paper-ready gate
 
+Require `admission_mode: formal`. An `exploratory-validation` plan may pass a
+diagnostic verification and reach `verified-diagnostic`, but it must fail any
+request to promote it to `paper-ready`.
+
 Require run verification reports, experiment aggregation, experiment
 inventory, numeric evidence with selectors, negative and contradictory runs,
 limitations, and no blocking novelty or experiment request.

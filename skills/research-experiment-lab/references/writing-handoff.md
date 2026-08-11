@@ -3,6 +3,11 @@
 Create project-root `research_handoff.json` only after user-approved promotion
 and the experiment stage is `paper-ready`.
 
+Refuse a writing handoff from `admission_mode: exploratory-validation` even
+when its diagnostic result is positive. Route the idea through focused
+target-domain novelty review, formal contract issuance, and a formal campaign
+first.
+
 For a shared-state project, emit
 `ai-research-writing/research-handoff-v2`. Include source idea ID, revision,
 and contract SHA-256; experiment ID, plan revision, and experiment-plan

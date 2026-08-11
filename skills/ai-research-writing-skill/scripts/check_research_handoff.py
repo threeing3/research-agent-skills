@@ -81,8 +81,19 @@ def _state_file(
     state_paths: dict[str, object],
     key: str,
     default: str,
+    legacy_default: str | None = None,
 ) -> Path:
-    return _project_file(root, state_paths.get(key, default), f"research_state.json paths.{key}")
+    configured = state_paths.get(key)
+    if configured is not None:
+        return _project_file(root, configured, f"research_state.json paths.{key}")
+    canonical = (root / default).resolve()
+    if canonical.is_file():
+        return canonical
+    if legacy_default:
+        legacy = (root / legacy_default).resolve()
+        if legacy.is_file():
+            return legacy
+    return _project_file(root, default, f"research_state.json paths.{key}")
 
 
 def _load_yaml_object(path: Path) -> dict[str, object]:
@@ -179,10 +190,27 @@ def _validate_shared_state(
     _require_match("idea lifecycle pool status", lifecycle.get("current_pool_status"), pool_status)
     _require_match("idea contract SHA-256", digest_file(contract_path), contract_hash)
 
+    if contract.get("contract_profile") == "staged-novelty/v1":
+        novelty_review = contract.get("novelty_review")
+        target_boundary = contract.get("target_domain_boundary")
+        if not isinstance(novelty_review, dict):
+            raise ContractError("staged idea contract requires novelty_review")
+        if not isinstance(target_boundary, dict):
+            raise ContractError("staged idea contract requires target_domain_boundary")
+        _require_match("focused target novelty", novelty_review.get("status"), "supported")
+        if not isinstance(novelty_review.get("coverage_end"), str) or not novelty_review.get("coverage_end"):
+            raise ContractError("staged idea contract requires novelty_review.coverage_end")
+        if novelty_review.get("recall_confidence") not in {"low", "medium", "high"}:
+            raise ContractError("staged idea contract requires novelty_review.recall_confidence")
+        for field in ("task", "problem_setting"):
+            if not isinstance(target_boundary.get(field), str) or not target_boundary.get(field):
+                raise ContractError(f"staged idea contract requires target_domain_boundary.{field}")
+
     consistency_path = _state_file(
         root,
         state_paths,
         "idea_state_consistency",
+        "research_state/ideas/state_consistency.json",
         "research_state/ideas/idea_state_consistency.json",
     )
     consistency = load_json_object(consistency_path)
@@ -232,6 +260,11 @@ def _validate_shared_state(
             raise ContractError(f"active {label} does not exist: {path}")
 
     plan = load_json_object(plan_path)
+    _require_match(
+        "experiment plan admission mode",
+        plan.get("admission_mode", "formal"),
+        "formal",
+    )
     for label, observed, expected in (
         ("experiment plan schema", plan.get("schema_version"), "research-experiment/plan-v2"),
         ("experiment plan id", plan.get("experiment_id"), experiment_id),
@@ -266,6 +299,7 @@ def _validate_shared_state(
     if verification.get("passed") is not True:
         raise ContractError("experiment_verification must record passed: true")
     for label, observed, expected in (
+        ("verification admission mode", verification.get("admission_mode", "formal"), "formal"),
         ("verification schema", verification.get("schema_version"), "research-experiment/experiment-verification-v2"),
         ("verification experiment id", verification.get("experiment_id"), experiment_id),
         ("verification plan revision", verification.get("plan_revision"), plan_revision),

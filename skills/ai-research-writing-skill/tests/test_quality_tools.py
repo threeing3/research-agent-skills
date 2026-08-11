@@ -511,6 +511,7 @@ class ResearchHandoffTests(unittest.TestCase):
         lifecycle_validity: str = "active",
         experiment_stage: str = "paper-ready",
         verification_passed: bool = True,
+        admission_mode: str = "formal",
     ) -> Path:
         ideas = root / "research_state" / "ideas"
         experiment = root / "research_state" / "experiments" / "exp-1"
@@ -544,7 +545,7 @@ class ResearchHandoffTests(unittest.TestCase):
         }
         contract_path.write_text(json.dumps(contract), encoding="utf-8")
         contract_hash = hashlib.sha256(contract_path.read_bytes()).hexdigest()
-        consistency_path = ideas / "idea_state_consistency.json"
+        consistency_path = ideas / "state_consistency.json"
         consistency_path.write_text(
             json.dumps(
                 {
@@ -569,6 +570,7 @@ class ResearchHandoffTests(unittest.TestCase):
             json.dumps(
                 {
                     "schema_version": "research-experiment/plan-v2",
+                    "admission_mode": admission_mode,
                     "experiment_id": "exp-1",
                     "plan_revision": 1,
                     "idea_id": "idea-1",
@@ -596,6 +598,7 @@ class ResearchHandoffTests(unittest.TestCase):
             json.dumps(
                 {
                     "schema_version": "research-experiment/experiment-verification-v2",
+                    "admission_mode": admission_mode,
                     "experiment_id": "exp-1",
                     "plan_revision": 1,
                     "idea_id": "idea-1",
@@ -622,7 +625,7 @@ class ResearchHandoffTests(unittest.TestCase):
                     "active_experiment_id": "exp-1",
                     "paths": {
                         "idea_pool": "research_state/ideas/idea_pool.json",
-                        "idea_state_consistency": "research_state/ideas/idea_state_consistency.json",
+                        "idea_state_consistency": "research_state/ideas/state_consistency.json",
                         "experiments": "research_state/experiments",
                     },
                     "updated_at": "fixture",
@@ -791,6 +794,16 @@ class ResearchHandoffTests(unittest.TestCase):
             result = run_script("check_research_handoff.py", root)
             self.assertEqual(result.returncode, 2)
             self.assertIn("experiment state stage mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_exploratory_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(
+                root, admission_mode="exploratory-validation"
+            )
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("experiment plan admission mode mismatch", result.stderr)
 
     def test_shared_state_handoff_rejects_plan_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -11,6 +11,7 @@ Treat paper writing as claim-evidence engineering, not prose generation.
 
 - Ground claims in repository files, experiment artifacts, notes, or verified citations.
 - Never invent citations or numeric results. Mark missing evidence visibly and weaken unsupported claims.
+- Keep target-domain novelty, source provenance, transfer/adaptation value, contribution strength, implementation fidelity, and experimental maturity as separate claims. Never use one as a substitute for another.
 - For full papers, produce concrete LaTeX, BibTeX, figure, table, review, and build artifacts; do not stop at an outline.
 - Keep human judgment in the loop for scientific correctness, visual inspection, reviewer risk, and final submission decisions.
 
@@ -50,6 +51,7 @@ Keep process instructions in plan/review files, never in manuscript prose.
 
 - **Evidence**: exact numbers must trace to data, logs, tables, notebooks, or scripts. Quantitative papers maintain numeric-evidence v2 selectors and recomputable aggregates.
 - **Experiment evidence**: verify that direct competitors, foundational methods, ablation anchors, robustness, efficiency, and failure analysis support the intended claims. Route missing or invalid evidence to `research-experiment-lab`.
+- **Admission**: never use an `exploratory-validation` experiment as paper-ready method evidence. Require a formal plan, focused target-domain novelty review, active contract, and formal paper-ready verification.
 - **Long runs**: accept a long experiment only when its experiment package contains readable logs plus structured events, metrics, resource usage, environment, synchronization, and run-verification records.
 - **Story**: define thesis, gap, contribution boundary, and claims to avoid before a full draft.
 - **Literature**: position close work before writing Related Work.
@@ -62,6 +64,8 @@ Keep process instructions in plan/review files, never in manuscript prose.
 ## Evidence Boundaries
 
 - Treat negative, mixed, missing-seed, or incomplete results as scope constraints, not material to hide.
+- Treat `implementation-not-confirmed`, `measurement-inconclusive`, and `mechanism-counterevidence` as different evidence states. Do not write “the idea failed” when only the implementation or measurement failed.
+- A positive metric does not prove novelty. A weak adaptation or immature experiment does not prove non-novelty.
 - Verify that each citation supports the attached sentence, not merely the topic.
 - Save important papers locally only when access and redistribution permit; otherwise record stable metadata and access status.
 - Generated diagrams communicate a workflow or idea; they are never experimental evidence.

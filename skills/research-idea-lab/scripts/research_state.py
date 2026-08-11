@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Optional
 
 
+CANONICAL_CONSISTENCY_PATH = "research_state/ideas/state_consistency.json"
+LEGACY_CONSISTENCY_PATH = "research_state/ideas/idea_state_consistency.json"
+
+
 def atomic_json(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + ".tmp")
@@ -38,7 +42,7 @@ def init(root: Path) -> None:
                 "ideation_sessions": "research_state/ideation_sessions",
                 "review_patterns": "research_state/review_patterns",
                 "idea_pool": "research_state/ideas/idea_pool.json",
-                "idea_state_consistency": "research_state/ideas/state_consistency.json",
+                "idea_state_consistency": CANONICAL_CONSISTENCY_PATH,
                 "experiments": "research_state/experiments",
                 "paper_state": "research_state/paper/paper_state.json",
                 "events": "research_state/logs/research_events.jsonl"
@@ -52,21 +56,29 @@ def init(root: Path) -> None:
     required_paths = {
         "ideation_sessions": "research_state/ideation_sessions",
         "review_patterns": "research_state/review_patterns",
-        "idea_state_consistency": "research_state/ideas/state_consistency.json",
+        "idea_state_consistency": CANONICAL_CONSISTENCY_PATH,
     }
-    missing_paths = {
+    path_updates = {
         key: value for key, value in required_paths.items() if key not in paths
     }
-    if missing_paths:
+    current_consistency = paths.get("idea_state_consistency")
+    if (
+        isinstance(current_consistency, str)
+        and current_consistency.replace("\\", "/") == LEGACY_CONSISTENCY_PATH
+    ):
+        path_updates["idea_state_consistency"] = CANONICAL_CONSISTENCY_PATH
+    if path_updates:
         previous_revision = state.get("revision", 0)
-        paths.update(missing_paths)
+        previous_paths = {key: paths.get(key) for key in path_updates}
+        paths.update(path_updates)
         state["revision"] = previous_revision + 1
         state["updated_at"] = datetime.now(timezone.utc).isoformat()
         atomic_json(index, state)
         event_path = base / "logs" / "research_events.jsonl"
         event = {
-            "event": "state-paths-added",
-            "paths": missing_paths,
+            "event": "state-paths-updated",
+            "previous_paths": previous_paths,
+            "paths": path_updates,
             "revision_before": previous_revision,
             "revision_after": state["revision"],
             "timestamp": state["updated_at"]

@@ -7,13 +7,24 @@
   "required": ["schema_version", "experiment_id", "plan_revision", "mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
   "properties": {
     "schema_version": {"const": "research-experiment/plan-v2"},
+    "admission_mode": {"enum": ["exploratory-validation", "formal", "diagnostic"]},
     "project_id": {"type": "string", "minLength": 1},
     "experiment_id": {"type": "string", "minLength": 1},
     "plan_revision": {"type": "integer", "minimum": 1},
     "mode": {"enum": ["pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"]},
     "idea_id": {"type": "string", "minLength": 1},
     "idea_revision": {"type": "integer", "minimum": 1},
+    "implementation_revision": {"type": ["integer", "null"], "minimum": 1},
     "idea_contract_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+    "validation_alignment": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["artifact", "sha256"],
+      "properties": {
+        "artifact": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
     "mechanism_family_id": {"type": "string"},
     "mechanism_signature_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
     "inherited_failure_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
@@ -40,14 +51,34 @@
         "constraints": {"type": "array", "items": {"type": "object"}},
         "lineage_check_report": {"type": "string"},
         "idea_state_consistency_report": {"type": "string"},
+        "validation_alignment_check_report": {"type": "string"},
         "last_reconciled_at": {"type": ["string", "null"]}
       }
     },
     "autonomy": {"type": "object"},
     "tasks": {"type": "array", "items": {"type": "object"}},
     "resource_policy": {"type": "object"},
-    "budget": {"type": "object"},
+    "budget": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "max_direct_cost_cny": {"type": "number", "minimum": 0},
+        "max_wall_time_hours": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
     "required_outputs": {"type": "array", "items": {"type": ["string", "object"]}},
     "required_runs": {"type": "array", "items": {"type": "object"}}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"admission_mode": {"const": "exploratory-validation"}},
+        "required": ["admission_mode"]
+      },
+      "then": {
+        "required": ["implementation_revision", "validation_alignment"],
+        "properties": {"validation_alignment": {"type": "object"}}
+      }
+    }
+  ]
 }

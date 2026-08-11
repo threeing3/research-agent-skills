@@ -46,6 +46,19 @@ Define a minimum viable innovation with explicit inputs, outputs, replaceability
 
 Default to single-factor ablations. Use removal, simpler replacement, or controlled random replacement. Add combination ablations only when an interaction hypothesis is stated in advance. Always include the full method in the same table.
 
+For a baseline modification or mechanism combination, require the upstream
+idea artifact to identify the exact baseline version, target failure, add /
+replace / remove / rewire / combine operation, insertion location, before and
+after information or training flow, reused and redesigned parts, expected
+resource delta, and isolating controls. Do not infer these changes from a
+method name or final code diff alone.
+
+Before treating a negative result as mechanism evidence, require upstream
+activation evidence that the implementation used the intended mechanism and
+intervention evidence showing that disabling, shuffling, or replacing it had
+the predicted effect. Otherwise describe the result as an implementation or
+measurement limitation.
+
 ## Experiment matrix
 
 Map every experiment to one or more claim identifiers. Include:

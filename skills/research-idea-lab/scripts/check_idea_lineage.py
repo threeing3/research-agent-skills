@@ -87,6 +87,28 @@ def validate(contract: dict[str, Any]) -> tuple[list[str], list[str], str]:
     if schema != "research-idea/v4":
         failures.append(f"schema_version must be research-idea/v4, found {schema!r}")
 
+    if contract.get("contract_profile") == "staged-novelty/v1":
+        novelty_review = contract.get("novelty_review")
+        target_boundary = contract.get("target_domain_boundary")
+        decision = contract.get("decision")
+        if not isinstance(novelty_review, dict):
+            failures.append("staged contract requires novelty_review")
+            novelty_review = {}
+        if novelty_review.get("status") != "supported":
+            failures.append("staged contract requires target-domain novelty status supported")
+        if not novelty_review.get("coverage_end"):
+            failures.append("staged contract requires novelty_review.coverage_end")
+        if novelty_review.get("recall_confidence") not in {"low", "medium", "high"}:
+            failures.append("staged contract requires novelty_review.recall_confidence")
+        if not isinstance(target_boundary, dict):
+            failures.append("staged contract requires target_domain_boundary")
+            target_boundary = {}
+        for field in ("task", "problem_setting"):
+            if not target_boundary.get(field):
+                failures.append(f"staged contract requires target_domain_boundary.{field}")
+        if not isinstance(decision, dict) or decision.get("selected_by_user") is not True:
+            failures.append("staged contract requires explicit user selection")
+
     lifecycle = contract.get("lifecycle")
     if lifecycle is None:
         warnings.append(

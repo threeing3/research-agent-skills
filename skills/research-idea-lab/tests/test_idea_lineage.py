@@ -117,6 +117,48 @@ class IdeaLineageTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("only an active contract can be handed off", result.stdout)
 
+    def test_staged_contract_with_supported_target_novelty_passes(self) -> None:
+        payload = contract()
+        payload.update(
+            {
+                "contract_profile": "staged-novelty/v1",
+                "target_domain_boundary": {
+                    "task": "VideoQA",
+                    "problem_setting": "long-video evidence reasoning",
+                    "key_constraints": ["long context"],
+                },
+                "novelty_review": {
+                    "status": "supported",
+                    "coverage_end": "2026-08-11",
+                    "recall_confidence": "medium",
+                },
+                "decision": {"selected_by_user": True},
+            }
+        )
+        result = run(payload)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_staged_contract_with_uncertain_target_novelty_blocks(self) -> None:
+        payload = contract()
+        payload.update(
+            {
+                "contract_profile": "staged-novelty/v1",
+                "target_domain_boundary": {
+                    "task": "VideoQA",
+                    "problem_setting": "long-video evidence reasoning",
+                },
+                "novelty_review": {
+                    "status": "uncertain",
+                    "coverage_end": "2026-08-11",
+                    "recall_confidence": "low",
+                },
+                "decision": {"selected_by_user": True},
+            }
+        )
+        result = run(payload)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("target-domain novelty status supported", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

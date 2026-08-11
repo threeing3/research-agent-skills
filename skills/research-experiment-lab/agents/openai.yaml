@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Experiment Lab"
-  short_description: "Design, run, debug, and verify ML experiments"
-  default_prompt: "Use $research-experiment-lab to design and run a fully logged experiment campaign on AutoDL."
+  short_description: "Validate mechanisms and run formal ML experiments"
+  default_prompt: "Use $research-experiment-lab to run a user-approved low-cost mechanism validation or a fully logged formal experiment campaign."

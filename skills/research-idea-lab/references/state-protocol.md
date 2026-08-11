@@ -28,6 +28,7 @@ research_state/
   ideas/<idea-id>/idea_contract.yaml
   ideas/<idea-id>/lineage_check.json
   ideas/state_consistency.json
+  ideas/<idea-id>/validation/<alignment-id>.yaml
   ideas/<idea-id>/debate/debate_state.json
   ideas/<idea-id>/debate/cross_examination.yaml
   ideas/<idea-id>/debate/adversarial_review.yaml
@@ -75,7 +76,13 @@ Record one work mode in every ideation session:
 
 - `explore` may create provisional seeds and write `raw` or `developing` candidates. It may not write `rejected` or `experiment-ready`.
 - `develop` may write `developing`, `screened`, `novelty-risk`, `discussion-active`, `gate-ready`, or `parked`. It may not write `rejected` or `experiment-ready`.
-- `gate` may write any current-state status after running the applicable strict checks.
+- `novelty` may write `screened`, `novelty-risk`, `gate-ready`, or, after focused novelty, lineage, formal-entry, and explicit user-selection checks pass, `experiment-ready`. It may not write `rejected`.
+- `gate` may write any current-state status after running the user-requested full strict checks.
+
+Track maturity independently as `seed`, `developing`, or `validation-ready`.
+An incomplete idea is not a rejected idea. Use
+`references/iterative-development.md` to classify implementation revisions,
+mechanism revisions, and linked derived ideas.
 
 `research_state/ideas/idea_pool.json` is the canonical current status. A candidate may receive a canonical idea ID when it is selected for development or has a stable problem/mechanism signature; provisional exploration seeds remain in the session artifact.
 
@@ -87,6 +94,18 @@ An idea contract is an evidence-bearing handoff snapshot issued at `experiment-r
 4. run `scripts/check_idea_state_consistency.py` and store the report at `ideas/state_consistency.json`.
 
 Legacy contracts without lifecycle metadata remain readable. Do not bulk-rewrite them. The consistency checker must flag a legacy contract whose issued status conflicts with the current pool so it cannot be handed to experiments silently.
+
+Pre-gate exploratory validation does not require or create an idea contract.
+Freeze a user-approved `research-idea/validation-alignment-v1` artifact under
+`ideas/<idea-id>/validation/`, and let the experiment plan bind its SHA-256.
+The alignment may move a developing idea forward or backward, but it may not
+set novelty, `experiment-ready`, or paper-ready status.
+
+`ideas/state_consistency.json` is the canonical consistency-report name for
+all new writes. Readers may accept the legacy
+`ideas/idea_state_consistency.json` path when an old index or plan explicitly
+references it. Do not delete the legacy file; update new indexes, templates,
+and examples to the canonical name.
 
 During multi-role ideation, the Chair is the sole canonical writer. Worker roles return structured artifacts to the Chair or write only to an explicitly bounded temporary path. Use `references/role-artifact-schemas.md` for session and debate artifacts.
 

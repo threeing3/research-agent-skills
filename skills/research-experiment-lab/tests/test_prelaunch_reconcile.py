@@ -26,8 +26,12 @@ MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 
 
-def idea_contract(validity: str = "active", pool_status: str = "experiment-ready") -> dict:
-    return {
+def idea_contract(
+    validity: str = "active",
+    pool_status: str = "experiment-ready",
+    novelty_status: str | None = None,
+) -> dict:
+    contract = {
         "schema_version": "research-idea/v4",
         "idea_id": "idea-1",
         "revision": 2,
@@ -49,6 +53,23 @@ def idea_contract(validity: str = "active", pool_status: str = "experiment-ready
         "evaluation_signature": {"unit_of_analysis": "video-question"},
         "anti_reskin_gate": {"status": "pass", "independence_valid": True},
     }
+    if novelty_status is not None:
+        contract.update(
+            {
+                "contract_profile": "staged-novelty/v1",
+                "target_domain_boundary": {
+                    "task": "VideoQA",
+                    "problem_setting": "long-video evidence reasoning",
+                    "key_constraints": ["long context"],
+                },
+                "novelty_review": {
+                    "status": novelty_status,
+                    "coverage_end": "2026-08-11",
+                    "recall_confidence": "medium",
+                },
+            }
+        )
+    return contract
 
 
 def write_fixture(
@@ -59,6 +80,7 @@ def write_fixture(
     validity: str = "active",
     pool_status: str = "experiment-ready",
     include_lifecycle: bool = True,
+    novelty_status: str | None = None,
 ) -> tuple[Path, Path]:
     ideas_root = root / "research_state" / "ideas"
     contract_path = ideas_root / "idea-1" / "idea_contract.yaml"
@@ -74,7 +96,11 @@ def write_fixture(
         ),
         encoding="utf-8",
     )
-    contract = idea_contract(validity=validity, pool_status=pool_status)
+    contract = idea_contract(
+        validity=validity,
+        pool_status=pool_status,
+        novelty_status=novelty_status,
+    )
     if not include_lifecycle:
         contract.pop("lifecycle")
     contract["anti_reskin_gate"]["review_context_policy"] = "cold"
@@ -109,7 +135,7 @@ def write_fixture(
             }
         ],
     }
-    consistency_path = ideas_root / "idea_state_consistency.json"
+    consistency_path = ideas_root / "state_consistency.json"
     consistency_path.write_text(json.dumps(consistency_report), encoding="utf-8")
     plan = {
         "schema_version": "research-experiment/plan-v2",
@@ -122,7 +148,7 @@ def write_fixture(
         "prelaunch": {
             "required_gates": sorted(MODULE.REQUIRED_GATES),
             "lineage_check_report": "lineage_check.json",
-            "idea_state_consistency_report": "research_state/ideas/idea_state_consistency.json",
+            "idea_state_consistency_report": "research_state/ideas/state_consistency.json",
             "constraints": [
                 {
                     "constraint_id": "video-count",
@@ -162,7 +188,7 @@ class PrelaunchReconcileTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             contract_path, plan_path = write_fixture(root)
-            report_path = root / "research_state" / "ideas" / "idea_state_consistency.json"
+            report_path = root / "research_state" / "ideas" / "state_consistency.json"
             consistency = subprocess.run(
                 [
                     sys.executable,
@@ -247,6 +273,22 @@ class PrelaunchReconcileTests(unittest.TestCase):
             result = run(contract_path, plan_path)
             self.assertEqual(result.returncode, 1)
             self.assertIn("pool_hash_matches=False", result.stdout)
+
+    def test_staged_contract_with_supported_target_novelty_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = run(
+                *write_fixture(Path(directory), novelty_status="supported")
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("focused-target-novelty", result.stdout)
+
+    def test_staged_contract_with_uncertain_target_novelty_blocks_formal_run(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = run(
+                *write_fixture(Path(directory), novelty_status="uncertain")
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("focused-target-novelty", result.stdout)
 
 
 if __name__ == "__main__":

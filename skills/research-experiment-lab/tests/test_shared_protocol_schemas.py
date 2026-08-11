@@ -43,6 +43,20 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             schema["properties"]["prelaunch"]["required"],
         )
         self.assertIn("idea_state_consistency_report", template["prelaunch"])
+        self.assertEqual(template["admission_mode"], "formal")
+        self.assertIn("validation_alignment", schema["properties"])
+        self.assertIn("validation_alignment_check_report", template["prelaunch"])
+
+    def test_validation_alignment_schema_requires_user_and_realization_evidence(self) -> None:
+        schema = load(REPO / "schemas" / "validation-alignment.schema.json")
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            "research-idea/validation-alignment-v1",
+        )
+        validation_required = schema["properties"]["validation"]["required"]
+        self.assertIn("activation_evidence", validation_required)
+        self.assertIn("intervention_evidence", validation_required)
+        self.assertIn("user_alignment", schema["required"])
 
     def test_verification_schema_tracks_emitted_v2_identity(self) -> None:
         schema = load(REPO / "schemas" / "verification-report.schema.json")
@@ -50,6 +64,7 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             schema["properties"]["schema_version"]["const"],
             "research-experiment/experiment-verification-v2",
         )
+        self.assertIn("verified-diagnostic", schema["properties"]["stage"]["enum"])
         for field in (
             "experiment_id",
             "plan_revision",

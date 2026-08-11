@@ -14,6 +14,14 @@ a passed `research-experiment/experiment-verification-v2` report carrying the
 same identities and hashes. Treat any mismatch, lifecycle invalidation,
 incomplete verification, or unresolved kill condition as a blocker.
 
+Require the experiment plan and verification report to use
+`admission_mode: formal`; an exploratory validation cannot enter a writing
+handoff. For a `staged-novelty/v1` idea contract, require
+`novelty_review.status: supported` plus its target-domain boundary, coverage
+end, and recall confidence. Preserve source provenance, transfer/adaptation
+value, contribution strength, implementation fidelity, and experimental
+maturity as separate evidence fields; do not collapse them into novelty.
+
 ## Handoff Contract
 
 Create `research_handoff.json` using `research-handoff.schema.json`. Paths are relative to the handoff project.
@@ -63,6 +71,12 @@ python3 scripts/check_research_handoff.py /path/to/handoff-project --require-unb
 ## Ownership Boundary
 
 The upstream system owns the truth of exported evidence and stable file paths. It must not summarize away negative runs, failed conditions, missing baselines, uncertainty, or contradictory outcomes.
+
+It must also preserve whether a negative result was
+`implementation-not-confirmed`, `measurement-inconclusive`, or
+`mechanism-counterevidence`. Only the last directly challenges the mechanism,
+and even then the manuscript must bind the conclusion to the tested idea and
+implementation revisions.
 
 This skill owns all manuscript decisions after handoff. It creates `paper_state.json`, the paper story, claim map, prose, figures/tables, citation records, reviews, LaTeX, and build record. Never copy upstream writing prompts into the skill contract.
 
