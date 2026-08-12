@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Experiment Lab"
   short_description: "Validate mechanisms and run formal ML experiments"
-  default_prompt: "Use $research-experiment-lab to run a user-approved low-cost mechanism validation or a fully logged formal experiment campaign."
+  default_prompt: "Use $research-experiment-lab to run a user-approved validation or a fully logged experiment while keeping simplified methods out of paper-ready evidence."

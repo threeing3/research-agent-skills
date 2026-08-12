@@ -116,6 +116,7 @@ class ExperimentLabTests(unittest.TestCase):
                 "--mode", mode,
                 "--idea-id", "idea-1",
                 "--idea-revision", 1,
+                "--scientific-configuration", "complete fixture method",
                 "--research-question", "Does X improve Y?",
             ]
             if admission_mode is not None:
@@ -125,7 +126,8 @@ class ExperimentLabTests(unittest.TestCase):
                     [
                         "--implementation-revision", 1,
                         "--validation-alignment", "research_state/ideas/idea-1/validation/align-1.yaml",
-                        "--validation-alignment-sha256", "0" * 64,
+                        "--validation-alignment-id", "align-1",
+                        "--method-tier", "simplified",
                     ]
                 )
             result = run("experimentctl.py", *init_args)
@@ -294,10 +296,7 @@ class ExperimentLabTests(unittest.TestCase):
             self.assertEqual(verification["idea_id"], "idea-1")
             self.assertEqual(verification["idea_revision"], 1)
             self.assertEqual(verification["stage"], "paper-ready")
-            self.assertEqual(
-                verification["experiment_plan_sha256"],
-                hashlib.sha256(plan_path.read_bytes()).hexdigest(),
-            )
+            self.assertNotIn("experiment_plan_sha256", verification)
 
     def test_paper_ready_evidence_enters_writing_and_videoqa_figure_route(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -377,10 +376,8 @@ class ExperimentLabTests(unittest.TestCase):
                 "schema_version": "ai-research-writing/research-handoff-v2",
                 "source_idea_id": "idea-1",
                 "source_idea_revision": 1,
-                "source_idea_contract_sha256": plan["idea_contract_sha256"],
                 "experiment_id": "exp-1",
                 "experiment_plan_revision": 1,
-                "experiment_plan_sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
                 "research_question": "Does X improve Y?",
                 "paper_type": "empirical VideoQA paper",
                 "target_venue": "CVPR",

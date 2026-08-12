@@ -159,6 +159,10 @@ validation-alignment.yaml → 低成本探索性验证
 idea_contract.yaml → state_consistency.json → 正式 experiment_plan.json → 不可变 run → verification_report.json → research_handoff.json
 ```
 
+新增的质量控制层会在论文和正式实验产物前清理防御性流程语言、重复测试与无意义本地哈希。跨阶段身份以 ID、修订号、项目相对路径和方法配置为主；远程下载、不可变快照和官方模板校验仍保留必要摘要。
+
+稳定想法可以使用持续文献监控，按时间窗口输出 `RELAX`、`RESEARCH` 或 `FOLLOW-UP`，用于更新检索信心、触发精读或要求修改主张，但监控结果本身不能直接拒绝想法。正式实验还必须声明方法层级；简化、代理、玩具或调试实现不能进入论文级结果。
+
 具体设计分成五层：
 
 1. **双入口**：低成本探索性验证绑定使用者批准的 `validation-alignment.yaml`（验证对齐卡），不要求完整想法契约；正式实验才绑定 `idea_contract.yaml`（想法契约）和通过的目标领域新颖性状态。

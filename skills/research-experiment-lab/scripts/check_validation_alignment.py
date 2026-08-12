@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import sys
@@ -36,14 +35,6 @@ def load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"expected JSON object: {path}")
     return value
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def atomic_json(path: Path, value: dict[str, Any]) -> None:
@@ -86,7 +77,6 @@ def main() -> int:
         plan_path = args.plan.resolve()
         alignment = load_yaml(alignment_path)
         plan = load_json(plan_path)
-        alignment_hash = sha256_file(alignment_path)
 
         checks.append(
             check(
@@ -127,14 +117,12 @@ def main() -> int:
         if not isinstance(alignment_ref, dict):
             checks.append(check("alignment-reference", False, "missing validation_alignment object"))
         else:
-            recorded_hash = alignment_ref.get("sha256")
-            checks.append(
-                check(
-                    "alignment-hash",
-                    recorded_hash == alignment_hash,
-                    f"plan={recorded_hash!r} computed={alignment_hash!r}",
-                )
-            )
+            for name, plan_value, alignment_value in (
+                ("alignment-id", alignment_ref.get("alignment_id"), alignment.get("alignment_id")),
+                ("alignment-idea-revision", alignment_ref.get("idea_revision"), alignment.get("idea_revision")),
+                ("alignment-implementation-revision", alignment_ref.get("implementation_revision"), alignment.get("implementation_revision")),
+            ):
+                checks.append(check(name, plan_value == alignment_value, f"plan={plan_value!r} alignment={alignment_value!r}"))
 
         collision = alignment.get("lightweight_collision_check")
         collision_status = collision.get("status") if isinstance(collision, dict) else None

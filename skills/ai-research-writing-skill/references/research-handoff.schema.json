@@ -43,7 +43,7 @@
   "allOf": [
     {
       "if": {"properties": {"schema_version": {"const": "ai-research-writing/research-handoff-v2"}}, "required": ["schema_version"]},
-      "then": {"required": ["source_idea_id", "source_idea_revision", "source_idea_contract_sha256", "experiment_id", "experiment_plan_revision", "experiment_plan_sha256"]}
+      "then": {"required": ["source_idea_id", "source_idea_revision", "experiment_id", "experiment_plan_revision"]}
     },
     {
       "if": {"properties": {"quantitative": {"const": true}}},

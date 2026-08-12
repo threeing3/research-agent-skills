@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 import sys
@@ -93,7 +92,9 @@ def write_fixture(root: Path, value: dict | None = None) -> tuple[Path, Path]:
         "implementation_revision": alignment_value["implementation_revision"],
         "validation_alignment": {
             "artifact": "alignment.yaml",
-            "sha256": hashlib.sha256(alignment_path.read_bytes()).hexdigest(),
+            "alignment_id": alignment_value["alignment_id"],
+            "idea_revision": alignment_value["idea_revision"],
+            "implementation_revision": alignment_value["implementation_revision"],
         },
         "budget": dict(alignment_value["budget"]),
         "stop_conditions": list(alignment_value["validation"]["stop_conditions"]),
@@ -170,15 +171,15 @@ class ValidationAlignmentTests(unittest.TestCase):
             result = run(*write_fixture(Path(directory), value))
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_alignment_hash_mismatch_blocks(self) -> None:
+    def test_alignment_revision_mismatch_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             alignment_path, plan_path = write_fixture(Path(directory))
             plan = json.loads(plan_path.read_text(encoding="utf-8"))
-            plan["validation_alignment"]["sha256"] = "0" * 64
+            plan["validation_alignment"]["implementation_revision"] = 99
             plan_path.write_text(json.dumps(plan), encoding="utf-8")
             result = run(alignment_path, plan_path)
             self.assertEqual(result.returncode, 1)
-            self.assertIn("alignment-hash", result.stdout)
+            self.assertIn("alignment-implementation-revision", result.stdout)
 
     def test_empty_target_boundary_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

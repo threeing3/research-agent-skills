@@ -4,7 +4,7 @@ Use this protocol for a user-approved low-cost run intended to learn whether an 
 
 ## Entry
 
-Require a frozen `research-idea/validation-alignment-v1` artifact owned by `research-idea-lab`. Copy its idea ID, idea revision, implementation revision, path, and SHA-256 into an experiment plan with:
+Require a frozen `research-idea/validation-alignment-v1` artifact owned by `research-idea-lab`. Copy its alignment ID, idea revision, implementation revision, and path into an experiment plan with:
 
 ```json
 {
@@ -13,15 +13,22 @@ Require a frozen `research-idea/validation-alignment-v1` artifact owned by `rese
   "idea_id": "",
   "idea_revision": 1,
   "implementation_revision": 1,
-  "idea_contract_sha256": "",
   "validation_alignment": {
     "artifact": "research_state/ideas/example/validation/example.yaml",
-    "sha256": ""
+    "alignment_id": "example",
+    "idea_revision": 1,
+    "implementation_revision": 1
+  },
+  "method_identity": {
+    "method_tier": "simplified",
+    "publication_eligible": false,
+    "scientific_configuration": "describe the validation implementation",
+    "excluded_simplifications": ["list differences from the full proposed method"]
   }
 }
 ```
 
-Run `scripts/check_validation_alignment.py --alignment <path> --plan <path> --report <experiment-dir>/validation_alignment_check.json` before creating compute work. A `not-applicable` idea skips this channel and returns to focused novelty review. A `not-identifiable` idea returns to development.
+Run `scripts/check_validation_alignment.py --alignment <path> --plan <path> --report <experiment-dir>/validation_alignment_check.json` before creating compute work. Bind the alignment ID plus idea and implementation revisions; do not require a generic local-file digest. A `not-applicable` idea skips this channel and returns to focused novelty review. A `not-identifiable` idea returns to development.
 
 The lightweight target-domain status may be `no-obvious-collision` or `uncertain`. `collision-needs-revision` blocks only the unchanged version; return it to `research-idea-lab` for a material revision or reframed claim.
 

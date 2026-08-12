@@ -4,7 +4,7 @@
   "title": "Experiment Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
+  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "idea_id", "idea_revision", "method_identity", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
   "properties": {
     "schema_version": {"const": "research-experiment/plan-v2"},
     "admission_mode": {"enum": ["exploratory-validation", "formal", "diagnostic"]},
@@ -15,18 +15,33 @@
     "idea_id": {"type": "string", "minLength": 1},
     "idea_revision": {"type": "integer", "minimum": 1},
     "implementation_revision": {"type": ["integer", "null"], "minimum": 1},
-    "idea_contract_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+    "idea_contract_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$", "deprecated": true},
     "validation_alignment": {
       "type": ["object", "null"],
       "additionalProperties": false,
-      "required": ["artifact", "sha256"],
+      "required": ["artifact", "alignment_id", "idea_revision", "implementation_revision"],
       "properties": {
         "artifact": {"type": "string", "minLength": 1},
+        "alignment_id": {"type": "string", "minLength": 1},
+        "idea_revision": {"type": "integer", "minimum": 1},
+        "implementation_revision": {"type": "integer", "minimum": 1},
+        "approved_at": {"type": "string"},
         "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
+    "method_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method_tier", "publication_eligible", "scientific_configuration", "excluded_simplifications"],
+      "properties": {
+        "method_tier": {"enum": ["full", "simplified", "proxy", "toy", "debug"]},
+        "publication_eligible": {"type": "boolean"},
+        "scientific_configuration": {"type": "string"},
+        "excluded_simplifications": {"type": "array", "items": {"type": "string"}}
+      }
+    },
     "mechanism_family_id": {"type": "string"},
-    "mechanism_signature_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
+    "mechanism_signature_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$", "deprecated": true},
     "inherited_failure_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "research_question": {"type": "string"},
     "hypothesis": {"type": "string", "minLength": 1},
@@ -78,6 +93,16 @@
       "then": {
         "required": ["implementation_revision", "validation_alignment"],
         "properties": {"validation_alignment": {"type": "object"}}
+      }
+    },
+    {
+      "if": {"properties": {"admission_mode": {"const": "formal"}}, "required": ["admission_mode"]},
+      "then": {
+        "properties": {
+          "method_identity": {
+            "properties": {"method_tier": {"const": "full"}, "publication_eligible": {"const": true}}
+          }
+        }
       }
     }
   ]

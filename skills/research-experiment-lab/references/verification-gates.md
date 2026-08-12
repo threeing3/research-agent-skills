@@ -44,7 +44,8 @@ Before saying “passed,” identify the proving command, run it fresh, read ful
 output and exit code, and make only the claim supported by that output.
 `verify_experiment.py` must emit
 `research-experiment/experiment-verification-v2`, including experiment and
-idea IDs, both revisions, the idea-contract SHA-256, experiment-plan SHA-256,
+idea IDs, both revisions, method identity, and formal admission mode. Legacy
+idea-contract or experiment-plan hashes may be checked when present,
 resulting stage, failed-check blockers, and structured checks. Shared-state
 writing accepts only a passed report whose stage is `paper-ready` and whose
 identity chain matches current canonical files.

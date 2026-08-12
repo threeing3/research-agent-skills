@@ -1,6 +1,6 @@
 ---
 name: ai-research-writing-skill
-description: End-to-end research paper generation, review, and revision for ML/AI/CV/NLP projects from repositories, notes, experiment logs, drafts, and conference templates. Use when building a paper story, mapping claims to evidence, writing or revising sections, producing figures and tables, verifying citations, acting as a skeptical reviewer, running venue or build checks, or preparing a LaTeX/Overleaf/Git submission package.
+description: End-to-end research paper generation, review, revision, claim-evidence auditing, and user-approved exemplar-card distillation for ML/AI/CV/NLP projects from repositories, notes, experiment logs, drafts, reference papers, and conference templates. Use when building a paper story, mapping claims to evidence, writing or revising sections, learning transferable structure from a supplied paper, producing figures and tables, verifying citations, reviewing, or preparing a LaTeX/Overleaf/Git submission package.
 ---
 
 # AI Research Writing Skill
@@ -14,6 +14,12 @@ Treat paper writing as claim-evidence engineering, not prose generation.
 - Keep target-domain novelty, source provenance, transfer/adaptation value, contribution strength, implementation fidelity, and experimental maturity as separate claims. Never use one as a substitute for another.
 - For full papers, produce concrete LaTeX, BibTeX, figure, table, review, and build artifacts; do not stop at an outline.
 - Keep human judgment in the loop for scientific correctness, visual inspection, reviewer risk, and final submission decisions.
+- Follow `../../docs/research-quality-controls.md`: remove defensive process
+  language, keep material scientific facts, and report judgment-dependent
+  concerns outside manuscript files until the user approves an edit.
+- Choose `quick` or `standard` execution depth independently from the writing
+  route. Preserve the requested output shape; internal checklist breadth must
+  not force a process report.
 
 ## Route the Task
 
@@ -26,6 +32,7 @@ Choose the smallest route that covers the request. Load only the listed referenc
 | Verified-result ingestion and claim backfill | `references/results-backfill.md`, `references/numeric-evidence.md` |
 | Upstream research-system handoff | `references/research-handoff.md`, `references/artifacts.md` |
 | Story, thesis, gap, or contribution | `references/paper-story.md` |
+| Distill a user-approved writing exemplar | `references/exemplar-cards.md` |
 | Section writing or revision | `references/README.md`, then the section-specific reference |
 | Figures and tables | `references/figure-workflow.md`, `references/figure-spec.md`; for VideoQA or long-video papers also invoke `videoqa-paper-figures` |
 | Citation search or repair | `references/citation-workflow.md` |
@@ -38,7 +45,7 @@ Choose the smallest route that covers the request. Load only the listed referenc
 For full-paper and submission work:
 
 1. Create `paper_state.json` from the contract in `references/artifacts.md`; declare mode, stage, venue, main TeX, bibliography, required artifacts, blockers, and build record.
-2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. In a shared-state project, accept only handoff v2 after it reconciles the active idea lifecycle, idea-pool and contract hashes, active experiment, plan hash, `paper-ready` state, and v2 verification identity. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
+2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. In a shared-state project, accept only handoff v2 after it reconciles active IDs and revisions, idea lifecycle, formal `paper-ready` state, publication-eligible full method identity, and v2 verification identity. Legacy hashes may be checked when present but are not required for new local handoffs. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
 3. Establish the story, claim boundaries, and literature position before long-form prose.
 4. For empirical papers, validate the baseline, method-component, experiment-matrix, reproducibility, and long-run logging evidence in `references/empirical-experiment-design.md`. When `research-experiment-lab` state exists, issue a structured experiment request for missing evidence; do not design, launch, debug, or modify experiments from this writing skill.
 5. Follow the two-pass drafting order in `references/workflow.md`: write evidence-bearing core sections first, then finalize framing sections.
@@ -50,6 +57,10 @@ Keep process instructions in plan/review files, never in manuscript prose.
 ## Gates
 
 - **Evidence**: exact numbers must trace to data, logs, tables, notebooks, or scripts. Quantitative papers maintain numeric-evidence v2 selectors and recomputable aggregates.
+- **Claim matrix**: keep each important claim linked to required evidence,
+  current evidence, exact idea and experiment revisions, status, limitation, and
+  next action. Use `overstated` and `unclear` rather than silently repairing a
+  claim by invention.
 - **Experiment evidence**: verify that direct competitors, foundational methods, ablation anchors, robustness, efficiency, and failure analysis support the intended claims. Route missing or invalid evidence to `research-experiment-lab`.
 - **Admission**: never use an `exploratory-validation` experiment as paper-ready method evidence. Require a formal plan, focused target-domain novelty review, active contract, and formal paper-ready verification.
 - **Long runs**: accept a long experiment only when its experiment package contains readable logs plus structured events, metrics, resource usage, environment, synchronization, and run-verification records.

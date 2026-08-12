@@ -40,14 +40,6 @@ def read_json(path: Path) -> dict[str, Any]:
     return value
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def normalized(value: Any) -> Any:
     if isinstance(value, str):
         return re.sub(r"\s+", " ", value.strip().lower())
@@ -185,13 +177,11 @@ def main() -> int:
         if unresolved:
             blockers.append("lineage-blocked")
 
-        contract_hash = file_sha256(contract_path)
         mechanism_hash = mechanism_sha256(contract)
         checks.append(check_result("idea-recorded-mechanism-hash", gate.get("mechanism_signature_sha256") == mechanism_hash, f"recorded={gate.get('mechanism_signature_sha256')!r} computed={mechanism_hash!r}"))
         identities = (
             ("idea-id", plan.get("idea_id"), contract.get("idea_id")),
             ("idea-revision", plan.get("idea_revision"), contract.get("revision")),
-            ("idea-contract-sha256", plan.get("idea_contract_sha256"), contract_hash),
             ("mechanism-family-id", plan.get("mechanism_family_id"), lineage.get("family_id")),
             ("mechanism-signature-sha256", plan.get("mechanism_signature_sha256"), mechanism_hash),
         )
@@ -246,10 +236,6 @@ def main() -> int:
                 if isinstance(record, dict) and record.get("idea_id") == contract.get("idea_id")
             ] if isinstance(records, list) else []
             inferred_pool_path = contract_path.parent.parent / "idea_pool.json"
-            pool_hash_matches = (
-                inferred_pool_path.is_file()
-                and consistency.get("pool_sha256") == file_sha256(inferred_pool_path)
-            )
             current_pool_status = None
             pool_identity_matches = False
             if inferred_pool_path.is_file():
@@ -271,18 +257,16 @@ def main() -> int:
             consistency_valid = (
                 consistency.get("schema_version") == "research-idea/state-consistency-v2"
                 and consistency.get("passed") is True
-                and pool_hash_matches
                 and pool_identity_matches
                 and len(matching) == 1
                 and record.get("contract_revision") == contract.get("revision")
-                and record.get("contract_sha256") == contract_hash
                 and record.get("lifecycle_validity") == ACTIVE_LIFECYCLE
                 and record.get("lifecycle_pool_status") == current_pool_status
                 and record.get("pool_status") == current_pool_status
             )
             consistency_evidence = (
                 f"{consistency_path}; schema={consistency.get('schema_version')!r}; "
-                f"passed={consistency.get('passed')!r}; pool_hash_matches={pool_hash_matches}; "
+                f"passed={consistency.get('passed')!r}; "
                 f"pool_identity_matches={pool_identity_matches}; matching_records={len(matching)}"
             )
         checks.append(

@@ -10,14 +10,13 @@ full campaign.
 ## Required handoff
 
 Read the canonical idea contract, idea-state consistency report, and
-lineage-check report. Copy these immutable identifiers into
+lineage-check report. Copy these revision-safe identifiers into
 `experiment_plan.json`:
 
 ```json
 {
   "idea_id": "",
   "idea_revision": 1,
-  "idea_contract_sha256": "",
   "mechanism_family_id": "",
   "mechanism_signature_sha256": "",
   "inherited_failure_ids": []

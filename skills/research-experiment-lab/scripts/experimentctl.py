@@ -48,8 +48,8 @@ def initialize(args: argparse.Namespace) -> None:
             raise ValueError("exploratory-validation requires idea_id and idea_revision")
         if not isinstance(args.implementation_revision, int):
             raise ValueError("exploratory-validation requires implementation_revision")
-        if not args.validation_alignment or not args.validation_alignment_sha256:
-            raise ValueError("exploratory-validation requires validation alignment path and SHA-256")
+        if not args.validation_alignment or not args.validation_alignment_id:
+            raise ValueError("exploratory-validation requires validation alignment path and alignment_id")
     experiment_dir = root / "research_state" / "experiments" / experiment_id
     if experiment_dir.exists():
         raise ValueError(f"experiment already exists; do not overwrite it: {experiment_dir}")
@@ -64,17 +64,23 @@ def initialize(args: argparse.Namespace) -> None:
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
         "implementation_revision": args.implementation_revision,
-        "idea_contract_sha256": "",
         "validation_alignment": (
             {
                 "artifact": args.validation_alignment,
-                "sha256": args.validation_alignment_sha256,
+                "alignment_id": args.validation_alignment_id,
+                "idea_revision": args.idea_revision,
+                "implementation_revision": args.implementation_revision,
             }
             if args.validation_alignment
             else None
         ),
+        "method_identity": {
+            "method_tier": args.method_tier,
+            "publication_eligible": args.method_tier == "full" and admission_mode == "formal",
+            "scientific_configuration": args.scientific_configuration,
+            "excluded_simplifications": [],
+        },
         "mechanism_family_id": "",
-        "mechanism_signature_sha256": "",
         "inherited_failure_ids": [],
         "research_question": args.research_question,
         "hypothesis": "",
@@ -264,6 +270,9 @@ def main() -> int:
     init_parser.add_argument("--implementation-revision", type=int)
     init_parser.add_argument("--validation-alignment")
     init_parser.add_argument("--validation-alignment-sha256")
+    init_parser.add_argument("--validation-alignment-id")
+    init_parser.add_argument("--method-tier", choices=("full", "simplified", "proxy", "toy", "debug"), default="full")
+    init_parser.add_argument("--scientific-configuration", default="")
     init_parser.add_argument("--research-question", default="")
     init_parser.set_defaults(func=initialize)
 

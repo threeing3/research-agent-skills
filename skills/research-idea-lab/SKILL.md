@@ -1,6 +1,6 @@
 ---
 name: research-idea-lab
-description: Discover, iteratively develop, rescue, compare, and, only when explicitly requested, fully score or rank novel ML/AI research ideas, especially for VideoQA and long-video understanding. Use for field mapping, finding directions or open problems, baseline-grounded module changes, mechanism combinations, turning rough seeds into testable versions, cross-domain transfer, target-domain novelty checking, refreshing an idea pool, or preparing a user-selected idea for low-cost validation or formal experiments, including requests such as 找方向, 还有没有 idea, 继续想, 救方向, 加模块, 改基线, 严格评分, or 选题排序. Default vague direction-finding and rescue requests to exploration; keep focused novelty review separate from full scoring and rejection.
+description: Discover, iteratively develop, rescue, monitor, compare, and, only when explicitly requested, fully score or rank novel ML/AI research ideas, especially for VideoQA and long-video understanding. Use for field mapping, finding directions or open problems, baseline-grounded module changes, mechanism combinations, turning rough seeds into testable versions, cross-domain transfer, target-domain novelty checking, monitoring new competitor papers, refreshing an idea pool, or preparing a user-selected idea for low-cost validation or formal experiments, including requests such as 找方向, 还有没有 idea, 继续想, 救方向, 加模块, 改基线, 最近有没有新论文, 严格评分, or 选题排序. Default vague direction-finding and rescue requests to exploration; keep monitoring and focused novelty review separate from full scoring and rejection.
 ---
 
 # Research Idea Lab
@@ -17,6 +17,13 @@ Treat ideation as literature-grounded hypothesis discovery. Separate possibility
 - Treat CNY 100 and 24 hours as the standing maximum for one approved validation round. Ask again for any larger resource envelope or material scope change.
 - Keep advisory uncertainty in the output; do not require a reply. Request a decision only for a blocking truthfulness, permission, cost, ethics, or venue-compliance issue.
 - Never run strict review merely because an idea is rough, crowded, or missing evidence.
+- Follow `../../docs/research-quality-controls.md`: use partial confirmation,
+  keep warnings outside owned artifacts until approved, and do not create
+  generic local-workflow hashes.
+
+Choose execution depth independently from research stage: `quick` for a narrow
+local question and `standard` for reusable or stage-changing work. Depth changes
+check breadth and output length; it never grants stricter decision authority.
 
 ## Choose One Work Mode
 
@@ -56,11 +63,19 @@ Use only when the user explicitly requests scoring, ranking, a full strict revie
 - Only this mode may set `rejected`. Both `novelty` and `gate` may set `experiment-ready` after focused novelty, lineage, user-selection, and experiment-entry requirements pass.
 - A low current-readiness score does not erase development potential. Use `abandon` only when no testable central claim remains after a documented rescue attempt.
 
+### `monitor` — incremental new-work tracking
+
+Use for latest-paper checks, competitor tracking, or refreshing a stable idea's
+coverage window. Follow `references/literature-monitoring.md` and emit
+`RELAX`, `RESEARCH`, or `FOLLOW-UP`. Monitoring never directly rejects an idea
+or issues a formal novelty verdict.
+
 ## Start
 
 1. Locate the project root. Keep state under `<project-root>/research_state/` and the index at `<project-root>/research_state.json`.
 2. Read `references/state-protocol.md` and inspect current state before writing.
-3. Choose `explore`, `develop`, `novelty`, or `gate`; record the mode and assumptions in the session artifact.
+3. Choose `explore`, `develop`, `novelty`, `monitor`, or `gate`; record the mode,
+   execution depth, and assumptions in the session artifact.
 4. Choose the coverage mode:
    - `baseline`: no trustworthy field snapshot exists, the scope changed materially, or the user requests a remap.
    - `incremental`: a trustworthy snapshot exists; search from its `coverage_end` through today with an overlap window.
@@ -68,6 +83,7 @@ Use only when the user explicitly requests scoring, ranking, a full strict revie
    - For `explore`: read `references/exploration-workflow.md`, `references/iterative-development.md`, and `references/opportunity-map.md`.
    - For `develop`: read those three files plus `references/novelty-workflow.md`; read `references/cross-domain-transfer.md` when transfer is relevant.
    - For `novelty`: read `references/novelty-workflow.md`, `references/anti-reskin-protocol.md`, `references/idea-contract.md`, and `references/iterative-development.md`; read `references/cross-domain-transfer.md` when transfer is relevant.
+   - For `monitor`: read `references/literature-monitoring.md` and `references/novelty-workflow.md`.
    - For `gate`: additionally read `references/idea-evaluation-rubric.md`, `references/anti-reskin-protocol.md`, `references/role-debate-protocol.md`, `references/role-artifact-schemas.md`, and `references/idea-contract.md`.
    - Read `references/research-process-metrics.md` only for strict candidate comparison or pilot-information decisions.
    - Read `references/reviewer-pattern-workflow.md` and `references/ai-venue-scope.json` only when building or querying the public reviewer-pattern corpus or calibrating a target venue.
@@ -200,7 +216,12 @@ Use these current-state statuses: `raw`, `developing`, `screened`, `novelty-risk
 
 Treat `ideas/idea_pool.json` as the canonical current status. Treat an idea contract as an evidence-bearing handoff snapshot. When later literature or verified experiments move an `experiment-ready` idea to another status, invalidate or supersede the contract lifecycle, append an event, and run `scripts/check_idea_state_consistency.py`. Preserve historical scientific content; do not bulk-rewrite old contracts.
 
-`research-experiment-lab` owns experiment design, execution, debugging, aggregation, and verification. For exploratory validation, hand off the frozen alignment path and SHA-256. For formal work, hand off the family ID, mechanism-signature hash, lineage report, inherited failure IDs, and active contract lifecycle. Do not run experiments in this skill.
+`research-experiment-lab` owns experiment design, execution, debugging,
+aggregation, and verification. For exploratory validation, hand off the frozen
+alignment path, alignment ID, idea revision, and implementation revision. For
+formal work, hand off the family ID, lineage report, inherited failure IDs, and
+active contract lifecycle. Legacy hashes may be read but new local handoffs do
+not require them. Do not run experiments in this skill.
 
 ## Integrity
 

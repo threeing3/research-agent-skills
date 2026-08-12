@@ -97,7 +97,9 @@ Legacy contracts without lifecycle metadata remain readable. Do not bulk-rewrite
 
 Pre-gate exploratory validation does not require or create an idea contract.
 Freeze a user-approved `research-idea/validation-alignment-v1` artifact under
-`ideas/<idea-id>/validation/`, and let the experiment plan bind its SHA-256.
+`ideas/<idea-id>/validation/`, and let the experiment plan bind its alignment
+ID, idea revision, and implementation revision. Do not require a generic local
+file hash.
 The alignment may move a developing idea forward or backward, but it may not
 set novelty, `experiment-ready`, or paper-ready status.
 

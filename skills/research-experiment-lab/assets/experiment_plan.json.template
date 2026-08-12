@@ -7,10 +7,14 @@
   "idea_id": "example-idea",
   "idea_revision": 1,
   "implementation_revision": null,
-  "idea_contract_sha256": "",
   "validation_alignment": null,
+  "method_identity": {
+    "method_tier": "full",
+    "publication_eligible": true,
+    "scientific_configuration": "describe the complete method configuration",
+    "excluded_simplifications": []
+  },
   "mechanism_family_id": "",
-  "mechanism_signature_sha256": "",
   "inherited_failure_ids": [],
   "research_question": "",
   "hypothesis": "",

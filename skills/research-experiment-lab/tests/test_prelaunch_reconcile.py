@@ -247,16 +247,14 @@ class PrelaunchReconcileTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("idea-lifecycle-declared", result.stdout)
 
-    def test_stale_consistency_contract_hash_blocks(self) -> None:
+    def test_stale_consistency_contract_revision_blocks(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             contract_path, plan_path = write_fixture(root)
-            contract = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
-            contract["title"] = "materially revised after consistency check"
-            contract_path.write_text(yaml.safe_dump(contract, sort_keys=False), encoding="utf-8")
-            plan = json.loads(plan_path.read_text(encoding="utf-8"))
-            plan["idea_contract_sha256"] = hashlib.sha256(contract_path.read_bytes()).hexdigest()
-            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            report_path = root / "research_state" / "ideas" / "state_consistency.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            report["records"][0]["contract_revision"] = 999
+            report_path.write_text(json.dumps(report), encoding="utf-8")
             result = run(contract_path, plan_path)
             self.assertEqual(result.returncode, 1)
             self.assertIn("idea-state-consistency-report", result.stdout)
@@ -272,7 +270,7 @@ class PrelaunchReconcileTests(unittest.TestCase):
             pool_path.write_text(json.dumps(pool), encoding="utf-8")
             result = run(contract_path, plan_path)
             self.assertEqual(result.returncode, 1)
-            self.assertIn("pool_hash_matches=False", result.stdout)
+            self.assertIn("pool_identity_matches=False", result.stdout)
 
     def test_staged_contract_with_supported_target_novelty_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -53,11 +53,11 @@ silently enlarge a run because a task failed.
 ## Idea-revision synchronization
 
 Before launching every task and at every scheduled check, compare the plan's
-`idea_id`, `idea_revision`, and `idea_contract_sha256` with the canonical idea
-state. Consume new `research_events.jsonl` entries from the last cursor.
+`idea_id` and `idea_revision` with the canonical idea state. Consume new
+`research_events.jsonl` entries from the last cursor.
 
-For `exploratory-validation`, compare `implementation_revision` and the frozen
-validation-alignment SHA-256 instead of requiring an idea contract. Any change
+For `exploratory-validation`, compare the alignment ID, idea revision, and
+`implementation_revision` instead of requiring an idea contract. Any change
 to the approved question, mechanism, implementation behavior, dataset, metric,
 budget, or outcome semantics stales queued tasks and requires fresh user
 alignment.

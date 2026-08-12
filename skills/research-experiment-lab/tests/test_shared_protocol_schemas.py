@@ -45,6 +45,10 @@ class SharedProtocolSchemaTests(unittest.TestCase):
         self.assertIn("idea_state_consistency_report", template["prelaunch"])
         self.assertEqual(template["admission_mode"], "formal")
         self.assertIn("validation_alignment", schema["properties"])
+        self.assertIn("method_identity", schema["required"])
+        formal_rule = schema["allOf"][1]["then"]["properties"]["method_identity"]["properties"]
+        self.assertEqual(formal_rule["method_tier"]["const"], "full")
+        self.assertTrue(formal_rule["publication_eligible"]["const"])
         self.assertIn("validation_alignment_check_report", template["prelaunch"])
 
     def test_validation_alignment_schema_requires_user_and_realization_evidence(self) -> None:
@@ -58,6 +62,22 @@ class SharedProtocolSchemaTests(unittest.TestCase):
         self.assertIn("intervention_evidence", validation_required)
         self.assertIn("user_alignment", schema["required"])
 
+    def test_literature_monitor_schema_has_action_signals(self) -> None:
+        schema = load(REPO / "schemas" / "literature-monitor.schema.json")
+        self.assertEqual(
+            schema["properties"]["overall_signal"]["enum"],
+            ["RELAX", "RESEARCH", "FOLLOW-UP"],
+        )
+        self.assertIn("target_domain_boundary", schema["required"])
+
+    def test_claim_evidence_schema_tracks_overstatement_and_next_action(self) -> None:
+        schema = load(REPO / "schemas" / "claim-evidence.schema.json")
+        statuses = schema["properties"]["status"]["enum"]
+        self.assertIn("overstated", statuses)
+        self.assertIn("unclear", statuses)
+        self.assertIn("required_evidence", schema["properties"])
+        self.assertIn("next_action", schema["properties"])
+
     def test_verification_schema_tracks_emitted_v2_identity(self) -> None:
         schema = load(REPO / "schemas" / "verification-report.schema.json")
         self.assertEqual(
@@ -70,8 +90,7 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "plan_revision",
             "idea_id",
             "idea_revision",
-            "idea_contract_sha256",
-            "experiment_plan_sha256",
+            "method_identity",
             "stage",
             "passed",
         ):
@@ -84,15 +103,17 @@ class SharedProtocolSchemaTests(unittest.TestCase):
         for field in ("idea_pool", "idea_state_consistency", "experiments"):
             self.assertIn(field, paths)
 
-    def test_shared_writing_handoff_schema_requires_v2_hashes(self) -> None:
+    def test_shared_writing_handoff_schema_uses_ids_and_revisions(self) -> None:
         schema = load(
             WRITING_SKILL / "references" / "research-handoff.schema.json"
         )
         versions = schema["properties"]["schema_version"]["enum"]
         self.assertIn("ai-research-writing/research-handoff-v2", versions)
         then_required = schema["allOf"][0]["then"]["required"]
-        self.assertIn("source_idea_contract_sha256", then_required)
-        self.assertIn("experiment_plan_sha256", then_required)
+        self.assertIn("source_idea_id", then_required)
+        self.assertIn("source_idea_revision", then_required)
+        self.assertNotIn("source_idea_contract_sha256", then_required)
+        self.assertNotIn("experiment_plan_sha256", then_required)
 
 
 if __name__ == "__main__":

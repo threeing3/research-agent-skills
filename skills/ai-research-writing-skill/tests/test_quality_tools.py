@@ -576,6 +576,12 @@ class ResearchHandoffTests(unittest.TestCase):
                     "idea_id": "idea-1",
                     "idea_revision": 1,
                     "idea_contract_sha256": contract_hash,
+                    "method_identity": {
+                        "method_tier": "full",
+                        "publication_eligible": True,
+                        "scientific_configuration": "complete fixture method",
+                        "excluded_simplifications": [],
+                    },
                 }
             ),
             encoding="utf-8",
@@ -605,6 +611,12 @@ class ResearchHandoffTests(unittest.TestCase):
                     "idea_revision": 1,
                     "idea_contract_sha256": contract_hash,
                     "experiment_plan_sha256": plan_hash,
+                    "method_identity": {
+                        "method_tier": "full",
+                        "publication_eligible": True,
+                        "scientific_configuration": "complete fixture method",
+                        "excluded_simplifications": [],
+                    },
                     "stage": experiment_stage,
                     "passed": verification_passed,
                     "blockers": [] if verification_passed else ["fixture-failure"],
@@ -754,6 +766,17 @@ class ResearchHandoffTests(unittest.TestCase):
             root = Path(directory)
             self._write_shared_state_project(root)
             result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_shared_state_handoff_accepts_revision_identity_without_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            handoff_path = self._write_shared_state_project(root)
+            handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+            handoff.pop("source_idea_contract_sha256")
+            handoff.pop("experiment_plan_sha256")
+            handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root, "--require-unblocked")
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_shared_state_handoff_rejects_legacy_presence_only_contract(self) -> None:

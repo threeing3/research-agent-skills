@@ -23,6 +23,11 @@ def section(start: str, end: str) -> str:
 
 
 class SkillModeContractTests(unittest.TestCase):
+    def test_monitor_is_incremental_and_not_a_rejection_gate(self) -> None:
+        self.assertIn("### `monitor`", SKILL_TEXT)
+        self.assertIn("`RELAX`, `RESEARCH`, or `FOLLOW-UP`", SKILL_TEXT)
+        self.assertIn("never directly rejects an idea", SKILL_TEXT)
+
     def test_interaction_policy_limits_questions_and_silent_escalation(self) -> None:
         self.assertIn("Ask at most one blocking question in a turn", SKILL_TEXT)
         self.assertIn("Do not ask for routine mode changes or skill handoffs", SKILL_TEXT)

@@ -9,9 +9,9 @@ target-domain novelty review, formal contract issuance, and a formal campaign
 first.
 
 For a shared-state project, emit
-`ai-research-writing/research-handoff-v2`. Include source idea ID, revision,
-and contract SHA-256; experiment ID, plan revision, and experiment-plan
-SHA-256; and paths to:
+`ai-research-writing/research-handoff-v2`. Include source idea ID and revision;
+experiment ID and plan revision; publication-eligible full method identity; and
+paths to:
 
 - project and experiment inventories;
 - verified analysis and decision;
@@ -24,8 +24,9 @@ SHA-256; and paths to:
 Before emission, re-run idea-state consistency and require the selected
 contract lifecycle to remain `active`. The experiment state and its v2
 verification report must both say `paper-ready`, and the verification report
-must repeat the same idea identity, contract hash, experiment identity, plan
-revision, and plan hash. Do not copy a verification report or analysis files
+must repeat the same idea identity, experiment identity, plan revision, and
+method identity. Legacy hashes may be checked when present but are not required
+for a new local handoff. Do not copy a verification report or analysis files
 from a different experiment directory into the handoff.
 
 The writing skill may issue `experiment_request.json` for missing evidence.

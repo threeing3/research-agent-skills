@@ -6,12 +6,12 @@ The upstream system must export evidence, not writing prompts. The skill remains
 
 When the project-root `research_state.json` exists, read it before accepting a
 handoff and require `ai-research-writing/research-handoff-v2`. Reconcile the
-source idea with `active_idea_id`, its v4 contract revision and SHA-256, its
+source idea with `active_idea_id`, its v4 contract revision, its
 `active` lifecycle, the current experiment-ready idea-pool row, and a fresh
 passed `research-idea/state-consistency-v2` report. Reconcile the experiment
-with `active_experiment_id`, plan revision and SHA-256, `paper-ready` state, and
+with `active_experiment_id`, plan revision, `paper-ready` state, and
 a passed `research-experiment/experiment-verification-v2` report carrying the
-same identities and hashes. Treat any mismatch, lifecycle invalidation,
+same identities, revisions, and publication method identity. Treat any mismatch, lifecycle invalidation,
 incomplete verification, or unresolved kill condition as a blocker.
 
 Require the experiment plan and verification report to use
@@ -31,10 +31,8 @@ Create `research_handoff.json` using `research-handoff.schema.json`. Paths are r
   "schema_version": "ai-research-writing/research-handoff-v2",
   "source_idea_id": "videoqa-example",
   "source_idea_revision": 1,
-  "source_idea_contract_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   "experiment_id": "videoqa-example-full",
   "experiment_plan_revision": 1,
-  "experiment_plan_sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
   "research_question": "Does method X improve metric Y under condition Z?",
   "paper_type": "empirical ML paper",
   "target_venue": "ICML",

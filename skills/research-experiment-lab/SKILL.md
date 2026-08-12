@@ -1,6 +1,6 @@
 ---
 name: research-experiment-lab
-description: Design, execute, debug, revise, verify, and archive complete ML/AI experiment campaigns, from low-cost pilots through paper-ready main results, ablations, robustness, efficiency, reproduction, and failure analysis. Use for local or SSH/AutoDL experiments, remote code and result synchronization, long-run monitoring and recovery, systematic experiment debugging, multi-seed result aggregation, or producing verified evidence for AI research writing, especially VideoQA and long-video understanding.
+description: Design, execute, debug, revise, verify, and archive complete ML/AI experiment campaigns while separating full publication methods from simplified, proxy, toy, and debug implementations. Use for user-approved low-cost validation, local or SSH/AutoDL experiments, remote code and result synchronization, long-run logging and recovery, systematic experiment debugging, multi-seed aggregation, or producing verified evidence for AI research writing, especially VideoQA and long-video understanding.
 ---
 
 # Research Experiment Lab
@@ -8,6 +8,11 @@ description: Design, execute, debug, revise, verify, and archive complete ML/AI 
 Own the experimental lifecycle. Treat every scientific result as a traceable
 chain from idea revision to plan, immutable run, raw evidence, verification,
 aggregation, and writing handoff.
+
+Follow `../../docs/research-quality-controls.md`. Run a direct-output preflight
+for publication-facing plans and tables: remove defensive test sprawl, keep
+scientifically necessary controls, and surface judgment calls as warnings
+without silently injecting edits. Use partial confirmation by default.
 
 ## Route
 
@@ -30,7 +35,8 @@ Read only the references needed for the task:
 2. Declare `admission_mode` as `exploratory-validation`, `formal`, or
    `diagnostic`.
    - `exploratory-validation` requires a frozen, user-approved
-     `research-idea/validation-alignment-v1` artifact and its SHA-256. It does
+     `research-idea/validation-alignment-v1` artifact, alignment ID, idea
+     revision, and implementation revision. It does
      not require an idea contract or full novelty gate. Run
      `scripts/check_validation_alignment.py`; refuse launch when the artifact,
      user approval, realization evidence, intervention evidence, stop
@@ -46,6 +52,9 @@ Read only the references needed for the task:
      question when they make no novel-method or paper-ready claim.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
+   Declare `method_identity.method_tier` as `full`, `simplified`, `proxy`,
+   `toy`, or `debug`. Only a fully specified `full` method may be marked
+   publication-eligible or promoted to `paper-ready`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
    and failure thresholds, stop conditions, budget, and confounders before
    observing formal results.
@@ -199,9 +208,10 @@ Use these stages exactly:
 
 An `exploratory-validation` campaign may end at `verified-diagnostic` but may
 never become `paper-ready`, prove novelty, or directly support a paper-core
-method claim. Only formal `paper-ready` evidence with a v2 verification report and matching idea
-contract and experiment-plan hashes may enter an unblocked shared-state writing
-handoff.
+method claim. Only formal `paper-ready` evidence with a v2 verification report,
+matching IDs and revisions, and a publication-eligible full method may enter an
+unblocked shared-state writing handoff. Legacy hashes remain readable but are
+not required for new local handoffs.
 
 ## Ownership and Safety
 

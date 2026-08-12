@@ -123,8 +123,9 @@ def _validate_v2_identity_fields(handoff: dict[str, object]) -> None:
         ):
             raise ContractError(f"handoff v2 requires a positive integer field: {field}")
     for field in ("source_idea_contract_sha256", "experiment_plan_sha256"):
-        if not isinstance(handoff.get(field), str) or not HASH_PATTERN.fullmatch(str(handoff[field])):
-            raise ContractError(f"handoff v2 requires a lowercase SHA-256 field: {field}")
+        value = handoff.get(field)
+        if value is not None and (not isinstance(value, str) or not HASH_PATTERN.fullmatch(value)):
+            raise ContractError(f"optional legacy digest must be lowercase SHA-256: {field}")
 
 
 def _validate_shared_state(
@@ -149,8 +150,8 @@ def _validate_shared_state(
             raise ContractError(f"shared-state handoff {label} has an unsafe identifier: {value!r}")
     idea_revision = handoff["source_idea_revision"]
     plan_revision = handoff["experiment_plan_revision"]
-    contract_hash = str(handoff["source_idea_contract_sha256"])
-    plan_hash = str(handoff["experiment_plan_sha256"])
+    contract_hash = handoff.get("source_idea_contract_sha256")
+    plan_hash = handoff.get("experiment_plan_sha256")
 
     _require_match("active idea", idea_id, state.get("active_idea_id"))
     _require_match("active experiment", experiment_id, state.get("active_experiment_id"))
@@ -188,7 +189,8 @@ def _validate_shared_state(
         raise ContractError("active idea contract requires lifecycle metadata")
     _require_match("idea lifecycle validity", lifecycle.get("validity"), "active")
     _require_match("idea lifecycle pool status", lifecycle.get("current_pool_status"), pool_status)
-    _require_match("idea contract SHA-256", digest_file(contract_path), contract_hash)
+    if contract_hash is not None:
+        _require_match("idea contract SHA-256", digest_file(contract_path), contract_hash)
 
     if contract.get("contract_profile") == "staged-novelty/v1":
         novelty_review = contract.get("novelty_review")
@@ -221,7 +223,6 @@ def _validate_shared_state(
     )
     if consistency.get("passed") is not True:
         raise ContractError("idea-state consistency report must record passed: true")
-    _require_match("idea pool SHA-256", consistency.get("pool_sha256"), digest_file(idea_pool_path))
     records = consistency.get("records")
     matching_records = [
         record for record in records
@@ -234,7 +235,6 @@ def _validate_shared_state(
     record = matching_records[0]
     for label, observed, expected in (
         ("consistent idea revision", record.get("contract_revision"), idea_revision),
-        ("consistent idea contract SHA-256", record.get("contract_sha256"), contract_hash),
         ("consistent idea lifecycle", record.get("lifecycle_validity"), "active"),
         ("consistent idea pool status", record.get("pool_status"), pool_status),
     ):
@@ -271,10 +271,20 @@ def _validate_shared_state(
         ("experiment plan revision", plan.get("plan_revision"), plan_revision),
         ("experiment plan idea id", plan.get("idea_id"), idea_id),
         ("experiment plan idea revision", plan.get("idea_revision"), idea_revision),
-        ("experiment plan idea contract SHA-256", plan.get("idea_contract_sha256"), contract_hash),
-        ("experiment plan SHA-256", digest_file(plan_path), plan_hash),
     ):
         _require_match(label, observed, expected)
+    if contract_hash is not None:
+        _require_match("experiment plan idea contract SHA-256", plan.get("idea_contract_sha256"), contract_hash)
+    if plan_hash is not None:
+        _require_match("experiment plan SHA-256", digest_file(plan_path), plan_hash)
+
+    method_identity = plan.get("method_identity")
+    if not isinstance(method_identity, dict):
+        raise ContractError("formal writing handoff requires method_identity")
+    if method_identity.get("method_tier") != "full" or method_identity.get("publication_eligible") is not True:
+        raise ContractError("writing handoff requires a publication-eligible full method")
+    if not isinstance(method_identity.get("scientific_configuration"), str) or not method_identity.get("scientific_configuration"):
+        raise ContractError("writing handoff requires method_identity.scientific_configuration")
 
     experiment_state = load_json_object(experiment_state_path)
     for label, observed, expected in (
@@ -305,11 +315,14 @@ def _validate_shared_state(
         ("verification plan revision", verification.get("plan_revision"), plan_revision),
         ("verification idea id", verification.get("idea_id"), idea_id),
         ("verification idea revision", verification.get("idea_revision"), idea_revision),
-        ("verification idea contract SHA-256", verification.get("idea_contract_sha256"), contract_hash),
-        ("verification experiment plan SHA-256", verification.get("experiment_plan_sha256"), plan_hash),
         ("verification stage", verification.get("stage"), "paper-ready"),
     ):
         _require_match(label, observed, expected)
+    _require_match("verification method identity", verification.get("method_identity"), method_identity)
+    if contract_hash is not None:
+        _require_match("verification idea contract SHA-256", verification.get("idea_contract_sha256"), contract_hash)
+    if plan_hash is not None:
+        _require_match("verification experiment plan SHA-256", verification.get("experiment_plan_sha256"), plan_hash)
 
 
 def validate_handoff(root: Path, handoff_path: Path) -> list[str]:

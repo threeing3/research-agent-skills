@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from experiment_common import atomic_json, now, read_json, sha256_file
+from experiment_common import atomic_json, now, read_json
 
 
 OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
@@ -40,6 +40,7 @@ def main() -> int:
         plan = read_json(plan_path)
         state = read_json(state_path)
         admission_mode = plan.get("admission_mode", "formal")
+        method_identity = plan.get("method_identity") if isinstance(plan.get("method_identity"), dict) else {}
         checks.append(
             result(
                 "plan-schema",
@@ -47,6 +48,15 @@ def main() -> int:
                 repr(plan.get("schema_version")),
             )
         )
+        publication_identity_ok = (
+            not args.promote_paper_ready
+            or (
+                method_identity.get("method_tier") == "full"
+                and method_identity.get("publication_eligible") is True
+                and bool(method_identity.get("scientific_configuration"))
+            )
+        )
+        checks.append(result("publication-method-identity", publication_identity_ok, repr(method_identity)))
         checks.append(
             result(
                 "state-schema",
@@ -191,8 +201,7 @@ def main() -> int:
         "plan_revision": plan.get("plan_revision"),
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
-        "idea_contract_sha256": plan.get("idea_contract_sha256"),
-        "experiment_plan_sha256": sha256_file(plan_path) if plan_path.is_file() else None,
+        "method_identity": plan.get("method_identity", {}),
         "stage": stage,
         "passed": passed,
         "blockers": [item["name"] for item in checks if not item["passed"]],
