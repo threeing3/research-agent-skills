@@ -519,6 +519,21 @@ class ResearchHandoffTests(unittest.TestCase):
         contract_path = ideas / "idea-1" / "idea_contract.yaml"
         contract_path.parent.mkdir(parents=True)
         analysis.mkdir(parents=True)
+        problem_card = root / "research_state/problems/problem-1/problem_card.yaml"
+        problem_card.parent.mkdir(parents=True)
+        problem_card.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-problem/v1",
+                    "problem_id": "problem-1",
+                    "revision": 1,
+                    "maturity": "solution-ready",
+                    "status": "open",
+                    "motivation_insight": {"status": "evidence-backed"},
+                }
+            ),
+            encoding="utf-8",
+        )
         pool_status = "experiment-ready" if lifecycle_validity == "active" else "rejected"
         pool_path = ideas / "idea_pool.json"
         pool_path.write_text(
@@ -533,9 +548,29 @@ class ResearchHandoffTests(unittest.TestCase):
         )
         contract = {
             "schema_version": "research-idea/v4",
+            "contract_profile": "problem-led/v1",
             "idea_id": "idea-1",
             "revision": 1,
             "status": "experiment-ready",
+            "target_domain_boundary": {"task": "VideoQA", "problem_setting": "long-video evidence"},
+            "novelty_review": {"status": "supported", "coverage_end": "2026-08-01", "recall_confidence": "high"},
+            "problem_derivation": {
+                "problem_id": "problem-1",
+                "problem_revision": 1,
+                "problem_card": "research_state/problems/problem-1/problem_card.yaml",
+                "problem_maturity": "solution-ready",
+                "observed_failure": "early evidence is lost",
+                "bottleneck_hypothesis": "uniform compression erases sparse evidence",
+                "distinctive_motivation_insight": "selective retention is the bottleneck",
+                "motivation_status": "evidence-backed",
+                "research_value": "separates retention from capacity",
+                "required_behavior_change": "retain relevant evidence",
+                "design_principle": "condition retention on the query",
+                "module_operation": "select evidence tokens",
+                "implementation_location": "before the answer decoder",
+                "motivation_to_design_chain": ["failure", "bottleneck", "required behavior", "module"],
+                "evidence_triad": {"mechanism": ["activation"], "quantitative": ["accuracy"], "qualitative": ["paired cases"]},
+            },
             "lifecycle": {
                 "validity": lifecycle_validity,
                 "current_pool_status": pool_status,
@@ -569,7 +604,7 @@ class ResearchHandoffTests(unittest.TestCase):
         plan_path.write_text(
             json.dumps(
                 {
-                    "schema_version": "research-experiment/plan-v2",
+                    "schema_version": "research-experiment/plan-v3",
                     "admission_mode": admission_mode,
                     "experiment_id": "exp-1",
                     "plan_revision": 1,
@@ -581,6 +616,22 @@ class ResearchHandoffTests(unittest.TestCase):
                         "publication_eligible": True,
                         "scientific_configuration": "complete fixture method",
                         "excluded_simplifications": [],
+                    },
+                    "evidence_obligations": {
+                        "mechanism": [{"id": "mechanism-1", "claim": "module is active", "required_artifacts": ["analysis/mechanism.json"]}],
+                        "quantitative": [{"id": "quantitative-1", "claim": "metric improves", "required_artifacts": ["analysis/metric_summary.csv"]}],
+                        "qualitative": [{
+                            "id": "qualitative-1",
+                            "claim": "behavior changes",
+                            "required_artifacts": ["analysis/qualitative.json"],
+                            "selection_protocol": {
+                                "frozen_before_results": True,
+                                "categories": ["early-evidence"],
+                                "required_outcomes": ["success", "failure", "unchanged-or-regression"],
+                                "sampling_rule": "sample before inspecting outcomes",
+                                "comparison_views": ["baseline", "full-method", "ablation"],
+                            },
+                        }],
                     },
                 }
             ),
@@ -603,7 +654,8 @@ class ResearchHandoffTests(unittest.TestCase):
         (experiment / "verification_report.json").write_text(
             json.dumps(
                 {
-                    "schema_version": "research-experiment/experiment-verification-v2",
+                    "schema_version": "research-experiment/experiment-verification-v3",
+                    "plan_schema_version": "research-experiment/plan-v3",
                     "admission_mode": admission_mode,
                     "experiment_id": "exp-1",
                     "plan_revision": 1,
@@ -620,13 +672,25 @@ class ResearchHandoffTests(unittest.TestCase):
                     "stage": experiment_stage,
                     "passed": verification_passed,
                     "blockers": [] if verification_passed else ["fixture-failure"],
-                    "checks": [],
+                    "checks": [{"name": "fixture-evidence", "passed": verification_passed, "evidence": "fixture"}],
+                    "evidence_summary": {
+                        "mechanism": 1 if verification_passed else 0,
+                        "quantitative": 1 if verification_passed else 0,
+                        "qualitative": 1 if verification_passed else 0,
+                    },
+                    "evidence_results": [
+                        {"family": "mechanism", "obligation_id": "mechanism-1", "passed": verification_passed, "required_artifacts": ["analysis/mechanism.json"]},
+                        {"family": "quantitative", "obligation_id": "quantitative-1", "passed": verification_passed, "required_artifacts": ["analysis/metric_summary.csv"]},
+                        {"family": "qualitative", "obligation_id": "qualitative-1", "passed": verification_passed, "required_artifacts": ["analysis/qualitative.json"]},
+                    ],
                 }
             ),
             encoding="utf-8",
         )
         (analysis / "run_index.csv").write_text("run_id,status\nrun-1,verified\n", encoding="utf-8")
         (analysis / "metric_summary.csv").write_text("metric,mean\nscore,0.9\n", encoding="utf-8")
+        (analysis / "mechanism.json").write_text('{"activation": true}\n', encoding="utf-8")
+        (analysis / "qualitative.json").write_text('{"success": 1, "failure": 1, "unchanged": 1}\n', encoding="utf-8")
         (root / "research_state.json").write_text(
             json.dumps(
                 {
@@ -846,6 +910,58 @@ class ResearchHandoffTests(unittest.TestCase):
             result = run_script("check_research_handoff.py", root)
             self.assertEqual(result.returncode, 2)
             self.assertIn("passed: true", result.stderr)
+
+    def test_shared_state_handoff_rejects_missing_explicit_admission_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root)
+            plan_path = root / "research_state/experiments/exp-1/experiment_plan.json"
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan.pop("admission_mode")
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            handoff_path = root / "research_handoff.json"
+            handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+            handoff.pop("experiment_plan_sha256")
+            handoff_path.write_text(json.dumps(handoff), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("experiment plan admission mode mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_empty_verification_checks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root)
+            verification_path = root / "research_state/experiments/exp-1/verification_report.json"
+            verification = json.loads(verification_path.read_text(encoding="utf-8"))
+            verification["checks"] = []
+            verification_path.write_text(json.dumps(verification), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("non-empty checks", result.stderr)
+
+    def test_shared_state_handoff_rejects_forged_evidence_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root)
+            verification_path = root / "research_state/experiments/exp-1/verification_report.json"
+            verification = json.loads(verification_path.read_text(encoding="utf-8"))
+            verification["evidence_summary"]["mechanism"] = 2
+            verification_path.write_text(json.dumps(verification), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("verification evidence summary mismatch", result.stderr)
+
+    def test_shared_state_handoff_rejects_closed_problem_card(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write_shared_state_project(root)
+            card_path = root / "research_state/problems/problem-1/problem_card.yaml"
+            card = json.loads(card_path.read_text(encoding="utf-8"))
+            card["status"] = "closed"
+            card_path.write_text(json.dumps(card), encoding="utf-8")
+            result = run_script("check_research_handoff.py", root)
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("problem card must remain", result.stderr)
 
 
 class CameraReadyTests(unittest.TestCase):

@@ -15,6 +15,8 @@ from experiment_common import atomic_json, now, read_json
 
 
 OPS = {">=": operator.ge, "<=": operator.le, ">": operator.gt, "<": operator.lt, "==": operator.eq}
+STRICT_PLAN_SCHEMA = "research-experiment/plan-v3"
+STRICT_REPORT_SCHEMA = "research-experiment/experiment-verification-v3"
 
 
 def result(name: str, passed: bool, evidence: str) -> dict[str, Any]:
@@ -23,6 +25,26 @@ def result(name: str, passed: bool, evidence: str) -> dict[str, Any]:
 
 def key(row: dict[str, Any]) -> tuple[Any, ...]:
     return (row.get("variant"), row.get("dataset"), row.get("split"), row.get("seed"))
+
+
+def nonempty(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def qualitative_protocol_ok(value: Any) -> bool:
+    if not isinstance(value, dict) or value.get("frozen_before_results") is not True:
+        return False
+    categories = value.get("categories")
+    outcomes = value.get("required_outcomes")
+    views = value.get("comparison_views")
+    return (
+        isinstance(categories, list) and bool(categories) and all(nonempty(item) for item in categories)
+        and isinstance(outcomes, list)
+        and {"success", "failure", "unchanged-or-regression"}.issubset(set(outcomes))
+        and nonempty(value.get("sampling_rule"))
+        and isinstance(views, list) and len(views) >= 2 and all(nonempty(item) for item in views)
+        and {"baseline", "full-method"}.issubset(set(views))
+    )
 
 
 def main() -> int:
@@ -34,18 +56,26 @@ def main() -> int:
     checks: list[dict[str, Any]] = []
     plan: dict[str, Any] = {}
     state: dict[str, Any] = {}
+    evidence_results: list[dict[str, Any]] = []
     plan_path = experiment_dir / "experiment_plan.json"
     state_path = experiment_dir / "experiment_state.json"
     try:
         plan = read_json(plan_path)
         state = read_json(state_path)
-        admission_mode = plan.get("admission_mode", "formal")
+        plan_schema = plan.get("schema_version")
+        admission_mode = plan.get("admission_mode")
+        if args.promote_paper_ready and plan_schema != STRICT_PLAN_SCHEMA:
+            print(
+                "[FAIL] plan-v3-migration-required: legacy plan-v2 is read-only and cannot be promoted in place"
+            )
+            print("EXPERIMENT VERIFICATION: FAIL")
+            return 1
         method_identity = plan.get("method_identity") if isinstance(plan.get("method_identity"), dict) else {}
         checks.append(
             result(
                 "plan-schema",
-                plan.get("schema_version") == "research-experiment/plan-v2",
-                repr(plan.get("schema_version")),
+                plan_schema in {"research-experiment/plan-v2", STRICT_PLAN_SCHEMA},
+                repr(plan_schema),
             )
         )
         publication_identity_ok = (
@@ -105,6 +135,73 @@ def main() -> int:
                 f"admission_mode={admission_mode!r} promote={args.promote_paper_ready}",
             )
         )
+        evidence_obligations = plan.get("evidence_obligations")
+        if not isinstance(evidence_obligations, dict):
+            evidence_obligations = {}
+        evidence_results = []
+        if args.promote_paper_ready:
+            seen_obligation_ids: set[str] = set()
+            for family in ("mechanism", "quantitative", "qualitative"):
+                obligations = evidence_obligations.get(family)
+                family_ok = isinstance(obligations, list) and bool(obligations)
+                checks.append(
+                    result(
+                        f"evidence-family:{family}",
+                        family_ok,
+                        f"declared={len(obligations) if isinstance(obligations, list) else 0}",
+                    )
+                )
+                if not isinstance(obligations, list):
+                    continue
+                for index, obligation in enumerate(obligations, 1):
+                    label = f"evidence:{family}:{index}"
+                    if not isinstance(obligation, dict):
+                        checks.append(result(label, False, repr(obligation)))
+                        continue
+                    shape_ok = (
+                        nonempty(obligation.get("id"))
+                        and nonempty(obligation.get("claim"))
+                        and isinstance(obligation.get("required_artifacts"), list)
+                        and bool(obligation["required_artifacts"])
+                        and all(nonempty(item) for item in obligation["required_artifacts"])
+                    )
+                    if family == "qualitative":
+                        shape_ok = shape_ok and qualitative_protocol_ok(obligation.get("selection_protocol"))
+                    obligation_id = str(obligation.get("id", ""))
+                    identity_ok = bool(obligation_id) and obligation_id not in seen_obligation_ids
+                    if obligation_id:
+                        seen_obligation_ids.add(obligation_id)
+                    shape_ok = shape_ok and identity_ok
+                    checks.append(result(f"{label}:shape", shape_ok, repr(obligation)))
+                    artifact_passes: list[bool] = []
+                    artifacts = obligation.get("required_artifacts") if isinstance(obligation.get("required_artifacts"), list) else []
+                    for relative in artifacts:
+                        artifact_ok = isinstance(relative, str) and bool(relative.strip())
+                        path = experiment_dir
+                        if artifact_ok:
+                            path = (experiment_dir / relative).resolve()
+                            artifact_ok = (
+                                path.is_relative_to(experiment_dir)
+                                and path.is_file()
+                                and path.stat().st_size > 0
+                            )
+                        checks.append(
+                            result(
+                                f"{label}:artifact:{relative}",
+                                artifact_ok,
+                                str(path),
+                            )
+                        )
+                        artifact_passes.append(artifact_ok)
+                    obligation_passed = shape_ok and bool(artifacts) and all(artifact_passes)
+                    evidence_results.append(
+                        {
+                            "family": family,
+                            "obligation_id": obligation_id,
+                            "passed": obligation_passed,
+                            "required_artifacts": artifacts,
+                        }
+                    )
         required_runs = plan.get("required_runs")
         checks.append(result("required-runs-declared", isinstance(required_runs, list) and bool(required_runs), str(required_runs)))
         manifests: dict[tuple[Any, ...], tuple[dict[str, Any], Path]] = {}
@@ -183,7 +280,7 @@ def main() -> int:
         checks.append(result("verification-readable", False, f"{type(exc).__name__}: {exc}"))
 
     passed = all(item["passed"] for item in checks)
-    admission_mode = plan.get("admission_mode", "formal")
+    admission_mode = plan.get("admission_mode")
     stage = (
         "paper-ready"
         if passed and args.promote_paper_ready
@@ -194,7 +291,12 @@ def main() -> int:
         else "blocked"
     )
     report = {
-        "schema_version": "research-experiment/experiment-verification-v2",
+        "schema_version": (
+            STRICT_REPORT_SCHEMA
+            if plan.get("schema_version") == STRICT_PLAN_SCHEMA
+            else "research-experiment/experiment-verification-v2"
+        ),
+        "plan_schema_version": plan.get("schema_version"),
         "admission_mode": admission_mode,
         "verified_at": now(),
         "experiment_id": plan.get("experiment_id"),
@@ -202,6 +304,11 @@ def main() -> int:
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
         "method_identity": plan.get("method_identity", {}),
+        "evidence_summary": {
+            family: sum(1 for item in evidence_results if item["family"] == family and item["passed"])
+            for family in ("mechanism", "quantitative", "qualitative")
+        },
+        "evidence_results": evidence_results,
         "stage": stage,
         "passed": passed,
         "blockers": [item["name"] for item in checks if not item["passed"]],

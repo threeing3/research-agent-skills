@@ -4,7 +4,7 @@
 
 ## Ownership（所有权）
 
-- `research-idea-lab`：文献、想法池、创新性判断、想法契约。
+- `research-idea-lab`：文献、问题卡、瓶颈与独到动机、问题—想法谱系、想法池、创新性判断和想法契约。
 - `research-experiment-lab`：实验计划、不可变运行、日志、统计和验证报告。
 - `ai-research-writing-skill`：论文状态、论断、正文、引用、表格和写作交接。
 
@@ -15,7 +15,8 @@
 探索性验证流：
 
 ```text
-validation-alignment.yaml
+problem_card.yaml
+  → validation-alignment.yaml
   → exploratory-validation experiment_plan.json
   → validation_alignment_check.json
   → immutable run records
@@ -51,10 +52,18 @@ idea_contract.yaml
 
 - 写作技能可以提出 `experiment_request.json`，但不得启动实验。
 - 实验技能可以提出 `idea_revision_request.json`，但不得直接修改想法契约。
-- 探索性验证必须引用用户批准的 `validation-alignment-v1` 及其哈希；正式新实验必须引用通过的 `research-idea/state-consistency-v2` 报告。契约不是 `active`、想法池不再是 `experiment-ready`，或任一哈希过期时禁止正式启动。
+- 新的探索性验证必须引用父问题卡以及用户批准的
+  `validation-alignment-v3`；历史 v1/v2 对齐卡仅可读，启动前必须迁移。正式新实验必须引用
+  通过的 `research-idea/state-consistency-v2` 报告。契约不是 `active`、想法池
+  不再是 `experiment-ready`，或身份与修订过期时禁止正式启动。
+- 新的 `research-idea/v4` 正式契约必须使用 `problem-led/v1`；谱系检查会读取
+  真实问题卡并核对问题 ID、修订、成熟度、状态、结构和语义。旧契约只读，
+  缺失、关闭或过期的问题卡不能进入实验交接。
 - 每一轮探索性验证都需要新的用户对齐；在已批准的 100 元、24 小时范围内可以按冻结任务图执行，超出范围重新批准。
 - 探索性验证先判断程序是否真的实现并启用了设想机制，再区分实现未确认、测量不明确、机制反证和支持性信号。
-- 共享状态下的写作交接使用 `ai-research-writing/research-handoff-v2`，并核对活动 ID、想法与计划修订、`paper-ready` 阶段、完整方法身份及 v2 验证报告；旧哈希存在时可额外核验，但不再是新交接必需字段。
+- 论文级正式实验必须同时具备机制、定量和定性三类证据义务；定性案例要
+  预先声明选择协议并包含失败案例，不能只挑成功样例。
+- 共享状态下的写作交接使用 `ai-research-writing/research-handoff-v2`，并核对活动 ID、想法与计划修订、`paper-ready` 阶段、完整方法身份及 v3 验证报告；验证报告中的检查项、三类证据义务、逐项结果和实际文件必须完全对应，不能依赖手填计数。旧哈希存在时可额外核验，但不再是新交接必需字段。
 
 跨技能统一遵循 `research-quality-controls.md`：默认部分确认；判断性风险只警告、不自动写入产物；探索深度与研究阶段分离；各技能读取广泛但只写自己拥有的产物。
 - 非共享状态的独立写作项目可继续读取 v1 交接，但不能借此绕过共享状态核验。

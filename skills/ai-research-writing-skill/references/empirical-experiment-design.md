@@ -25,6 +25,10 @@ python3 scripts/validate_design_csvs.py --project-dir <project> --fail-on-issues
 ```
 
 Do not draft superiority, robustness, efficiency, or significance claims until the supporting matrix rows are `verified`.
+Do not draft a causal module claim until mechanism evidence is verified. Do not draft
+a systematic qualitative-improvement claim from hand-picked successes; require a
+predeclared case-selection protocol with baseline, full-method, ablation, unchanged,
+and failure cases where applicable.
 
 ## Baseline contract
 

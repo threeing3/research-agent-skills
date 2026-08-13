@@ -45,9 +45,13 @@ Choose the smallest route that covers the request. Load only the listed referenc
 For full-paper and submission work:
 
 1. Create `paper_state.json` from the contract in `references/artifacts.md`; declare mode, stage, venue, main TeX, bibliography, required artifacts, blockers, and build record.
-2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. In a shared-state project, accept only handoff v2 after it reconciles active IDs and revisions, idea lifecycle, formal `paper-ready` state, publication-eligible full method identity, and v2 verification identity. Legacy hashes may be checked when present but are not required for new local handoffs. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
+2. If `research_handoff.json` exists, run `check_research_handoff.py --require-unblocked` first. In a shared-state project, accept only handoff v2 after it reconciles active IDs and revisions, an active `problem-led/v1` idea, a v3 formal plan, `paper-ready` state, publication-eligible full method identity, and v3 verification identity. Legacy plans, reports, and idea profiles remain read-only and require migration before formal handoff. Otherwise inventory the repository and experiments before drafting. Create one task packet and update `plan/progress.md` at the start and end.
 3. Establish the story, claim boundaries, and literature position before long-form prose.
 4. For empirical papers, validate the baseline, method-component, experiment-matrix, reproducibility, and long-run logging evidence in `references/empirical-experiment-design.md`. When `research-experiment-lab` state exists, issue a structured experiment request for missing evidence; do not design, launch, debug, or modify experiments from this writing skill.
+   For problem-led work, preserve the chain from observed failure and distinctive
+   motivation to method design. Require verified mechanism, quantitative, and
+   qualitative evidence before claiming that a proposed module causes a strong or
+   systematic improvement.
 5. Follow the two-pass drafting order in `references/workflow.md`: write evidence-bearing core sections first, then finalize framing sections.
 6. When results arrive, follow `references/results-backfill.md`; never promote `planned` or `placeholder` evidence to `verified` from file presence alone.
 7. Run the mode-aware quality gate. A terminal stage is invalid when inputs are missing, claims/citations remain unresolved, verification is pending, blockers remain, or build hashes are stale.
@@ -62,6 +66,9 @@ Keep process instructions in plan/review files, never in manuscript prose.
   next action. Use `overstated` and `unclear` rather than silently repairing a
   claim by invention.
 - **Experiment evidence**: verify that direct competitors, foundational methods, ablation anchors, robustness, efficiency, and failure analysis support the intended claims. Route missing or invalid evidence to `research-experiment-lab`.
+- **Problem and motivation**: verify that the Introduction's motivation matches the
+  parent problem evidence and that the Method follows the recorded design derivation;
+  do not manufacture a post-hoc motivation from successful results.
 - **Admission**: never use an `exploratory-validation` experiment as paper-ready method evidence. Require a formal plan, focused target-domain novelty review, active contract, and formal paper-ready verification.
 - **Long runs**: accept a long experiment only when its experiment package contains readable logs plus structured events, metrics, resource usage, environment, synchronization, and run-verification records.
 - **Story**: define thesis, gap, contribution boundary, and claims to avoid before a full draft.

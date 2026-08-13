@@ -23,7 +23,7 @@
     "user_alignment"
   ],
   "properties": {
-    "schema_version": {"const": "research-idea/validation-alignment-v1"},
+    "schema_version": {"enum": ["research-idea/validation-alignment-v1", "research-idea/validation-alignment-v2", "research-idea/validation-alignment-v3"]},
     "alignment_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"},
     "idea_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"},
     "idea_revision": {"type": "integer", "minimum": 1},
@@ -39,8 +39,46 @@
       ]
     },
     "title": {"type": "string", "minLength": 1},
+    "parent_problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["problem_id", "problem_revision", "problem_card", "problem_maturity", "motivation_status"],
+      "properties": {
+        "problem_id": {"type": "string", "minLength": 1},
+        "problem_revision": {"type": "integer", "minimum": 1},
+        "problem_card": {"type": "string", "minLength": 1},
+        "problem_maturity": {"enum": ["bottleneck-framed", "solution-ready"]},
+        "motivation_status": {"enum": ["distinctive-hypothesis", "evidence-backed", "contested"]}
+      }
+    },
     "problem_hypothesis": {"type": "string", "minLength": 1},
     "mechanism_hypothesis": {"type": "string", "minLength": 1},
+    "motivation_design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed_failure",
+        "bottleneck_hypothesis",
+        "distinctive_motivation_insight",
+        "research_value",
+        "required_behavior_change",
+        "design_principle",
+        "module_operation",
+        "implementation_location",
+        "why_existing_components_are_insufficient"
+      ],
+      "properties": {
+        "observed_failure": {"type": "string", "minLength": 1},
+        "bottleneck_hypothesis": {"type": "string", "minLength": 1},
+        "distinctive_motivation_insight": {"type": "string", "minLength": 1},
+        "research_value": {"type": "string", "minLength": 1},
+        "required_behavior_change": {"type": "string", "minLength": 1},
+        "design_principle": {"type": "string", "minLength": 1},
+        "module_operation": {"type": "string", "minLength": 1},
+        "implementation_location": {"type": "string", "minLength": 1},
+        "why_existing_components_are_insufficient": {"type": "string", "minLength": 1}
+      }
+    },
     "target_domain_boundary": {
       "type": "object",
       "additionalProperties": false,
@@ -127,6 +165,9 @@
         "strongest_alternative": {"type": "string", "minLength": 1},
         "activation_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
         "intervention_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "quantitative_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "qualitative_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "qualitative_selection_protocol": {"type": ["string", "object"]},
         "outcome_interpretation": {
           "type": "object",
           "additionalProperties": false,
@@ -174,7 +215,67 @@
       }
     }
   },
+  "$defs": {
+    "qualitativeSelectionProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_before_results", "categories", "required_outcomes", "sampling_rule", "comparison_views"],
+      "properties": {
+        "frozen_before_results": {"const": true},
+        "categories": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "required_outcomes": {
+          "type": "array",
+          "items": {"enum": ["success", "failure", "unchanged-or-regression"]},
+          "minItems": 3,
+          "uniqueItems": true,
+          "allOf": [
+            {"contains": {"const": "success"}},
+            {"contains": {"const": "failure"}},
+            {"contains": {"const": "unchanged-or-regression"}}
+          ]
+        },
+        "sampling_rule": {"type": "string", "minLength": 1},
+        "comparison_views": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 2,
+          "uniqueItems": true,
+          "allOf": [{"contains": {"const": "baseline"}}, {"contains": {"const": "full-method"}}]
+        }
+      }
+    }
+  },
   "allOf": [
+    {
+      "if": {
+        "properties": {"schema_version": {"const": "research-idea/validation-alignment-v2"}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["parent_problem", "motivation_design"],
+        "properties": {
+          "validation": {
+            "required": ["quantitative_evidence", "qualitative_evidence", "qualitative_selection_protocol"],
+            "properties": {"qualitative_selection_protocol": {"type": "string", "minLength": 1}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"schema_version": {"const": "research-idea/validation-alignment-v3"}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["parent_problem", "motivation_design"],
+        "properties": {
+          "validation": {
+            "required": ["quantitative_evidence", "qualitative_evidence", "qualitative_selection_protocol"],
+            "properties": {"qualitative_selection_protocol": {"$ref": "#/$defs/qualitativeSelectionProtocol"}}
+          }
+        }
+      }
+    },
     {
       "if": {
         "properties": {

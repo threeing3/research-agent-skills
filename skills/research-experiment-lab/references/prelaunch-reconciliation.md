@@ -34,8 +34,12 @@ Reject the handoff when:
 - any inherited failure is unresolved;
 - the idea revision, family, contract hash, or mechanism hash differs;
 - the proposed experiment does not test the recorded discriminating prediction.
-- a `staged-novelty/v1` contract does not record target-domain novelty as
+- a `problem-led/v1` contract does not record target-domain novelty as
   `supported` with its boundary, coverage end, and recall confidence.
+- a contract is not `problem-led/v1`; older profiles are legacy-read-only;
+- a `problem-led/v1` contract omits the parent problem revision, distinctive
+  motivation, motivation-to-design derivation, or mechanism/quantitative/qualitative
+  evidence plan.
 
 Historical runs remain valid evidence for their original revision. They do not
 become evidence for a new mechanism merely because files, weights, or datasets

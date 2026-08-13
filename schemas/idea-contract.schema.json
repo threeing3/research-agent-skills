@@ -7,7 +7,9 @@
   "required": ["schema_version", "idea_id", "revision", "status", "title", "problem", "core_hypothesis", "mechanism", "experiment_entry"],
   "properties": {
     "schema_version": {"enum": ["research-idea/v2", "research-idea/v3", "research-idea/v4"]},
-    "contract_profile": {"enum": ["staged-novelty/v1"]},
+    "contract_profile": {
+      "enum": ["problem-led/v1", "staged-novelty/v1", "legacy-read-only/v1"]
+    },
     "project_id": {"type": "string", "minLength": 1},
     "idea_id": {"type": "string", "minLength": 1},
     "revision": {"type": "integer", "minimum": 1},
@@ -26,6 +28,53 @@
       }
     },
     "title": {"type": "string", "minLength": 1},
+    "problem_derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "problem_id",
+        "problem_revision",
+        "problem_card",
+        "problem_maturity",
+        "observed_failure",
+        "bottleneck_hypothesis",
+        "distinctive_motivation_insight",
+        "motivation_status",
+        "research_value",
+        "required_behavior_change",
+        "design_principle",
+        "module_operation",
+        "implementation_location",
+        "motivation_to_design_chain",
+        "evidence_triad"
+      ],
+      "properties": {
+        "problem_id": {"type": "string", "minLength": 1},
+        "problem_revision": {"type": "integer", "minimum": 1},
+        "problem_card": {"type": "string", "minLength": 1},
+        "problem_maturity": {"enum": ["bottleneck-framed", "solution-ready"]},
+        "observed_failure": {"type": "string", "minLength": 1},
+        "bottleneck_hypothesis": {"type": "string", "minLength": 1},
+        "distinctive_motivation_insight": {"type": "string", "minLength": 1},
+        "motivation_status": {"enum": ["distinctive-hypothesis", "evidence-backed", "contested"]},
+        "research_value": {"type": "string", "minLength": 1},
+        "required_behavior_change": {"type": "string", "minLength": 1},
+        "design_principle": {"type": "string", "minLength": 1},
+        "module_operation": {"type": "string", "minLength": 1},
+        "implementation_location": {"type": "string", "minLength": 1},
+        "motivation_to_design_chain": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 4},
+        "evidence_triad": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mechanism", "quantitative", "qualitative"],
+          "properties": {
+            "mechanism": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+            "quantitative": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+            "qualitative": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1}
+          }
+        }
+      }
+    },
     "development": {
       "type": "object",
       "additionalProperties": true,
@@ -93,6 +142,28 @@
   "allOf": [
     {
       "if": {
+        "properties": {"schema_version": {"const": "research-idea/v4"}},
+        "required": ["schema_version"]
+      },
+      "then": {"required": ["contract_profile"]}
+    },
+    {
+      "if": {
+        "properties": {"contract_profile": {"const": "problem-led/v1"}},
+        "required": ["contract_profile"]
+      },
+      "then": {
+        "required": ["development", "problem_derivation", "target_domain_boundary", "novelty_review", "decision"],
+        "properties": {
+          "novelty_review": {
+            "required": ["status", "coverage_end", "recall_confidence"],
+            "properties": {"status": {"const": "supported"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
         "properties": {"contract_profile": {"const": "staged-novelty/v1"}},
         "required": ["contract_profile"]
       },
@@ -102,6 +173,26 @@
           "novelty_review": {
             "required": ["status", "coverage_end", "recall_confidence"],
             "properties": {"status": {"const": "supported"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "contract_profile": {
+            "enum": ["staged-novelty/v1", "legacy-read-only/v1"]
+          }
+        },
+        "required": ["contract_profile"]
+      },
+      "then": {
+        "required": ["lifecycle"],
+        "properties": {
+          "lifecycle": {
+            "properties": {
+              "validity": {"enum": ["invalidated", "superseded"]}
+            }
           }
         }
       }

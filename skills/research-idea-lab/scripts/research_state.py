@@ -23,6 +23,7 @@ def init(root: Path) -> None:
     for relative in (
         "literature",
         "ideation_sessions",
+        "problems",
         "review_patterns",
         "ideas",
         "experiments",
@@ -40,6 +41,7 @@ def init(root: Path) -> None:
             "paths": {
                 "field_snapshot": "research_state/literature/field_snapshot.json",
                 "ideation_sessions": "research_state/ideation_sessions",
+                "problems": "research_state/problems",
                 "review_patterns": "research_state/review_patterns",
                 "idea_pool": "research_state/ideas/idea_pool.json",
                 "idea_state_consistency": CANONICAL_CONSISTENCY_PATH,
@@ -55,6 +57,7 @@ def init(root: Path) -> None:
     paths = state.setdefault("paths", {})
     required_paths = {
         "ideation_sessions": "research_state/ideation_sessions",
+        "problems": "research_state/problems",
         "review_patterns": "research_state/review_patterns",
         "idea_state_consistency": CANONICAL_CONSISTENCY_PATH,
     }

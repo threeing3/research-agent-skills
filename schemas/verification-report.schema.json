@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": ["schema_version", "verified_at", "experiment_id", "plan_revision", "idea_id", "idea_revision", "method_identity", "stage", "passed", "blockers", "checks"],
   "properties": {
-    "schema_version": {"const": "research-experiment/experiment-verification-v2"},
+    "schema_version": {"enum": ["research-experiment/experiment-verification-v2", "research-experiment/experiment-verification-v3"]},
+    "plan_schema_version": {"enum": ["research-experiment/plan-v2", "research-experiment/plan-v3"]},
     "admission_mode": {"enum": ["exploratory-validation", "formal", "diagnostic"]},
     "verified_at": {"type": "string", "minLength": 1},
     "experiment_id": {"type": ["string", "null"]},
@@ -16,6 +17,30 @@
     "idea_contract_sha256": {"type": ["string", "null"], "pattern": "^$|^[0-9a-f]{64}$", "deprecated": true},
     "experiment_plan_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$", "deprecated": true},
     "method_identity": {"type": "object"},
+    "evidence_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mechanism", "quantitative", "qualitative"],
+      "properties": {
+        "mechanism": {"type": "integer", "minimum": 0},
+        "quantitative": {"type": "integer", "minimum": 0},
+        "qualitative": {"type": "integer", "minimum": 0}
+      }
+    },
+    "evidence_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["family", "obligation_id", "passed", "required_artifacts"],
+        "properties": {
+          "family": {"enum": ["mechanism", "quantitative", "qualitative"]},
+          "obligation_id": {"type": "string", "minLength": 1},
+          "passed": {"type": "boolean"},
+          "required_artifacts": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+        }
+      }
+    },
     "stage": {"enum": ["verified-diagnostic", "verified-scientific", "paper-ready", "blocked"]},
     "passed": {"type": "boolean"},
     "blockers": {"type": "array", "items": {"type": "string"}},
@@ -32,5 +57,54 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "research-experiment/experiment-verification-v3"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["plan_schema_version", "admission_mode", "evidence_summary", "evidence_results"],
+        "properties": {"checks": {"minItems": 1}}
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {"const": "research-experiment/experiment-verification-v3"},
+          "passed": {"const": true}
+        },
+        "required": ["schema_version", "passed"]
+      },
+      "then": {
+        "properties": {
+          "blockers": {"maxItems": 0},
+          "checks": {"items": {"properties": {"passed": {"const": true}}}},
+          "evidence_results": {"items": {"properties": {"passed": {"const": true}}}}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {"const": "research-experiment/experiment-verification-v3"},
+          "stage": {"const": "paper-ready"}
+        },
+        "required": ["schema_version", "stage"]
+      },
+      "then": {
+        "properties": {
+          "admission_mode": {"const": "formal"},
+          "plan_schema_version": {"const": "research-experiment/plan-v3"},
+          "passed": {"const": true},
+          "evidence_summary": {
+            "properties": {
+              "mechanism": {"minimum": 1},
+              "quantitative": {"minimum": 1},
+              "qualitative": {"minimum": 1}
+            }
+          },
+          "evidence_results": {"minItems": 3}
+        }
+      }
+    }
+  ]
 }

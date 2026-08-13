@@ -125,7 +125,11 @@ def main() -> int:
         decision = contract.get("decision") if isinstance(contract.get("decision"), dict) else {}
         lifecycle = contract.get("lifecycle") if isinstance(contract.get("lifecycle"), dict) else {}
 
-        admission_mode = plan.get("admission_mode", "formal")
+        plan_schema = plan.get("schema_version")
+        checks.append(check_result("plan-schema-v3", plan_schema == "research-experiment/plan-v3", repr(plan_schema)))
+        if plan_schema != "research-experiment/plan-v3":
+            blockers.append("legacy-plan-migration-required")
+        admission_mode = plan.get("admission_mode")
         checks.append(check_result("formal-admission-mode", admission_mode == "formal", repr(admission_mode)))
         if admission_mode != "formal":
             blockers.append("wrong-prelaunch-protocol")
@@ -151,7 +155,11 @@ def main() -> int:
         checks.append(check_result("idea-user-selected", decision.get("selected_by_user") is True, str(decision.get("selected_by_user"))))
         checks.append(check_result("anti-reskin-gate", gate.get("status") == "pass" and gate.get("independence_valid") is True and gate.get("review_context_policy") == "cold", repr(gate.get("status"))))
 
-        if contract.get("contract_profile") == "staged-novelty/v1":
+        contract_profile = contract.get("contract_profile")
+        checks.append(check_result("problem-led-profile", contract_profile == "problem-led/v1", repr(contract_profile)))
+        if contract_profile != "problem-led/v1":
+            blockers.append("legacy-contract-read-only")
+        if contract_profile == "problem-led/v1":
             novelty_review = contract.get("novelty_review") if isinstance(contract.get("novelty_review"), dict) else {}
             target_boundary = contract.get("target_domain_boundary") if isinstance(contract.get("target_domain_boundary"), dict) else {}
             novelty_supported = (
@@ -170,6 +178,33 @@ def main() -> int:
             )
             if not novelty_supported:
                 blockers.append("novelty-not-supported")
+
+        if contract_profile == "problem-led/v1":
+            derivation = contract.get("problem_derivation") if isinstance(contract.get("problem_derivation"), dict) else {}
+            required_derivation = (
+                "problem_id",
+                "problem_revision",
+                "problem_card",
+                "problem_maturity",
+                "observed_failure",
+                "bottleneck_hypothesis",
+                "distinctive_motivation_insight",
+                "motivation_status",
+                "research_value",
+                "required_behavior_change",
+                "design_principle",
+                "module_operation",
+                "implementation_location",
+            )
+            derivation_complete = all(derivation.get(field) not in (None, "") for field in required_derivation)
+            chain = derivation.get("motivation_to_design_chain")
+            derivation_complete = derivation_complete and isinstance(chain, list) and len(chain) >= 4 and all(chain)
+            triad = derivation.get("evidence_triad") if isinstance(derivation.get("evidence_triad"), dict) else {}
+            triad_complete = all(isinstance(triad.get(family), list) and bool(triad[family]) for family in ("mechanism", "quantitative", "qualitative"))
+            checks.append(check_result("problem-led-derivation", derivation_complete, repr(derivation)))
+            checks.append(check_result("problem-led-evidence-triad", triad_complete, repr(triad)))
+            if not derivation_complete or not triad_complete:
+                blockers.append("problem-led-contract-incomplete")
 
         inherited = lineage.get("inherited_failures", []) if isinstance(lineage, dict) else []
         unresolved = [str(item.get("failure_id")) for item in inherited if isinstance(item, dict) and item.get("status") == "unresolved"]

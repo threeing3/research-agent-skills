@@ -22,6 +22,7 @@
         "idea_state_consistency": {"type": "string", "minLength": 1},
         "ideation_sessions": {"type": "string", "minLength": 1},
         "paper_state": {"type": "string", "minLength": 1},
+        "problems": {"type": "string", "minLength": 1},
         "review_patterns": {"type": "string", "minLength": 1}
       },
       "additionalProperties": {"type": "string", "minLength": 1}

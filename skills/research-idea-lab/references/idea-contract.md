@@ -4,7 +4,7 @@ Create `research_state/ideas/<idea-id>/idea_contract.yaml`:
 
 ```yaml
 schema_version: research-idea/v4
-contract_profile: staged-novelty/v1
+contract_profile: problem-led/v1
 idea_id: videoqa-example
 revision: 1
 status: experiment-ready
@@ -16,6 +16,25 @@ lifecycle:
   invalidation_reason: null
   superseded_by_revision: null
 title: ""
+problem_derivation:
+  problem_id: ""
+  problem_revision: 1
+  problem_card: "research_state/problems/<problem-id>/problem_card.yaml"
+  problem_maturity: solution-ready
+  observed_failure: ""
+  bottleneck_hypothesis: ""
+  distinctive_motivation_insight: ""
+  motivation_status: evidence-backed
+  research_value: ""
+  required_behavior_change: ""
+  design_principle: ""
+  module_operation: ""
+  implementation_location: ""
+  motivation_to_design_chain: []
+  evidence_triad:
+    mechanism: []
+    quantitative: []
+    qualitative: []
 development:
   maturity: formal-experiment-ready
   idea_type: mechanism-invention
@@ -205,7 +224,11 @@ decision:
   selected_at: ""
 ```
 
-The contract is an evidence-bearing formal-experiment handoff snapshot, not a promise of acceptance and not the canonical current status. Pre-gate exploratory validation uses `research-idea/validation-alignment-v1` instead and must not create an active idea contract. `status` records the state at issuance. `lifecycle` records whether that snapshot remains usable:
+The contract is an evidence-bearing formal-experiment handoff snapshot, not a promise
+of acceptance and not the canonical current status. New pre-gate exploratory
+validation uses `research-idea/validation-alignment-v3` instead and must not create an
+active idea contract. Historical v1/v2 alignments remain read-only. `status` records the
+state at issuance. `lifecycle` records whether that snapshot remains usable:
 
 - `active`: the idea pool still says `experiment-ready`; the contract may be handed to experiments after all checks pass.
 - `invalidated`: later literature, evidence, permissions, ethics, or experiment results block the issued handoff.
@@ -215,7 +238,12 @@ When invalidating or superseding a contract, update only its lifecycle metadata 
 
 Scores require evidence and cannot override a fatal gate. Any material mechanism change increments its revision and invalidates stale debate judgments and experiment plans. Before experiment handoff, require an `active` lifecycle, run `scripts/check_idea_lineage.py`, then run `scripts/check_idea_state_consistency.py` against the project state.
 
-New staged contracts use `contract_profile: staged-novelty/v1`. Require
+Every new `research-idea/v4` formal handoff must use
+`contract_profile: problem-led/v1`. A historical staged contract may be relabeled
+`legacy-read-only/v1` for inspection, but it cannot enter experiment handoff. Require the parent
+problem ID and revision, evidence-backed failure, distinctive motivation, research
+value, complete motivation-to-design derivation, and mechanism/quantitative/
+qualitative evidence triad. Also require
 `novelty_review.status: supported`, the predeclared target-domain boundary,
 coverage end, recall confidence, complete-mechanism comparison, separate source
 provenance/transfer-value/contribution/readiness conclusions, and explicit user
@@ -223,6 +251,11 @@ selection. `debate.status: not-requested` is valid when only focused novelty
 review was needed. Full rubric scores, candidate ranking, reviewer simulation,
 and an abandon decision remain optional unless the user explicitly requested
 `gate` mode.
+
+Existing staged contracts remain readable historical records but are not eligible for
+new experiment admission. Do not rewrite their scientific content merely to add
+problem-led fields. Materially revise and validate the idea against its current
+problem card before issuing a new formal handoff.
 
 Keep idea and implementation revisions distinct. Bug fixes, interfaces,
 optimization, and other realization repairs increment the implementation

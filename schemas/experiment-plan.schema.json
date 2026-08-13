@@ -6,14 +6,14 @@
   "additionalProperties": false,
   "required": ["schema_version", "experiment_id", "plan_revision", "mode", "idea_id", "idea_revision", "method_identity", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
   "properties": {
-    "schema_version": {"const": "research-experiment/plan-v2"},
+    "schema_version": {"enum": ["research-experiment/plan-v2", "research-experiment/plan-v3"]},
     "admission_mode": {"enum": ["exploratory-validation", "formal", "diagnostic"]},
     "project_id": {"type": "string", "minLength": 1},
     "experiment_id": {"type": "string", "minLength": 1},
     "plan_revision": {"type": "integer", "minimum": 1},
     "mode": {"enum": ["pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"]},
-    "idea_id": {"type": "string", "minLength": 1},
-    "idea_revision": {"type": "integer", "minimum": 1},
+    "idea_id": {"type": ["string", "null"], "minLength": 1},
+    "idea_revision": {"type": ["integer", "null"], "minimum": 1},
     "implementation_revision": {"type": ["integer", "null"], "minimum": 1},
     "idea_contract_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$", "deprecated": true},
     "validation_alignment": {
@@ -25,6 +25,7 @@
         "alignment_id": {"type": "string", "minLength": 1},
         "idea_revision": {"type": "integer", "minimum": 1},
         "implementation_revision": {"type": "integer", "minimum": 1},
+        "parent_problem": {"$ref": "#/$defs/parentProblemReference"},
         "approved_at": {"type": "string"},
         "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
@@ -57,6 +58,7 @@
     "failure_thresholds": {"type": "array", "items": {"type": "object"}},
     "stop_conditions": {"type": "array", "items": {"type": ["string", "object"]}},
     "confounders_and_controls": {"type": "array", "items": {"type": ["string", "object"]}},
+    "evidence_obligations": {"type": "object"},
     "prelaunch": {
       "type": "object",
       "additionalProperties": false,
@@ -82,26 +84,118 @@
       }
     },
     "required_outputs": {"type": "array", "items": {"type": ["string", "object"]}},
-    "required_runs": {"type": "array", "items": {"type": "object"}}
+    "required_runs": {"type": "array", "items": {"type": "object"}},
+    "created_at": {"type": "string"}
+  },
+  "$defs": {
+    "parentProblemReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["problem_id", "problem_revision", "problem_card", "problem_maturity", "motivation_status"],
+      "properties": {
+        "problem_id": {"type": "string", "minLength": 1},
+        "problem_revision": {"type": "integer", "minimum": 1},
+        "problem_card": {"type": "string", "minLength": 1},
+        "problem_maturity": {"enum": ["bottleneck-framed", "solution-ready"]},
+        "motivation_status": {"enum": ["distinctive-hypothesis", "evidence-backed", "contested"]}
+      }
+    },
+    "evidenceObligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "required_artifacts"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "claim": {"type": "string", "minLength": 1},
+        "required_artifacts": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "qualitativeSelectionProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_before_results", "categories", "required_outcomes", "sampling_rule", "comparison_views"],
+      "properties": {
+        "frozen_before_results": {"const": true},
+        "categories": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "required_outcomes": {
+          "type": "array",
+          "items": {"enum": ["success", "failure", "unchanged-or-regression"]},
+          "minItems": 3,
+          "uniqueItems": true,
+          "allOf": [
+            {"contains": {"const": "success"}},
+            {"contains": {"const": "failure"}},
+            {"contains": {"const": "unchanged-or-regression"}}
+          ]
+        },
+        "sampling_rule": {"type": "string", "minLength": 1},
+        "comparison_views": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 2,
+          "uniqueItems": true,
+          "allOf": [{"contains": {"const": "baseline"}}, {"contains": {"const": "full-method"}}]
+        }
+      }
+    },
+    "qualitativeEvidenceObligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "required_artifacts", "selection_protocol"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "claim": {"type": "string", "minLength": 1},
+        "required_artifacts": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "selection_protocol": {"$ref": "#/$defs/qualitativeSelectionProtocol"}
+      }
+    },
+    "evidenceObligationsV3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mechanism", "quantitative", "qualitative"],
+      "properties": {
+        "mechanism": {"type": "array", "items": {"$ref": "#/$defs/evidenceObligation"}},
+        "quantitative": {"type": "array", "items": {"$ref": "#/$defs/evidenceObligation"}},
+        "qualitative": {"type": "array", "items": {"$ref": "#/$defs/qualitativeEvidenceObligation"}}
+      }
+    }
   },
   "allOf": [
     {
-      "if": {
-        "properties": {"admission_mode": {"const": "exploratory-validation"}},
-        "required": ["admission_mode"]
-      },
+      "if": {"properties": {"schema_version": {"const": "research-experiment/plan-v3"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["admission_mode", "evidence_obligations"],
+        "properties": {"evidence_obligations": {"$ref": "#/$defs/evidenceObligationsV3"}}
+      }
+    },
+    {
+      "if": {"properties": {"admission_mode": {"const": "exploratory-validation"}}, "required": ["admission_mode"]},
       "then": {
         "required": ["implementation_revision", "validation_alignment"],
-        "properties": {"validation_alignment": {"type": "object"}}
+        "properties": {
+          "idea_id": {"type": "string", "minLength": 1},
+          "idea_revision": {"type": "integer", "minimum": 1},
+          "validation_alignment": {"type": "object"}
+        }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {"const": "research-experiment/plan-v3"},
+          "admission_mode": {"const": "exploratory-validation"}
+        },
+        "required": ["schema_version", "admission_mode"]
+      },
+      "then": {"properties": {"validation_alignment": {"required": ["parent_problem"]}}}
     },
     {
       "if": {"properties": {"admission_mode": {"const": "formal"}}, "required": ["admission_mode"]},
       "then": {
         "properties": {
-          "method_identity": {
-            "properties": {"method_tier": {"const": "full"}, "publication_eligible": {"const": true}}
-          }
+          "idea_id": {"type": "string", "minLength": 1},
+          "idea_revision": {"type": "integer", "minimum": 1},
+          "method_identity": {"properties": {"method_tier": {"const": "full"}, "publication_eligible": {"const": true}}}
         }
       }
     }

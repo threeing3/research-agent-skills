@@ -10,17 +10,22 @@ source idea with `active_idea_id`, its v4 contract revision, its
 `active` lifecycle, the current experiment-ready idea-pool row, and a fresh
 passed `research-idea/state-consistency-v2` report. Reconcile the experiment
 with `active_experiment_id`, plan revision, `paper-ready` state, and
-a passed `research-experiment/experiment-verification-v2` report carrying the
+a passed `research-experiment/experiment-verification-v3` report carrying the
 same identities, revisions, and publication method identity. Treat any mismatch, lifecycle invalidation,
 incomplete verification, or unresolved kill condition as a blocker.
 
 Require the experiment plan and verification report to use
 `admission_mode: formal`; an exploratory validation cannot enter a writing
-handoff. For a `staged-novelty/v1` idea contract, require
+handoff. Formal handoff accepts only a `problem-led/v1` idea contract; older
+profiles remain legacy-read-only. Require
 `novelty_review.status: supported` plus its target-domain boundary, coverage
 end, and recall confidence. Preserve source provenance, transfer/adaptation
 value, contribution strength, implementation fidelity, and experimental
 maturity as separate evidence fields; do not collapse them into novelty.
+For `problem-led/v1`, also require the parent problem revision, observed failure,
+distinctive motivation, motivation-to-design chain, and non-empty mechanism,
+quantitative, and qualitative evidence families. The paper may only claim the
+strength of improvement actually supported by the verified experiment artifacts.
 
 ## Handoff Contract
 

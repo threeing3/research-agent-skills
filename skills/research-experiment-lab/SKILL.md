@@ -35,9 +35,11 @@ Read only the references needed for the task:
 2. Declare `admission_mode` as `exploratory-validation`, `formal`, or
    `diagnostic`.
    - `exploratory-validation` requires a frozen, user-approved
-     `research-idea/validation-alignment-v1` artifact, alignment ID, idea
+     `research-idea/validation-alignment-v3` artifact for new problem-led work,
+     alignment ID, parent problem identity, idea
      revision, and implementation revision. It does
-     not require an idea contract or full novelty gate. Run
+     not require an idea contract or full novelty gate. Historical v1/v2 alignments
+     remain read-only and require migration before launch. Run
      `scripts/check_validation_alignment.py`; refuse launch when the artifact,
      user approval, realization evidence, intervention evidence, stop
      conditions, or approved budget do not match the plan.
@@ -46,8 +48,10 @@ Read only the references needed for the task:
      `experiment-ready`, a fresh passed
      `research-idea/state-consistency-v2` report, mechanism family ID,
      mechanism-signature hash, resolved inherited failures, and the applicable
-     anti-reskin gate. New `staged-novelty/v1` contracts must record focused
-     target-domain novelty as `supported`.
+     anti-reskin gate. New formal work accepts only `problem-led/v1`; older profiles
+     remain read-only. The contract must record focused target-domain novelty as `supported` and
+     additionally preserve the parent problem, distinctive motivation, design
+     derivation, and evidence triad.
    - `diagnostic` and reproduction work may instead cite an explicit research
      question when they make no novel-method or paper-ready claim.
 3. Create or update
@@ -58,6 +62,10 @@ Read only the references needed for the task:
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
    and failure thresholds, stop conditions, budget, and confounders before
    observing formal results.
+   Freeze `evidence_obligations` for mechanism, quantitative, and qualitative
+   evidence. Each obligation names its claim and required artifact; qualitative
+   evidence also declares a case-selection protocol that includes failures and
+   prevents cherry-picking.
    Declare evidenced minimum prerequisites and verify that they are jointly
    satisfiable. A smaller run that cannot possibly pass the frozen scientific
    gate is not an eligible pilot.
@@ -200,6 +208,20 @@ Technical completion is not scientific verification. Require the declared
 seeds, fair baselines, stable dataset/split identifiers, recomputable metrics,
 uncertainty, mechanism-specific comparisons, and relevant robustness or
 efficiency evidence.
+
+Before `paper-ready`, require all three evidence families:
+
+- mechanism evidence showing that the proposed module is active and that an
+  intervention changes the targeted behavior;
+- quantitative evidence showing aggregate and bottleneck-targeted effects under
+  fair matched comparisons;
+- qualitative evidence showing the predicted behavior change under the frozen
+  selection protocol, including representative failures.
+
+Do not claim that a module “brings strong improvement” unless the observed verified
+evidence supports that wording. A quantitative gain without intervention evidence
+does not establish the claimed mechanism; hand-picked qualitative successes do not
+establish systematic improvement.
 
 Use these stages exactly:
 

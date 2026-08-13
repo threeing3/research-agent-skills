@@ -27,6 +27,21 @@ def run(name: str, *args: object) -> subprocess.CompletedProcess[str]:
 class ExperimentLabTests(unittest.TestCase):
     def make_project(self, root: Path) -> None:
         (root / "research_state/logs").mkdir(parents=True)
+        problem_card = root / "research_state/problems/problem-1/problem_card.yaml"
+        problem_card.parent.mkdir(parents=True)
+        problem_card.write_text(
+            json.dumps(
+                {
+                    "schema_version": "research-problem/v1",
+                    "problem_id": "problem-1",
+                    "revision": 1,
+                    "maturity": "solution-ready",
+                    "status": "open",
+                    "motivation_insight": {"status": "evidence-backed"},
+                }
+            ),
+            encoding="utf-8",
+        )
         ideas = root / "research_state" / "ideas"
         contract_path = ideas / "idea-1" / "idea_contract.yaml"
         contract_path.parent.mkdir(parents=True)
@@ -45,9 +60,29 @@ class ExperimentLabTests(unittest.TestCase):
             json.dumps(
                 {
                     "schema_version": "research-idea/v4",
+                    "contract_profile": "problem-led/v1",
                     "idea_id": "idea-1",
                     "revision": 1,
                     "status": "experiment-ready",
+                    "target_domain_boundary": {"task": "VideoQA", "problem_setting": "long-video evidence"},
+                    "novelty_review": {"status": "supported", "coverage_end": "2026-08-01", "recall_confidence": "high"},
+                    "problem_derivation": {
+                        "problem_id": "problem-1",
+                        "problem_revision": 1,
+                        "problem_card": "research_state/problems/problem-1/problem_card.yaml",
+                        "problem_maturity": "solution-ready",
+                        "observed_failure": "early evidence is lost",
+                        "bottleneck_hypothesis": "uniform compression erases sparse evidence",
+                        "distinctive_motivation_insight": "selective retention is the bottleneck",
+                        "motivation_status": "evidence-backed",
+                        "research_value": "separates retention from capacity",
+                        "required_behavior_change": "retain relevant evidence",
+                        "design_principle": "condition retention on the query",
+                        "module_operation": "select evidence tokens",
+                        "implementation_location": "before the answer decoder",
+                        "motivation_to_design_chain": ["failure", "bottleneck", "required behavior", "module"],
+                        "evidence_triad": {"mechanism": ["activation"], "quantitative": ["accuracy"], "qualitative": ["paired cases"]},
+                    },
                     "lifecycle": {
                         "validity": "active",
                         "current_pool_status": "experiment-ready",
@@ -97,6 +132,48 @@ class ExperimentLabTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def add_paper_evidence_obligations(self, experiment: Path, plan: dict) -> None:
+        analysis = experiment / "analysis"
+        analysis.mkdir(exist_ok=True)
+        (analysis / "mechanism_evidence.md").write_text(
+            "Activation and intervention evidence for the frozen module.\n",
+            encoding="utf-8",
+        )
+        (analysis / "qualitative_analysis.md").write_text(
+            "Preselected categories include successes, regressions, and unchanged cases.\n",
+            encoding="utf-8",
+        )
+        plan["evidence_obligations"] = {
+            "mechanism": [
+                {
+                    "id": "mechanism-1",
+                    "claim": "the module is active and affects the targeted behavior",
+                    "required_artifacts": ["analysis/mechanism_evidence.md"],
+                }
+            ],
+            "quantitative": [
+                {
+                    "id": "quantitative-1",
+                    "claim": "the full method improves the declared metric",
+                    "required_artifacts": ["analysis/metric_summary.csv"],
+                }
+            ],
+            "qualitative": [
+                {
+                    "id": "qualitative-1",
+                    "claim": "the predicted behavior improves on targeted cases",
+                    "required_artifacts": ["analysis/qualitative_analysis.md"],
+                    "selection_protocol": {
+                        "frozen_before_results": True,
+                        "categories": ["early-evidence", "distractor-heavy"],
+                        "required_outcomes": ["success", "failure", "unchanged-or-regression"],
+                        "sampling_rule": "sample each category before inspecting method success",
+                        "comparison_views": ["baseline", "full-method", "ablation"],
+                    },
+                }
+            ],
+        }
+
     def create_experiment_and_run(
         self,
         root: Path,
@@ -122,6 +199,34 @@ class ExperimentLabTests(unittest.TestCase):
             if admission_mode is not None:
                 init_args.extend(["--admission-mode", admission_mode])
             if admission_mode == "exploratory-validation":
+                alignment_path = (
+                    root
+                    / "research_state"
+                    / "ideas"
+                    / "idea-1"
+                    / "validation"
+                    / "align-1.yaml"
+                )
+                alignment_path.parent.mkdir(parents=True, exist_ok=True)
+                alignment_path.write_text(
+                    json.dumps(
+                        {
+                            "schema_version": "research-idea/validation-alignment-v3",
+                            "alignment_id": "align-1",
+                            "idea_id": "idea-1",
+                            "idea_revision": 1,
+                            "implementation_revision": 1,
+                            "parent_problem": {
+                                "problem_id": "problem-1",
+                                "problem_revision": 1,
+                                "problem_card": "research_state/problems/problem-1/problem_card.yaml",
+                                "problem_maturity": "solution-ready",
+                                "motivation_status": "evidence-backed",
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
                 init_args.extend(
                     [
                         "--implementation-revision", 1,
@@ -188,6 +293,14 @@ class ExperimentLabTests(unittest.TestCase):
             experiment = root / "research_state/experiments/exp-probe"
             plan_path = experiment / "experiment_plan.json"
             plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                plan["validation_alignment"]["parent_problem"]["problem_id"],
+                "problem-1",
+            )
+            self.assertEqual(
+                plan["validation_alignment"]["artifact"],
+                "research_state/ideas/idea-1/validation/align-1.yaml",
+            )
             plan.update(
                 {
                     "datasets": ["fixture"],
@@ -205,6 +318,7 @@ class ExperimentLabTests(unittest.TestCase):
                     "success_thresholds": [],
                 }
             )
+            self.add_paper_evidence_obligations(experiment, plan)
             plan_path.write_text(json.dumps(plan), encoding="utf-8")
             result = run("aggregate_results.py", experiment)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -268,6 +382,7 @@ class ExperimentLabTests(unittest.TestCase):
                     ],
                 }
             )
+            self.add_paper_evidence_obligations(experiment, plan)
             plan_path.write_text(json.dumps(plan), encoding="utf-8")
             result = run("aggregate_results.py", experiment)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -289,7 +404,7 @@ class ExperimentLabTests(unittest.TestCase):
             )
             self.assertEqual(
                 verification["schema_version"],
-                "research-experiment/experiment-verification-v2",
+                "research-experiment/experiment-verification-v3",
             )
             self.assertEqual(verification["experiment_id"], "exp-1")
             self.assertEqual(verification["plan_revision"], 1)
@@ -343,6 +458,7 @@ class ExperimentLabTests(unittest.TestCase):
                     ],
                 }
             )
+            self.add_paper_evidence_obligations(experiment, plan)
             plan_path.write_text(json.dumps(plan), encoding="utf-8")
             result = run("aggregate_results.py", experiment)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -730,6 +846,51 @@ class ExperimentLabTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("screen -DmS", result.stdout)
             self.assertNotIn("tmux new-session", result.stdout)
+
+    def test_paper_ready_requires_explicit_formal_admission(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_project(root)
+            run_dir = self.create_experiment_and_run(root, "run-1", 0.9)
+            self.assertEqual(run("verify_run.py", run_dir, "--require-metrics").returncode, 0)
+            experiment = root / "research_state/experiments/exp-1"
+            plan_path = experiment / "experiment_plan.json"
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan.pop("admission_mode")
+            plan.update({
+                "datasets": ["fixture"], "variants": ["ours"], "metrics": ["accuracy"], "seeds": [1],
+                "required_runs": [{"variant": "ours", "dataset": "fixture", "split": "val", "seed": 1}],
+                "success_thresholds": [],
+            })
+            self.add_paper_evidence_obligations(experiment, plan)
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            self.assertEqual(run("aggregate_results.py", experiment).returncode, 0)
+            result = run("verify_experiment.py", experiment, "--promote-paper-ready")
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("paper-ready-admission", result.stdout)
+
+    def test_failed_evidence_obligation_is_not_counted(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_project(root)
+            run_dir = self.create_experiment_and_run(root, "run-1", 0.9)
+            self.assertEqual(run("verify_run.py", run_dir, "--require-metrics").returncode, 0)
+            experiment = root / "research_state/experiments/exp-1"
+            plan_path = experiment / "experiment_plan.json"
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan.update({
+                "datasets": ["fixture"], "variants": ["ours"], "metrics": ["accuracy"], "seeds": [1],
+                "required_runs": [{"variant": "ours", "dataset": "fixture", "split": "val", "seed": 1}],
+                "success_thresholds": [],
+            })
+            self.add_paper_evidence_obligations(experiment, plan)
+            plan["evidence_obligations"]["mechanism"][0]["required_artifacts"] = ["analysis/missing.json"]
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            self.assertEqual(run("aggregate_results.py", experiment).returncode, 0)
+            result = run("verify_experiment.py", experiment, "--promote-paper-ready")
+            self.assertEqual(result.returncode, 1)
+            report = json.loads((experiment / "verification_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["evidence_summary"]["mechanism"], 0)
 
     def test_download_ingest_refuses_conflicting_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

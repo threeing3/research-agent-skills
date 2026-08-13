@@ -9,6 +9,8 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_TEXT = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
 ANTI_RESKIN_TEXT = (SKILL_ROOT / "references/anti-reskin-protocol.md").read_text(encoding="utf-8")
 NOVELTY_TEXT = (SKILL_ROOT / "references/novelty-workflow.md").read_text(encoding="utf-8")
+PROBLEM_TEXT = (SKILL_ROOT / "references/problem-discovery.md").read_text(encoding="utf-8")
+SOLUTION_TEXT = (SKILL_ROOT / "references/solution-design.md").read_text(encoding="utf-8")
 
 
 def section(start: str, end: str) -> str:
@@ -23,6 +25,29 @@ def section(start: str, end: str) -> str:
 
 
 class SkillModeContractTests(unittest.TestCase):
+    def test_vague_direction_defaults_to_problem_discovery(self) -> None:
+        problem = section("### `problem-discovery`", "### `explore`")
+        self.assertIn("Return a portfolio of research problems before proposing methods", problem)
+        self.assertIn("Prioritize problems exposed or actively studied by the newest credible papers", problem)
+        self.assertIn("Do not require a module or complete solution", problem)
+        self.assertIn("Literature absence alone is not a problem", problem)
+
+    def test_problem_discovery_requires_frontier_and_bottleneck_evidence(self) -> None:
+        self.assertIn("Frontier-first search", PROBLEM_TEXT)
+        self.assertIn("coverage_end", PROBLEM_TEXT)
+        self.assertIn("observed_failure", PROBLEM_TEXT)
+        self.assertIn("bottleneck_hypothesis", PROBLEM_TEXT)
+        self.assertIn("motivation_insight", PROBLEM_TEXT)
+        self.assertIn("Research value before solution design", PROBLEM_TEXT)
+
+    def test_solution_design_is_derived_from_motivation_and_has_evidence_triad(self) -> None:
+        self.assertIn("verified failure", SOLUTION_TEXT)
+        self.assertIn("distinctive motivation insight", SOLUTION_TEXT)
+        self.assertIn("module or system operation", SOLUTION_TEXT)
+        self.assertIn("mechanism", SOLUTION_TEXT)
+        self.assertIn("quantitative", SOLUTION_TEXT)
+        self.assertIn("qualitative", SOLUTION_TEXT)
+
     def test_monitor_is_incremental_and_not_a_rejection_gate(self) -> None:
         self.assertIn("### `monitor`", SKILL_TEXT)
         self.assertIn("`RELAX`, `RESEARCH`, or `FOLLOW-UP`", SKILL_TEXT)
@@ -31,7 +56,8 @@ class SkillModeContractTests(unittest.TestCase):
     def test_interaction_policy_limits_questions_and_silent_escalation(self) -> None:
         self.assertIn("Ask at most one blocking question in a turn", SKILL_TEXT)
         self.assertIn("Do not ask for routine mode changes or skill handoffs", SKILL_TEXT)
-        self.assertIn("never silently escalate to the full `gate`", SKILL_TEXT)
+        self.assertIn("never silently escalate to", SKILL_TEXT)
+        self.assertIn("solution generation or the full `gate`", SKILL_TEXT)
         self.assertIn("Before every validation round", SKILL_TEXT)
 
     def test_explore_cannot_run_strict_rejection(self) -> None:
@@ -56,14 +82,14 @@ class SkillModeContractTests(unittest.TestCase):
         self.assertIn("Only this mode may set `rejected`", gate)
 
     def test_exploration_has_positive_output_contract(self) -> None:
-        self.assertIn("return 3–5 candidates across", SKILL_TEXT)
-        self.assertIn("never return an empty rejection-only answer", SKILL_TEXT)
+        self.assertIn("return 3–5 candidates", SKILL_TEXT)
+        self.assertIn("methods merely to complete the count", SKILL_TEXT)
         self.assertIn("at least one attempted material rescue route", SKILL_TEXT)
 
     def test_portfolio_includes_baseline_changes_and_maturity(self) -> None:
         self.assertIn("`baseline-modification`", SKILL_TEXT)
         self.assertIn("include at least one", SKILL_TEXT)
-        self.assertIn("`seed`, `developing`, and `validation-ready`", SKILL_TEXT)
+        self.assertIn("`seed`, `developing`, or `validation-ready`", SKILL_TEXT)
 
     def test_source_scope_and_target_domain_are_separate(self) -> None:
         self.assertIn("Mechanism discovery may use high-quality primary sources from any field or venue", SKILL_TEXT)

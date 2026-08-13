@@ -16,7 +16,7 @@ SCRIPT = SKILL / "scripts" / "check_validation_alignment.py"
 
 def alignment() -> dict:
     return {
-        "schema_version": "research-idea/validation-alignment-v1",
+        "schema_version": "research-idea/validation-alignment-v3",
         "alignment_id": "align-1",
         "idea_id": "idea-1",
         "idea_revision": 2,
@@ -24,8 +24,26 @@ def alignment() -> dict:
         "maturity": "validation-ready",
         "idea_type": "baseline-modification",
         "title": "Question-conditioned memory",
+        "parent_problem": {
+            "problem_id": "problem-1",
+            "problem_revision": 1,
+            "problem_card": "research_state/problems/problem-1/problem_card.yaml",
+            "problem_maturity": "solution-ready",
+            "motivation_status": "evidence-backed",
+        },
         "problem_hypothesis": "The baseline forgets early evidence.",
         "mechanism_hypothesis": "Selective memory preserves relevant early evidence.",
+        "motivation_design": {
+            "observed_failure": "early visual evidence is lost as context grows",
+            "bottleneck_hypothesis": "uniform compression erases question-relevant early evidence",
+            "distinctive_motivation_insight": "the bottleneck is selective retention, not context capacity alone",
+            "research_value": "separates memory quality from raw context length",
+            "required_behavior_change": "retain question-relevant early evidence",
+            "design_principle": "condition retention on the question before compression",
+            "module_operation": "select and preserve question-relevant tokens",
+            "implementation_location": "between video encoder and answer decoder",
+            "why_existing_components_are_insufficient": "uniform compression cannot protect sparse early evidence",
+        },
         "target_domain_boundary": {
             "task": "long-video question answering",
             "problem_setting": "questions requiring early evidence",
@@ -59,6 +77,15 @@ def alignment() -> dict:
             "strongest_alternative": "extra capacity causes any gain",
             "activation_evidence": ["memory reads early tokens and affects decoder logits"],
             "intervention_evidence": ["shuffling memory removes the targeted gain"],
+            "quantitative_evidence": ["aggregate and early-evidence subset accuracy"],
+            "qualitative_evidence": ["paired baseline/full/ablation cases by failure category"],
+            "qualitative_selection_protocol": {
+                "frozen_before_results": True,
+                "categories": ["early-evidence", "distractor-heavy"],
+                "required_outcomes": ["success", "failure", "unchanged-or-regression"],
+                "sampling_rule": "sample every category before inspecting method success",
+                "comparison_views": ["baseline", "full-method", "ablation"],
+            },
             "outcome_interpretation": {
                 "supportive": "activation passes and targeted gain appears",
                 "negative": "activation passes but targeted gain does not appear",
@@ -84,8 +111,26 @@ def write_fixture(root: Path, value: dict | None = None) -> tuple[Path, Path]:
     alignment_path.write_text(
         yaml.safe_dump(alignment_value, sort_keys=False), encoding="utf-8"
     )
+    card_path = root / alignment_value.get("parent_problem", {}).get(
+        "problem_card", "research_state/problems/problem-1/problem_card.yaml"
+    )
+    card_path.parent.mkdir(parents=True, exist_ok=True)
+    parent = alignment_value.get("parent_problem", {})
+    card_path.write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": "research-problem/v1",
+                "problem_id": parent.get("problem_id", "problem-1"),
+                "revision": parent.get("problem_revision", 1),
+                "maturity": parent.get("problem_maturity", "solution-ready"),
+                "status": "open",
+                "motivation_insight": {"status": parent.get("motivation_status", "evidence-backed")},
+            }
+        ),
+        encoding="utf-8",
+    )
     plan = {
-        "schema_version": "research-experiment/plan-v2",
+        "schema_version": "research-experiment/plan-v3",
         "admission_mode": "exploratory-validation",
         "idea_id": alignment_value["idea_id"],
         "idea_revision": alignment_value["idea_revision"],
@@ -99,6 +144,8 @@ def write_fixture(root: Path, value: dict | None = None) -> tuple[Path, Path]:
         "budget": dict(alignment_value["budget"]),
         "stop_conditions": list(alignment_value["validation"]["stop_conditions"]),
     }
+    if "parent_problem" in alignment_value:
+        plan["validation_alignment"]["parent_problem"] = dict(alignment_value["parent_problem"])
     plan_path = root / "plan.json"
     plan_path.write_text(json.dumps(plan), encoding="utf-8")
     return alignment_path, plan_path
@@ -150,6 +197,22 @@ class ValidationAlignmentTests(unittest.TestCase):
             result = run(*write_fixture(Path(directory), value))
             self.assertEqual(result.returncode, 1)
             self.assertIn("validation:activation_evidence", result.stdout)
+
+    def test_problem_led_derivation_is_required(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            value = alignment()
+            value["motivation_design"]["distinctive_motivation_insight"] = ""
+            result = run(*write_fixture(Path(directory), value))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("motivation-design:distinctive_motivation_insight", result.stdout)
+
+    def test_quantitative_and_qualitative_evidence_are_required(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            value = alignment()
+            value["validation"]["qualitative_evidence"] = []
+            result = run(*write_fixture(Path(directory), value))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("validation:qualitative_evidence", result.stdout)
 
     def test_budget_above_standing_envelope_requires_override(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -206,6 +269,53 @@ class ValidationAlignmentTests(unittest.TestCase):
             result = run(*write_fixture(Path(directory), value))
             self.assertEqual(result.returncode, 1)
             self.assertIn("baseline-required-ablations", result.stdout)
+
+    def test_alignment_artifact_must_match_checked_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            alignment_path, plan_path = write_fixture(root)
+            other = root / "other.yaml"
+            other.write_text(alignment_path.read_text(encoding="utf-8"), encoding="utf-8")
+            result = run(other, plan_path)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("alignment-artifact-binding", result.stdout)
+
+    def test_problem_card_identity_mismatch_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            alignment_path, plan_path = write_fixture(root)
+            card_path = root / "research_state/problems/problem-1/problem_card.yaml"
+            card = yaml.safe_load(card_path.read_text(encoding="utf-8"))
+            card["revision"] = 99
+            card_path.write_text(yaml.safe_dump(card), encoding="utf-8")
+            result = run(alignment_path, plan_path)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("parent-problem:card-identity", result.stdout)
+
+    def test_closed_problem_card_blocks_new_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            alignment_path, plan_path = write_fixture(root)
+            card_path = root / "research_state/problems/problem-1/problem_card.yaml"
+            card = yaml.safe_load(card_path.read_text(encoding="utf-8"))
+            card["status"] = "closed"
+            card_path.write_text(yaml.safe_dump(card), encoding="utf-8")
+            result = run(alignment_path, plan_path)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("parent-problem:card-identity", result.stdout)
+
+    def test_legacy_v1_is_readable_but_launch_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            value = alignment()
+            value["schema_version"] = "research-idea/validation-alignment-v1"
+            value.pop("parent_problem")
+            value.pop("motivation_design")
+            value["validation"].pop("quantitative_evidence")
+            value["validation"].pop("qualitative_evidence")
+            value["validation"].pop("qualitative_selection_protocol")
+            result = run(*write_fixture(Path(directory), value))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("launch-contract-version", result.stdout)
 
 
 if __name__ == "__main__":

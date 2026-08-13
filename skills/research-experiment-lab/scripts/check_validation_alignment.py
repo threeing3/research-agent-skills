@@ -17,6 +17,8 @@ import yaml
 DEFAULT_MAX_DIRECT_COST_CNY = 100.0
 DEFAULT_MAX_WALL_TIME_HOURS = 24.0
 ALLOWED_LIGHTWEIGHT_STATUSES = {"no-obvious-collision", "uncertain"}
+STRICT_ALIGNMENT_SCHEMA = "research-idea/validation-alignment-v3"
+STRICT_PLAN_SCHEMA = "research-experiment/plan-v3"
 
 
 def now() -> str:
@@ -63,6 +65,44 @@ def check(name: str, passed: bool, evidence: str) -> dict[str, Any]:
     return {"name": name, "passed": bool(passed), "evidence": evidence}
 
 
+def project_root(path: Path) -> Path:
+    for candidate in (path.parent, *path.parents):
+        if (candidate / "research_state.json").is_file():
+            return candidate
+    return path.parent
+
+
+def project_file(root: Path, raw: Any) -> Path | None:
+    if not nonempty(raw):
+        return None
+    path = (root / str(raw)).resolve()
+    try:
+        path.relative_to(root.resolve())
+    except ValueError:
+        return None
+    return path
+
+
+def qualitative_protocol_ok(value: Any) -> bool:
+    if not isinstance(value, dict) or value.get("frozen_before_results") is not True:
+        return False
+    categories = value.get("categories")
+    outcomes = value.get("required_outcomes")
+    views = value.get("comparison_views")
+    return (
+        isinstance(categories, list)
+        and bool(categories)
+        and all(nonempty(item) for item in categories)
+        and isinstance(outcomes, list)
+        and {"success", "failure", "unchanged-or-regression"}.issubset(set(outcomes))
+        and nonempty(value.get("sampling_rule"))
+        and isinstance(views, list)
+        and len(views) >= 2
+        and all(nonempty(item) for item in views)
+        and {"baseline", "full-method"}.issubset(set(views))
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--alignment", type=Path, required=True)
@@ -78,13 +118,31 @@ def main() -> int:
         alignment = load_yaml(alignment_path)
         plan = load_json(plan_path)
 
+        alignment_schema = alignment.get("schema_version")
         checks.append(
             check(
                 "alignment-schema",
-                alignment.get("schema_version") == "research-idea/validation-alignment-v1",
-                repr(alignment.get("schema_version")),
+                alignment_schema in {
+                    "research-idea/validation-alignment-v1",
+                    "research-idea/validation-alignment-v2",
+                    STRICT_ALIGNMENT_SCHEMA,
+                },
+                repr(alignment_schema),
             )
         )
+        strict_contract = (
+            alignment_schema == STRICT_ALIGNMENT_SCHEMA
+            and plan.get("schema_version") == STRICT_PLAN_SCHEMA
+        )
+        checks.append(
+            check(
+                "launch-contract-version",
+                strict_contract,
+                f"alignment={alignment_schema!r} plan={plan.get('schema_version')!r}; legacy artifacts are read-only and require migration",
+            )
+        )
+        if not strict_contract:
+            blockers.append("legacy-alignment-migration-required")
         checks.append(
             check(
                 "exploratory-admission-mode",
@@ -117,6 +175,16 @@ def main() -> int:
         if not isinstance(alignment_ref, dict):
             checks.append(check("alignment-reference", False, "missing validation_alignment object"))
         else:
+            root = project_root(plan_path)
+            artifact_path = project_file(root, alignment_ref.get("artifact"))
+            artifact_ok = artifact_path == alignment_path
+            checks.append(
+                check(
+                    "alignment-artifact-binding",
+                    artifact_ok,
+                    f"plan={artifact_path} checked={alignment_path}",
+                )
+            )
             for name, plan_value, alignment_value in (
                 ("alignment-id", alignment_ref.get("alignment_id"), alignment.get("alignment_id")),
                 ("alignment-idea-revision", alignment_ref.get("idea_revision"), alignment.get("idea_revision")),
@@ -168,6 +236,89 @@ def main() -> int:
         for field in ("activation_evidence", "intervention_evidence", "stop_conditions"):
             value = validation.get(field)
             checks.append(check(f"validation:{field}", isinstance(value, list) and bool(value), repr(value)))
+
+        if alignment_schema in {"research-idea/validation-alignment-v2", STRICT_ALIGNMENT_SCHEMA}:
+            parent_problem = alignment.get("parent_problem")
+            if not isinstance(parent_problem, dict):
+                parent_problem = {}
+            for field in ("problem_id", "problem_card", "problem_maturity", "motivation_status"):
+                checks.append(
+                    check(
+                        f"parent-problem:{field}",
+                        nonempty(parent_problem.get(field)),
+                        repr(parent_problem.get(field)),
+                    )
+                )
+            problem_revision = parent_problem.get("problem_revision")
+            checks.append(
+                check(
+                    "parent-problem:problem_revision",
+                    isinstance(problem_revision, int)
+                    and not isinstance(problem_revision, bool)
+                    and problem_revision >= 1,
+                    repr(problem_revision),
+                )
+            )
+            if alignment_schema == STRICT_ALIGNMENT_SCHEMA:
+                root = project_root(plan_path)
+                card_path = project_file(root, parent_problem.get("problem_card"))
+                card: dict[str, Any] = {}
+                card_readable = card_path is not None and card_path.is_file()
+                if card_readable:
+                    card = load_yaml(card_path)
+                checks.append(check("parent-problem:card-readable", card_readable, str(card_path)))
+                motivation = card.get("motivation_insight") if isinstance(card.get("motivation_insight"), dict) else {}
+                card_matches = (
+                    card_readable
+                    and card.get("schema_version") == "research-problem/v1"
+                    and card.get("problem_id") == parent_problem.get("problem_id")
+                    and card.get("revision") == parent_problem.get("problem_revision")
+                    and card.get("maturity") == parent_problem.get("problem_maturity")
+                    and motivation.get("status") == parent_problem.get("motivation_status")
+                    and card.get("status") in {"open", "contested", "parked"}
+                )
+                checks.append(check("parent-problem:card-identity", card_matches, repr(parent_problem)))
+                plan_parent = alignment_ref.get("parent_problem") if isinstance(alignment_ref, dict) else None
+                checks.append(check("plan-parent-problem-binding", plan_parent == parent_problem, f"plan={plan_parent!r} alignment={parent_problem!r}"))
+
+            motivation_design = alignment.get("motivation_design")
+            if not isinstance(motivation_design, dict):
+                motivation_design = {}
+            for field in (
+                "observed_failure",
+                "bottleneck_hypothesis",
+                "distinctive_motivation_insight",
+                "research_value",
+                "required_behavior_change",
+                "design_principle",
+                "module_operation",
+                "implementation_location",
+                "why_existing_components_are_insufficient",
+            ):
+                checks.append(
+                    check(
+                        f"motivation-design:{field}",
+                        nonempty(motivation_design.get(field)),
+                        repr(motivation_design.get(field)),
+                    )
+                )
+
+            for field in ("quantitative_evidence", "qualitative_evidence"):
+                value = validation.get(field)
+                checks.append(
+                    check(
+                        f"validation:{field}",
+                        isinstance(value, list) and bool(value),
+                        repr(value),
+                    )
+                )
+            protocol_value = validation.get("qualitative_selection_protocol")
+            protocol_passed = (
+                qualitative_protocol_ok(protocol_value)
+                if alignment_schema == STRICT_ALIGNMENT_SCHEMA
+                else nonempty(protocol_value)
+            )
+            checks.append(check("validation:qualitative_selection_protocol", protocol_passed, repr(protocol_value)))
 
         outcomes = validation.get("outcome_interpretation")
         if not isinstance(outcomes, dict):

@@ -4,11 +4,15 @@ Use this protocol for a user-approved low-cost run intended to learn whether an 
 
 ## Entry
 
-Require a frozen `research-idea/validation-alignment-v1` artifact owned by `research-idea-lab`. Copy its alignment ID, idea revision, implementation revision, and path into an experiment plan with:
+Require a frozen `research-idea/validation-alignment-v3` artifact owned by
+`research-idea-lab` for new problem-led work. Copy its parent problem identity,
+alignment ID, idea revision, implementation revision, and path into an experiment
+plan. Historical v1/v2 alignments remain readable but are launch-blocked until
+migrated; they do not satisfy the new motivation-to-design and evidence-triad contract. Use:
 
 ```json
 {
-  "schema_version": "research-experiment/plan-v2",
+  "schema_version": "research-experiment/plan-v3",
   "admission_mode": "exploratory-validation",
   "idea_id": "",
   "idea_revision": 1,
@@ -17,7 +21,14 @@ Require a frozen `research-idea/validation-alignment-v1` artifact owned by `rese
     "artifact": "research_state/ideas/example/validation/example.yaml",
     "alignment_id": "example",
     "idea_revision": 1,
-    "implementation_revision": 1
+    "implementation_revision": 1,
+    "parent_problem": {
+      "problem_id": "example-problem",
+      "problem_revision": 1,
+      "problem_card": "research_state/problems/example-problem/problem_card.yaml",
+      "problem_maturity": "solution-ready",
+      "motivation_status": "evidence-backed"
+    }
   },
   "method_identity": {
     "method_tier": "simplified",
@@ -42,11 +53,16 @@ Never infer approval from prior interest, a cheap current machine, or a previous
 
 Before launch, copy these items from the alignment into the plan or task descriptions:
 
+- the selected problem, distinctive motivation, and derivation from bottleneck to
+  module;
 - the mechanism question and falsifiable prediction;
 - strongest alternative explanation;
 - activation evidence showing the program actually realizes and uses the mechanism;
 - intervention evidence showing disable, shuffle, replacement, or another controlled perturbation changes the predicted behavior;
 - supportive, negative, and inconclusive interpretations;
+- quantitative evidence obligations for aggregate and bottleneck-targeted effects;
+- qualitative evidence obligations and the predeclared non-cherry-picking case
+  selection protocol;
 - stop conditions.
 
 Use cheap functional checks where applicable: verify inputs reach the module, outputs affect decisions, training signals update the intended parameters, a small positive-control case can express the behavior, and matched disable/shuffle/replacement controls have the predicted effect. Do not demand every neural diagnostic for a non-neural mechanism; use the smallest checks that establish faithful realization.

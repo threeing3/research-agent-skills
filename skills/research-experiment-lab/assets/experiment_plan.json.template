@@ -1,5 +1,5 @@
 {
-  "schema_version": "research-experiment/plan-v2",
+  "schema_version": "research-experiment/plan-v3",
   "admission_mode": "formal",
   "experiment_id": "example-experiment",
   "plan_revision": 1,
@@ -30,6 +30,11 @@
   "failure_thresholds": [],
   "stop_conditions": [],
   "confounders_and_controls": [],
+  "evidence_obligations": {
+    "mechanism": [],
+    "quantitative": [],
+    "qualitative": []
+  },
   "prelaunch": {
     "required_gates": [
       "anti-reskin",

@@ -1,6 +1,9 @@
 # Exploration and Development Workflow
 
-Use this workflow in `explore` and `develop`. Its purpose is to create useful research possibilities before the strict admission gate.
+Use this workflow in `explore` and `develop` after a problem has been selected or
+supplied. Its purpose is to derive useful solution possibilities from an
+evidence-backed motivation before the strict admission gate. Use
+`problem-discovery.md` first when no concrete problem exists.
 
 ## Exploration stance
 
@@ -13,18 +16,29 @@ Use this workflow in `explore` and `develop`. Its purpose is to create useful re
 
 ## Opportunity-first loop
 
-1. Identify a documented failure, neglected setting, changed assumption, missing capability, or evaluation blind spot.
-2. Record what existing work already covers and what remains under-tested.
-3. Generate mechanisms that causally target the uncovered part.
-4. State one observation that would differ from the strongest simple explanation.
-5. Attach the smallest evidence route that could decide whether the candidate deserves development.
-6. Diversify before pruning.
+1. Load the selected problem card and its observed failure.
+2. Select a bottleneck hypothesis and distinctive motivation insight; retain the
+   strongest competing explanation.
+3. Derive the behavior that a successful intervention must change.
+4. Generate mechanisms that causally produce that behavior.
+5. Map each mechanism to a minimal module, system operation, baseline change, or
+   diagnostic contribution.
+6. State one observation that would differ from the strongest simple explanation.
+7. Predeclare mechanism, quantitative, and qualitative evidence.
+8. Diversify before pruning.
 
-Do not require a complete paper story for raw seeds. Require a concrete problem plus a tentative solution route before returning a seed, and name every missing link. Require a complete falsifiable story only before `validation-ready` or `gate-ready`.
+Do not require a complete paper story for raw seeds. Require a selected problem plus
+a tentative solution route before returning a seed, and name every missing arrow in
+the motivation-to-design chain. Require a complete falsifiable story only before
+`validation-ready` or `gate-ready`.
 
 ## Candidate portfolio
 
-Target at least six raw seeds internally. Return 3–5 candidates across mixed maturity after lightweight coherence and duplicate checks. If fewer than three can be supported honestly, return every supportable candidate plus the missing search/evidence routes; do not replace the portfolio with a rejection report.
+Target at least six raw solution seeds internally for the selected problem. Return
+3–5 candidates across mixed maturity after lightweight coherence and duplicate
+checks. If fewer than three can be supported honestly, return every supportable
+candidate plus the missing search/evidence routes; do not invent a familiar module or
+replace the portfolio with a rejection report.
 
 Classify every returned candidate as `mechanism-invention`, `baseline-modification`, `mechanism-combination`, `cross-domain-transfer`, or `simplification-or-diagnostic`. When a credible baseline is known, include at least one baseline modification or mechanism combination. Follow `iterative-development.md` for the required blueprint and version semantics.
 
@@ -47,16 +61,28 @@ Return each candidate in this compact form:
 
 ```yaml
 seed_id: provisional-01
+parent_problem_id: ""
+parent_problem_revision: 1
 title: ""
 maturity: seed|developing|validation-ready
 idea_type: mechanism-invention|baseline-modification|mechanism-combination|cross-domain-transfer|simplification-or-diagnostic
-problem: ""
+observed_failure: ""
 documented_failure: ""
 uncovered_opportunity: ""
+bottleneck_hypothesis: ""
+distinctive_motivation_insight: ""
+motivation_status: distinctive-hypothesis|evidence-backed|contested
+research_value_without_sota_gain: ""
+required_behavior_change: ""
 core_mechanism: ""
 why_this_mechanism_targets_the_failure: ""
+motivation_to_design_chain: []
 strongest_alternative: ""
 discriminating_prediction: ""
+evidence_triad:
+  mechanism: []
+  quantitative: []
+  qualitative: []
 minimum_viable_research_question: ""
 cheapest_evidence_route: ""
 closest_work_risk: ""
@@ -102,7 +128,10 @@ Stop exploration when all are true:
 
 - 3–5 coherent candidates are available, or an explicit evidence limit explains the smaller honest set;
 - the diversity ledger shows material rather than cosmetic variation;
+- every candidate traces from the selected problem and motivation to its mechanism;
 - each `developing` candidate has a discriminating prediction and cheapest evidence route; each `seed` names the missing link and next question that would develop it;
+- every validation-ready candidate predeclares mechanism, quantitative, and
+  qualitative evidence rather than promising unspecified “better results”;
 - each crowded candidate has a rescue or differentiation path;
 - the next query is unlikely to change which candidates deserve development.
 

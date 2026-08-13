@@ -1,13 +1,20 @@
 # Iterative Idea Development and Validation Alignment
 
-Use this protocol to keep rough ideas alive without confusing a failed implementation with a failed mechanism. Exploration may return incomplete seeds; only a user-approved validation run requires a complete alignment artifact.
+Use this protocol to keep rough ideas alive without confusing a failed solution,
+implementation, or measurement with a failed research problem. Exploration may
+return incomplete solution seeds; only a user-approved validation run requires a
+complete alignment artifact.
 
 ## Maturity ladder
 
 Track maturity separately from novelty and pool status:
 
-- `seed`: records a concrete problem and a tentative way to address it. Missing mechanism, interface, search, or evidence links are allowed when named explicitly.
-- `developing`: records the problem hypothesis, mechanism hypothesis, closest baseline, material unknowns, and at least one distinguishing prediction.
+- `seed`: references a concrete problem and records a tentative way to address its
+  bottleneck. Missing mechanism, interface, search, or evidence links are allowed
+  when named explicitly.
+- `developing`: records the parent problem revision, distinctive motivation,
+  motivation-to-design chain, mechanism hypothesis, closest baseline, material
+  unknowns, and at least one distinguishing prediction.
 - `validation-ready`: records the exact idea and implementation revisions, validation question, realization checks, outcome interpretations, stop conditions, budget, and user approval.
 
 A weak or incomplete seed is not a rejection. Move it forward by resolving the next decision-relevant unknown. Do not label it `validation-ready` merely because code can be written.
@@ -26,7 +33,7 @@ When a credible baseline is known, every returned portfolio of 3–5 candidates 
 
 An incomplete module idea may appear as a `seed`. It becomes `developing` only after the causal chain is explicit:
 
-`baseline failure -> mechanism intervention -> implementation location -> predicted behavior -> isolating control`
+`observed failure -> bottleneck -> distinctive motivation -> required behavior -> mechanism intervention -> implementation location -> predicted behavior -> isolating control`
 
 ## Baseline change blueprint
 
@@ -69,14 +76,16 @@ The classification is mandatory even when the probe is skipped.
 
 ## Validation alignment artifact
 
-Before any exploratory validation, create and freeze:
+Before any new exploratory validation, create and freeze:
 
 `research_state/ideas/<idea-id>/validation/<alignment-id>.yaml`
 
-Use `research-idea/validation-alignment-v1` and validate it against the shared schema. The artifact must include:
+Use `research-idea/validation-alignment-v3` and validate it against the shared schema.
+Versions 1 and 2 remain read-only for historical validations but must be migrated
+before a new problem-led round. The artifact must include:
 
 ```yaml
-schema_version: research-idea/validation-alignment-v1
+schema_version: research-idea/validation-alignment-v3
 alignment_id: ""
 idea_id: ""
 idea_revision: 1
@@ -84,8 +93,24 @@ implementation_revision: 1
 maturity: validation-ready
 idea_type: baseline-modification
 title: ""
+parent_problem:
+  problem_id: ""
+  problem_revision: 1
+  problem_card: "research_state/problems/<problem-id>/problem_card.yaml"
+  problem_maturity: solution-ready
+  motivation_status: evidence-backed
 problem_hypothesis: ""
 mechanism_hypothesis: ""
+motivation_design:
+  observed_failure: ""
+  bottleneck_hypothesis: ""
+  distinctive_motivation_insight: ""
+  research_value: ""
+  required_behavior_change: ""
+  design_principle: ""
+  module_operation: ""
+  implementation_location: ""
+  why_existing_components_are_insufficient: ""
 target_domain_boundary:
   task: ""
   problem_setting: ""
@@ -105,6 +130,14 @@ validation:
   strongest_alternative: ""
   activation_evidence: []
   intervention_evidence: []
+  quantitative_evidence: []
+  qualitative_evidence: []
+  qualitative_selection_protocol:
+    frozen_before_results: true
+    categories: ["target failure", "ordinary cases"]
+    required_outcomes: [success, failure, unchanged-or-regression]
+    sampling_rule: "sample fixed cases from every category before viewing method outcomes"
+    comparison_views: [baseline, full-method]
   outcome_interpretation:
     supportive: ""
     negative: ""
@@ -131,6 +164,18 @@ The alignment must answer two questions before launch:
 1. What observation shows that the program actually implements and activates the intended mechanism?
 2. What behavior should change when the mechanism is disabled, shuffled, or replaced?
 
+It must also predeclare how the proposed module will be evaluated at three levels:
+
+1. mechanism evidence showing that the design is active and causally responsible;
+2. quantitative evidence showing aggregate and bottleneck-targeted improvement under
+   fair comparisons;
+3. qualitative evidence showing the predicted behavior change under a declared case
+   selection protocol, including failures rather than cherry-picked successes.
+
+Do not promise that an experiment will produce a “good” improvement. Predeclare the
+evidence that would support, weaken, or refute the claim, then report the observed
+effect honestly.
+
 Interpret the run in this order:
 
 - `implementation-not-confirmed`: realization evidence failed; update the implementation, not the mechanism claim;
@@ -138,8 +183,18 @@ Interpret the run in this order:
 - `mechanism-counterevidence`: realization passed but the distinguishing prediction failed;
 - `supportive-signal`: realization passed and the distinguishing prediction appeared.
 
-A negative or inconclusive run never deletes the idea automatically. Continue only when new evidence, a material mechanism change, or a justified implementation repair changes what the next run can learn. Every new run requires a fresh user-approved alignment; there is no fixed scientific rescue count.
+A negative or inconclusive run never deletes the idea or parent problem automatically.
+Continue only when new evidence, a material mechanism change, or a justified
+implementation repair changes what the next run can learn. Update the problem only
+when evidence bears on the observed failure or bottleneck rather than merely the first
+solution. Every new run requires a fresh user-approved alignment; there is no fixed
+scientific rescue count.
 
 ## Handoff boundary
 
-`research-idea-lab` owns the idea revision and frozen alignment artifact. `research-experiment-lab` copies its SHA-256 into an `exploratory-validation` plan, validates the alignment, and owns execution and logs. Exploratory validation may prioritize development, but it cannot prove novelty, set `experiment-ready`, or enter a paper-ready writing handoff.
+`research-idea-lab` owns the idea revision and frozen alignment artifact.
+`research-experiment-lab` binds the exact artifact path, alignment ID, parent problem,
+idea revision, and implementation revision into an `exploratory-validation` plan,
+validates the alignment, and owns execution and logs. Exploratory validation may
+prioritize development, but it cannot prove novelty, set `experiment-ready`, or enter
+a paper-ready writing handoff.

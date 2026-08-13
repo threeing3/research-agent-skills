@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Idea Lab"
-  short_description: "Develop, monitor, and validate research ideas"
-  default_prompt: "Use $research-idea-lab to explore or develop baseline-grounded ideas, monitor new literature, and prepare a user-approved validation."
+  short_description: "Discover problems and derive research ideas"
+  default_prompt: "Use $research-idea-lab to inspect the latest literature for evidence-backed problems and bottlenecks, derive motivation-led solution ideas, and prepare a user-approved validation."

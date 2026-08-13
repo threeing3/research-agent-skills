@@ -32,6 +32,8 @@ class ResearchStateTests(unittest.TestCase):
                 state["paths"]["idea_state_consistency"],
                 "research_state/ideas/state_consistency.json",
             )
+            self.assertEqual(state["paths"]["problems"], "research_state/problems")
+            self.assertTrue((root / "research_state/problems").is_dir())
 
     def test_legacy_index_path_is_migrated_without_deleting_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -62,6 +64,8 @@ class ResearchStateTests(unittest.TestCase):
                 state["paths"]["idea_state_consistency"],
                 "research_state/ideas/state_consistency.json",
             )
+            self.assertEqual(state["paths"]["problems"], "research_state/problems")
+            self.assertTrue((root / "research_state/problems").is_dir())
             self.assertTrue(legacy.is_file())
             event = json.loads(
                 (root / "research_state/logs/research_events.jsonl")
