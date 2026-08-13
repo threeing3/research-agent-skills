@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "problem-card.schema.json",
+  "title": "Research Problem Card",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "recentSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "title",
+        "published_at",
+        "source_type",
+        "evidence_depth",
+        "domain_role"
+      ],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "published_at": {"type": "string", "format": "date"},
+        "source_type": {
+          "enum": [
+            "peer-reviewed",
+            "accepted",
+            "preprint",
+            "benchmark-update",
+            "artifact"
+          ]
+        },
+        "evidence_depth": {
+          "enum": ["metadata", "abstract", "full-text", "artifact-verified"]
+        },
+        "domain_role": {"enum": ["target-domain", "adjacent-domain"]},
+        "venue": {"type": "string"},
+        "url": {"type": "string", "format": "uri"}
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "problem_id",
+    "revision",
+    "maturity",
+    "status",
+    "problem_statement",
+    "frontier_context",
+    "target_context",
+    "observed_failure",
+    "evidence",
+    "current_approaches",
+    "bottleneck_hypotheses",
+    "motivation_insight",
+    "research_value",
+    "tractability",
+    "solution_idea_ids",
+    "uncertainties",
+    "next_problem_check"
+  ],
+  "properties": {
+    "schema_version": {"const": "research-problem/v1"},
+    "problem_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "maturity": {"enum": ["problem-seed", "evidence-backed", "bottleneck-framed", "solution-ready"]},
+    "status": {"enum": ["open", "contested", "parked", "closed"]},
+    "problem_statement": {"type": "string", "minLength": 1},
+    "frontier_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coverage_end", "recent_window_start", "recent_sources", "recent_source_fallback_reason", "active_research_signal", "why_unresolved_now", "older_foundational_sources"],
+      "properties": {
+        "coverage_end": {"type": "string", "format": "date"},
+        "recent_window_start": {"type": "string", "format": "date"},
+        "recent_sources": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/recentSource"}
+        },
+        "recent_source_fallback_reason": {"type": ["string", "null"]},
+        "active_research_signal": {"enum": ["converging", "newly-exposed", "persistent", "contested", "weak"]},
+        "why_unresolved_now": {"type": "string", "minLength": 1},
+        "older_foundational_sources": {"type": "array", "items": {"type": ["string", "object"]}}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"recent_sources": {"maxItems": 0}},
+            "required": ["recent_sources"]
+          },
+          "then": {
+            "properties": {
+              "recent_source_fallback_reason": {"type": "string", "minLength": 1},
+              "active_research_signal": {"enum": ["persistent", "contested", "weak"]}
+            }
+          },
+          "else": {
+            "properties": {
+              "recent_source_fallback_reason": {"const": null}
+            }
+          }
+        }
+      ]
+    },
+    "target_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task", "problem_setting", "conditions", "affected_capability"],
+      "properties": {
+        "task": {"type": "string", "minLength": 1},
+        "problem_setting": {"type": "string", "minLength": 1},
+        "conditions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "affected_capability": {"type": "string", "minLength": 1}
+      }
+    },
+    "observed_failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phenomenon", "conditions", "consequences"],
+      "properties": {
+        "phenomenon": {"type": "string", "minLength": 1},
+        "conditions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "consequences": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supporting_sources", "counter_evidence", "evidence_depth", "cross_method_status", "cross_dataset_status"],
+      "properties": {
+        "supporting_sources": {"type": "array", "items": {"type": ["string", "object"]}},
+        "counter_evidence": {"type": "array", "items": {"type": ["string", "object"]}},
+        "evidence_depth": {"enum": ["metadata", "abstract", "full-text", "artifact-verified", "mixed"]},
+        "cross_method_status": {"enum": ["unknown", "single", "repeated", "contradictory"]},
+        "cross_dataset_status": {"enum": ["unknown", "single", "repeated", "contradictory"]}
+      }
+    },
+    "current_approaches": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["what_they_solve", "what_remains_unsolved", "common_assumptions"],
+      "properties": {
+        "what_they_solve": {"type": "string"},
+        "what_remains_unsolved": {"type": "string"},
+        "common_assumptions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "bottleneck_hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["hypothesis", "supporting_evidence", "strongest_competing_explanation", "discriminating_observation"],
+        "properties": {
+          "hypothesis": {"type": "string", "minLength": 1},
+          "supporting_evidence": {"type": "array", "items": {"type": ["string", "object"]}},
+          "strongest_competing_explanation": {"type": "string", "minLength": 1},
+          "discriminating_observation": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "motivation_insight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_interpretation", "proposed_interpretation", "explanatory_advantage", "design_implication", "status", "disconfirming_evidence"],
+      "properties": {
+        "default_interpretation": {"type": "string"},
+        "proposed_interpretation": {"type": "string"},
+        "explanatory_advantage": {"type": "string"},
+        "design_implication": {"type": "string"},
+        "status": {"enum": ["unknown", "distinctive-hypothesis", "evidence-backed", "contested"]},
+        "disconfirming_evidence": {"type": "string"}
+      }
+    },
+    "research_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scientific", "practical", "community", "why_now", "value_without_sota_gain", "survives_first_solution_failure", "disconfirming_evidence"],
+      "properties": {
+        "scientific": {"type": "string"},
+        "practical": {"type": "string"},
+        "community": {"type": "string"},
+        "why_now": {"type": "string"},
+        "value_without_sota_gain": {"type": "string"},
+        "survives_first_solution_failure": {"type": "boolean"},
+        "disconfirming_evidence": {"type": "string"}
+      }
+    },
+    "tractability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observable", "measurable", "available_baselines", "available_data", "resource_risk"],
+      "properties": {
+        "observable": {"type": "string"},
+        "measurable": {"type": "string"},
+        "available_baselines": {"type": "array", "items": {"type": "string"}},
+        "available_data": {"type": "array", "items": {"type": "string"}},
+        "resource_risk": {"type": "string"}
+      }
+    },
+    "solution_idea_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "uncertainties": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "next_problem_check": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"maturity": {"enum": ["bottleneck-framed", "solution-ready"]}}, "required": ["maturity"]},
+      "then": {
+        "properties": {
+          "bottleneck_hypotheses": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "supporting_evidence": {"minItems": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"maturity": {"const": "solution-ready"}}, "required": ["maturity"]},
+      "then": {
+        "properties": {
+          "motivation_insight": {
+            "properties": {
+              "proposed_interpretation": {"minLength": 1},
+              "explanatory_advantage": {"minLength": 1},
+              "design_implication": {"minLength": 1},
+              "status": {"enum": ["distinctive-hypothesis", "evidence-backed", "contested"]},
+              "disconfirming_evidence": {"minLength": 1}
+            }
+          },
+          "research_value": {
+            "properties": {
+              "scientific": {"minLength": 1},
+              "practical": {"minLength": 1},
+              "community": {"minLength": 1},
+              "why_now": {"minLength": 1},
+              "value_without_sota_gain": {"minLength": 1},
+              "disconfirming_evidence": {"minLength": 1}
+            }
+          },
+          "tractability": {
+            "properties": {
+              "observable": {"minLength": 1},
+              "measurable": {"minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

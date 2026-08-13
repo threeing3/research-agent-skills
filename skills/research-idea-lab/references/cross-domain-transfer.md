@@ -1,6 +1,6 @@
 # Cross-Domain Research Idea Transfer
 
-Treat another discipline as a mechanism library, not a vocabulary source. A transfer counts toward innovation only when the target-domain adoption search finds no work occupying the complete mapping and the transfer produces a new, testable capability or explanation.
+Treat another discipline as a mechanism library, not a vocabulary source. Search source fields without venue restrictions. A source-field precedent establishes provenance, not target-domain occupation. Target-domain novelty is supported when a bounded adoption search across all credible target-domain sources finds no equivalent complete operative mechanism; whether the transfer adds enough adaptation or contribution value is a separate judgment.
 
 ## Source discovery
 
@@ -60,6 +60,8 @@ Search:
 
 Report adoption-search recall limits. “No matching title found” is not evidence of non-adoption.
 
+Predeclare the target domain by task, problem setting, and key constraints rather than venue, dataset, model, or terminology. A target-domain paper outside the preferred AI venue list still counts. A source-domain paper that never instantiates the mechanism in the target task does not count as target-domain occupation.
+
 ### Assumption audit
 
 List assumptions that fail during transfer. Examples include stationarity, observability, differentiability, exact state, clean supervision, bounded delay, or known dynamics. Specify the required adaptation rather than importing the source method unchanged.
@@ -74,7 +76,7 @@ Compare against the nearest native target-domain method. The transfer must add a
 - a new evaluation or diagnostic;
 - a principled solution to a documented failure.
 
-Renaming components or combining modules without necessity fails this test.
+Renaming components or combining modules without necessity fails this added-value test, but it does not retroactively change a supported target-domain novelty conclusion into “not novel.” Report novelty and contribution strength independently.
 
 ### Falsifiable prediction
 
@@ -95,4 +97,4 @@ For each transferred candidate, state:
 - prediction, negative control, and kill condition;
 - novelty confidence in both source and target searches.
 
-Do not describe a cross-domain origin itself as novelty. The novelty claim belongs to the unoccupied target-domain mechanism and its demonstrated consequence.
+Do not describe a cross-domain origin itself as novelty. The novelty claim belongs to the unoccupied target-domain mechanism at the declared claim level. Report source provenance, target-domain novelty, transfer/adaptation value, and experimental maturity as separate conclusions.

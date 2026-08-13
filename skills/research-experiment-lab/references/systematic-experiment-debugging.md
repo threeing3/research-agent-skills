@@ -21,6 +21,15 @@ Classify the failure:
 - evaluation or aggregation;
 - scientific hypothesis contradicted.
 
+For a new mechanism, split the last category further. Check whether the
+program actually implements and activates the intended idea before treating a
+negative metric as scientific counter-evidence. Use the activation and
+intervention evidence frozen in the validation alignment. If realization is
+not confirmed, classify the result as implementation failure; if the test
+cannot distinguish the mechanism, classify it as measurement-inconclusive.
+Only a faithfully realized, discriminating negative is mechanism
+counter-evidence.
+
 ## Phase 2: Pattern
 
 Compare a working run, official baseline, prior checkpoint, or smaller
@@ -42,4 +51,8 @@ and run ID, then verify the original symptom and relevant regressions.
 After three failed fixes for the same symptom, stop and discuss architecture.
 Do not relabel a correctly executed negative result as a software failure or
 continue tuning until it becomes positive.
+
+The three-fix pause applies to repeated technical fixes for one symptom, not
+to the lifetime of an evolving scientific idea. A new scientific validation
+still requires new evidence or a material revision and fresh user alignment.
 

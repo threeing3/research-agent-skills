@@ -10,6 +10,7 @@ research_state/
       experiment_plan.json
       experiment_state.json
       prelaunch_reconciliation.json
+      validation_alignment_check.json
       runs/<run-id>/records/
       analysis/
         run_index.csv
@@ -23,6 +24,11 @@ research_state/
 runs, stage, budget consumption, blockers, and verified evidence paths.
 For novel-method work it also links the mechanism family ID,
 mechanism-signature hash, and latest passing prelaunch reconciliation report.
+
+For `exploratory-validation`, it instead links the implementation revision,
+validation-alignment path and SHA-256, and latest passing alignment check. The
+idea contract hash remains empty because the idea has not been formally
+promoted.
 
 For autonomously continuing campaigns, `experiment_plan.json` also contains a
 durable `tasks` array. Each task records dependencies, required gates, successor

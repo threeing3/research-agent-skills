@@ -6,13 +6,26 @@ The upstream system must export evidence, not writing prompts. The skill remains
 
 When the project-root `research_state.json` exists, read it before accepting a
 handoff and require `ai-research-writing/research-handoff-v2`. Reconcile the
-source idea with `active_idea_id`, its v4 contract revision and SHA-256, its
+source idea with `active_idea_id`, its v4 contract revision, its
 `active` lifecycle, the current experiment-ready idea-pool row, and a fresh
 passed `research-idea/state-consistency-v2` report. Reconcile the experiment
-with `active_experiment_id`, plan revision and SHA-256, `paper-ready` state, and
-a passed `research-experiment/experiment-verification-v2` report carrying the
-same identities and hashes. Treat any mismatch, lifecycle invalidation,
+with `active_experiment_id`, plan revision, `paper-ready` state, and
+a passed `research-experiment/experiment-verification-v3` report carrying the
+same identities, revisions, and publication method identity. Treat any mismatch, lifecycle invalidation,
 incomplete verification, or unresolved kill condition as a blocker.
+
+Require the experiment plan and verification report to use
+`admission_mode: formal`; an exploratory validation cannot enter a writing
+handoff. Formal handoff accepts only a `problem-led/v1` idea contract; older
+profiles remain legacy-read-only. Require
+`novelty_review.status: supported` plus its target-domain boundary, coverage
+end, and recall confidence. Preserve source provenance, transfer/adaptation
+value, contribution strength, implementation fidelity, and experimental
+maturity as separate evidence fields; do not collapse them into novelty.
+For `problem-led/v1`, also require the parent problem revision, observed failure,
+distinctive motivation, motivation-to-design chain, and non-empty mechanism,
+quantitative, and qualitative evidence families. The paper may only claim the
+strength of improvement actually supported by the verified experiment artifacts.
 
 ## Handoff Contract
 
@@ -23,10 +36,8 @@ Create `research_handoff.json` using `research-handoff.schema.json`. Paths are r
   "schema_version": "ai-research-writing/research-handoff-v2",
   "source_idea_id": "videoqa-example",
   "source_idea_revision": 1,
-  "source_idea_contract_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   "experiment_id": "videoqa-example-full",
   "experiment_plan_revision": 1,
-  "experiment_plan_sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
   "research_question": "Does method X improve metric Y under condition Z?",
   "paper_type": "empirical ML paper",
   "target_venue": "ICML",
@@ -63,6 +74,12 @@ python3 scripts/check_research_handoff.py /path/to/handoff-project --require-unb
 ## Ownership Boundary
 
 The upstream system owns the truth of exported evidence and stable file paths. It must not summarize away negative runs, failed conditions, missing baselines, uncertainty, or contradictory outcomes.
+
+It must also preserve whether a negative result was
+`implementation-not-confirmed`, `measurement-inconclusive`, or
+`mechanism-counterevidence`. Only the last directly challenges the mechanism,
+and even then the manuscript must bind the conclusion to the tested idea and
+implementation revisions.
 
 This skill owns all manuscript decisions after handoff. It creates `paper_state.json`, the paper story, claim map, prose, figures/tables, citation records, reviews, LaTeX, and build record. Never copy upstream writing prompts into the skill contract.
 

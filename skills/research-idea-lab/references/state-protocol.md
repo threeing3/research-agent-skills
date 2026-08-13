@@ -23,11 +23,14 @@ research_state/
   review_patterns/checkpoints/<venue-id>.json
   review_patterns/logs/openreview-<venue-id>-<run-id>.log
   review_patterns/browser_import/<venue-id>/page-<offset>.json
+  problems/<problem-id>/problem_card.yaml
+  problems/<problem-id>/events.jsonl
   ideas/idea_pool.json
   ideas/mechanism_families.json
   ideas/<idea-id>/idea_contract.yaml
   ideas/<idea-id>/lineage_check.json
   ideas/state_consistency.json
+  ideas/<idea-id>/validation/<alignment-id>.yaml
   ideas/<idea-id>/debate/debate_state.json
   ideas/<idea-id>/debate/cross_examination.yaml
   ideas/<idea-id>/debate/adversarial_review.yaml
@@ -51,6 +54,7 @@ research_state/
     "field_snapshot": "research_state/literature/field_snapshot.json",
     "ideation_sessions": "research_state/ideation_sessions",
     "review_patterns": "research_state/review_patterns",
+    "problems": "research_state/problems",
     "idea_pool": "research_state/ideas/idea_pool.json",
     "idea_state_consistency": "research_state/ideas/state_consistency.json",
     "experiments": "research_state/experiments",
@@ -63,7 +67,10 @@ research_state/
 
 Ownership:
 
-- `research-idea-lab`: literature, public reviewer-pattern library, ideation sessions, role debate, idea pool, mechanism-family and failure lineage, novelty decisions, idea contracts.
+- `research-idea-lab`: literature, problem cards, bottleneck and motivation
+  hypotheses, problem-to-idea lineage, public reviewer-pattern library, ideation
+  sessions, role debate, idea pool, mechanism-family and failure lineage, novelty
+  decisions, and idea contracts.
 - `research-experiment-lab`: pilot and full experiment plans, immutable runs, logs, synchronization, debugging, aggregation, and verification.
 - `ai-research-writing-skill`: paper state, claims, prose, publication assets, review, and submission.
 
@@ -73,11 +80,29 @@ Writers must read the current `revision`, write detailed artifacts first, then a
 
 Record one work mode in every ideation session:
 
+- `problem-discovery` may create or update problem cards with `problem-seed`,
+  `evidence-backed`, `bottleneck-framed`, or `solution-ready` maturity. It does not
+  assign an idea status or require a solution.
 - `explore` may create provisional seeds and write `raw` or `developing` candidates. It may not write `rejected` or `experiment-ready`.
 - `develop` may write `developing`, `screened`, `novelty-risk`, `discussion-active`, `gate-ready`, or `parked`. It may not write `rejected` or `experiment-ready`.
-- `gate` may write any current-state status after running the applicable strict checks.
+- `novelty` may write `screened`, `novelty-risk`, `gate-ready`, or, after focused novelty, lineage, formal-entry, and explicit user-selection checks pass, `experiment-ready`. It may not write `rejected`.
+- `gate` may write any current-state status after running the user-requested full strict checks.
+
+Track problem maturity independently as `problem-seed`, `evidence-backed`,
+`bottleneck-framed`, or `solution-ready`. Track idea maturity independently as
+`seed`, `developing`, or `validation-ready`.
+An incomplete idea is not a rejected idea. Use
+`references/iterative-development.md` to classify implementation revisions,
+mechanism revisions, and linked derived ideas.
 
 `research_state/ideas/idea_pool.json` is the canonical current status. A candidate may receive a canonical idea ID when it is selected for development or has a stable problem/mechanism signature; provisional exploration seeds remain in the session artifact.
+
+`research_state/problems/<problem-id>/problem_card.yaml` is the evidence-bearing
+problem record. A stable idea links to one problem ID and revision; one problem may
+link to multiple ideas. A failed implementation or solution does not close the
+problem unless the evidence also refutes the observed failure or bottleneck. A
+material problem revision stales derived motivation and solution judgments until
+they are reconciled.
 
 An idea contract is an evidence-bearing handoff snapshot issued at `experiment-ready`, not the canonical current status. New or materially revised contracts must contain the lifecycle block in `references/idea-contract.md`. When later literature or verified evidence moves the pool entry away from `experiment-ready`:
 
@@ -87,6 +112,27 @@ An idea contract is an evidence-bearing handoff snapshot issued at `experiment-r
 4. run `scripts/check_idea_state_consistency.py` and store the report at `ideas/state_consistency.json`.
 
 Legacy contracts without lifecycle metadata remain readable. Do not bulk-rewrite them. The consistency checker must flag a legacy contract whose issued status conflicts with the current pool so it cannot be handed to experiments silently.
+
+Every new v4 experiment handoff uses `contract_profile: problem-led/v1`. The lineage
+check reads the referenced problem card, validates its structure and semantics, and
+requires its problem ID, revision, maturity, and open/contested/parked status to match
+the contract. Missing, closed, invalid, or stale problem cards block handoff. Legacy
+profiles remain read-only.
+
+Pre-gate exploratory validation does not require or create an idea contract.
+Freeze a user-approved `research-idea/validation-alignment-v3` artifact for new work under
+`ideas/<idea-id>/validation/`, and let the experiment plan bind its alignment
+ID, parent problem identity, idea revision, and implementation revision. Historical
+v1/v2 alignments remain read-only and require migration before a new launch. Do not
+require a generic local file hash.
+The alignment may move a developing idea forward or backward, but it may not
+set novelty, `experiment-ready`, or paper-ready status.
+
+`ideas/state_consistency.json` is the canonical consistency-report name for
+all new writes. Readers may accept the legacy
+`ideas/idea_state_consistency.json` path when an old index or plan explicitly
+references it. Do not delete the legacy file; update new indexes, templates,
+and examples to the canonical name.
 
 During multi-role ideation, the Chair is the sole canonical writer. Worker roles return structured artifacts to the Chair or write only to an explicitly bounded temporary path. Use `references/role-artifact-schemas.md` for session and debate artifacts.
 

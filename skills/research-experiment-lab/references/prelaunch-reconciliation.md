@@ -1,20 +1,22 @@
 # Prelaunch Lineage and Gate Reconciliation
 
-Use this protocol before creating a novel-method run, allocating a GPU, or
-starting an autonomous task graph. It prevents a renamed failed mechanism or
-an impossible experimental gate from consuming compute.
+Use this protocol before creating a `formal` novel-method run, allocating its
+GPU, or starting its autonomous task graph. For `exploratory-validation`, use
+`exploratory-validation.md` and `scripts/check_validation_alignment.py`
+instead. This formal protocol prevents a renamed failed mechanism, unsupported
+target-domain novelty claim, or impossible experimental gate from consuming a
+full campaign.
 
 ## Required handoff
 
 Read the canonical idea contract, idea-state consistency report, and
-lineage-check report. Copy these immutable identifiers into
+lineage-check report. Copy these revision-safe identifiers into
 `experiment_plan.json`:
 
 ```json
 {
   "idea_id": "",
   "idea_revision": 1,
-  "idea_contract_sha256": "",
   "mechanism_family_id": "",
   "mechanism_signature_sha256": "",
   "inherited_failure_ids": []
@@ -32,6 +34,12 @@ Reject the handoff when:
 - any inherited failure is unresolved;
 - the idea revision, family, contract hash, or mechanism hash differs;
 - the proposed experiment does not test the recorded discriminating prediction.
+- a `problem-led/v1` contract does not record target-domain novelty as
+  `supported` with its boundary, coverage end, and recall confidence.
+- a contract is not `problem-led/v1`; older profiles are legacy-read-only;
+- a `problem-led/v1` contract omits the parent problem revision, distinctive
+  motivation, motivation-to-design derivation, or mechanism/quantitative/qualitative
+  evidence plan.
 
 Historical runs remain valid evidence for their original revision. They do not
 become evidence for a new mechanism merely because files, weights, or datasets
@@ -63,7 +71,7 @@ Add a `prelaunch` object to the plan:
     }
   ],
   "lineage_check_report": "research_state/ideas/example/lineage_check.json",
-  "idea_state_consistency_report": "research_state/ideas/idea_state_consistency.json",
+  "idea_state_consistency_report": "research_state/ideas/state_consistency.json",
   "last_reconciled_at": ""
 }
 ```

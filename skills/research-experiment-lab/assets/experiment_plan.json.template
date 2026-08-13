@@ -1,13 +1,20 @@
 {
-  "schema_version": "research-experiment/plan-v2",
+  "schema_version": "research-experiment/plan-v3",
+  "admission_mode": "formal",
   "experiment_id": "example-experiment",
   "plan_revision": 1,
   "mode": "pilot",
   "idea_id": "example-idea",
   "idea_revision": 1,
-  "idea_contract_sha256": "",
+  "implementation_revision": null,
+  "validation_alignment": null,
+  "method_identity": {
+    "method_tier": "full",
+    "publication_eligible": true,
+    "scientific_configuration": "describe the complete method configuration",
+    "excluded_simplifications": []
+  },
   "mechanism_family_id": "",
-  "mechanism_signature_sha256": "",
   "inherited_failure_ids": [],
   "research_question": "",
   "hypothesis": "",
@@ -23,6 +30,11 @@
   "failure_thresholds": [],
   "stop_conditions": [],
   "confounders_and_controls": [],
+  "evidence_obligations": {
+    "mechanism": [],
+    "quantitative": [],
+    "qualitative": []
+  },
   "prelaunch": {
     "required_gates": [
       "anti-reskin",
@@ -33,6 +45,7 @@
     "constraints": [],
     "lineage_check_report": "",
     "idea_state_consistency_report": "",
+    "validation_alignment_check_report": "",
     "last_reconciled_at": null
   },
   "autonomy": {
@@ -62,6 +75,7 @@
   },
   "budget": {
     "gpu_types": [],
+    "max_direct_cost_cny": 100,
     "max_parallel_runs": 1,
     "max_wall_time_hours": 24,
     "max_retry_per_failure": 2,

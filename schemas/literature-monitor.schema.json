@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "literature-monitor.schema.json",
+  "title": "Research Idea Literature Monitor Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "monitor_id", "idea_id", "idea_revision", "as_of", "window", "target_domain_boundary", "query_families", "sources_scanned", "papers_scanned", "findings", "overall_signal"],
+  "properties": {
+    "schema_version": {"const": "research-idea/literature-monitor-v1"},
+    "monitor_id": {"type": "string", "minLength": 1},
+    "idea_id": {"type": "string", "minLength": 1},
+    "idea_revision": {"type": "integer", "minimum": 1},
+    "as_of": {"type": "string", "minLength": 1},
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {"from": {"type": "string", "minLength": 1}, "to": {"type": "string", "minLength": 1}}
+    },
+    "target_domain_boundary": {"type": "object"},
+    "query_families": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "sources_scanned": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "papers_scanned": {"type": "integer", "minimum": 0},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "source", "overlap_level", "overlap_types", "evidence_depth", "action"],
+        "properties": {
+          "title": {"type": "string", "minLength": 1},
+          "source": {"type": "string", "minLength": 1},
+          "overlap_level": {"enum": ["none", "low", "medium", "high"]},
+          "overlap_types": {"type": "array", "items": {"enum": ["problem", "mechanism", "evidence", "benchmark", "claim", "positioning"]}, "uniqueItems": true},
+          "evidence_depth": {"enum": ["metadata", "abstract", "full-text", "artifact"]},
+          "action": {"enum": ["RELAX", "RESEARCH", "FOLLOW-UP"]},
+          "implication": {"type": "string"}
+        }
+      }
+    },
+    "overall_signal": {"enum": ["RELAX", "RESEARCH", "FOLLOW-UP"]},
+    "novelty_effect": {"enum": ["none", "confidence-update", "focused-review-required", "claim-revision-required"]},
+    "next_actions": {"type": "array", "items": {"type": "string"}}
+  }
+}

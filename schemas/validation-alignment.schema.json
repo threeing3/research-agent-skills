@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-alignment.schema.json",
+  "title": "Research Idea Validation Alignment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "alignment_id",
+    "idea_id",
+    "idea_revision",
+    "implementation_revision",
+    "maturity",
+    "idea_type",
+    "title",
+    "problem_hypothesis",
+    "mechanism_hypothesis",
+    "target_domain_boundary",
+    "baseline_change",
+    "lightweight_collision_check",
+    "validation",
+    "budget",
+    "user_alignment"
+  ],
+  "properties": {
+    "schema_version": {"enum": ["research-idea/validation-alignment-v1", "research-idea/validation-alignment-v2", "research-idea/validation-alignment-v3"]},
+    "alignment_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"},
+    "idea_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$"},
+    "idea_revision": {"type": "integer", "minimum": 1},
+    "implementation_revision": {"type": "integer", "minimum": 1},
+    "maturity": {"const": "validation-ready"},
+    "idea_type": {
+      "enum": [
+        "mechanism-invention",
+        "baseline-modification",
+        "mechanism-combination",
+        "cross-domain-transfer",
+        "simplification-or-diagnostic"
+      ]
+    },
+    "title": {"type": "string", "minLength": 1},
+    "parent_problem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["problem_id", "problem_revision", "problem_card", "problem_maturity", "motivation_status"],
+      "properties": {
+        "problem_id": {"type": "string", "minLength": 1},
+        "problem_revision": {"type": "integer", "minimum": 1},
+        "problem_card": {"type": "string", "minLength": 1},
+        "problem_maturity": {"enum": ["bottleneck-framed", "solution-ready"]},
+        "motivation_status": {"enum": ["distinctive-hypothesis", "evidence-backed", "contested"]}
+      }
+    },
+    "problem_hypothesis": {"type": "string", "minLength": 1},
+    "mechanism_hypothesis": {"type": "string", "minLength": 1},
+    "motivation_design": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observed_failure",
+        "bottleneck_hypothesis",
+        "distinctive_motivation_insight",
+        "research_value",
+        "required_behavior_change",
+        "design_principle",
+        "module_operation",
+        "implementation_location",
+        "why_existing_components_are_insufficient"
+      ],
+      "properties": {
+        "observed_failure": {"type": "string", "minLength": 1},
+        "bottleneck_hypothesis": {"type": "string", "minLength": 1},
+        "distinctive_motivation_insight": {"type": "string", "minLength": 1},
+        "research_value": {"type": "string", "minLength": 1},
+        "required_behavior_change": {"type": "string", "minLength": 1},
+        "design_principle": {"type": "string", "minLength": 1},
+        "module_operation": {"type": "string", "minLength": 1},
+        "implementation_location": {"type": "string", "minLength": 1},
+        "why_existing_components_are_insufficient": {"type": "string", "minLength": 1}
+      }
+    },
+    "target_domain_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task", "problem_setting", "key_constraints"],
+      "properties": {
+        "task": {"type": "string", "minLength": 1},
+        "problem_setting": {"type": "string", "minLength": 1},
+        "key_constraints": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    },
+    "baseline_change": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": [
+        "baseline_id",
+        "selection_reason",
+        "target_failure",
+        "operation",
+        "location",
+        "before",
+        "after",
+        "reused_parts",
+        "redesigned_parts",
+        "expected_resource_delta",
+        "required_ablations"
+      ],
+      "properties": {
+        "baseline_id": {"type": "string", "minLength": 1},
+        "selection_reason": {"type": "string", "minLength": 1},
+        "target_failure": {"type": "string", "minLength": 1},
+        "operation": {"enum": ["add", "replace", "remove", "rewire", "combine"]},
+        "location": {"type": "string", "minLength": 1},
+        "before": {"type": "string", "minLength": 1},
+        "after": {"type": "string", "minLength": 1},
+        "reused_parts": {"type": "array", "items": {"type": "string"}},
+        "redesigned_parts": {"type": "array", "items": {"type": "string"}},
+        "expected_resource_delta": {"type": "string"},
+        "required_ablations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    },
+    "lightweight_collision_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "checked_at", "target_domain_queries", "closest_target_work", "note"],
+      "properties": {
+        "status": {"enum": ["no-obvious-collision", "collision-needs-revision", "uncertain"]},
+        "checked_at": {"type": "string", "minLength": 1},
+        "target_domain_queries": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        },
+        "closest_target_work": {"type": "array", "items": {"type": ["string", "object"]}},
+        "note": {"type": "string", "minLength": 1}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applicability",
+        "applicability_reason",
+        "question",
+        "falsifiable_prediction",
+        "strongest_alternative",
+        "activation_evidence",
+        "intervention_evidence",
+        "outcome_interpretation",
+        "stop_conditions"
+      ],
+      "properties": {
+        "applicability": {"enum": ["applicable", "not-applicable", "not-identifiable"]},
+        "applicability_reason": {"type": "string", "minLength": 1},
+        "question": {"type": "string", "minLength": 1},
+        "falsifiable_prediction": {"type": "string", "minLength": 1},
+        "strongest_alternative": {"type": "string", "minLength": 1},
+        "activation_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "intervention_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "quantitative_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "qualitative_evidence": {"type": "array", "items": {"type": ["string", "object"]}, "minItems": 1},
+        "qualitative_selection_protocol": {"type": ["string", "object"]},
+        "outcome_interpretation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["supportive", "negative", "inconclusive"],
+          "properties": {
+            "supportive": {"type": "string", "minLength": 1},
+            "negative": {"type": "string", "minLength": 1},
+            "inconclusive": {"type": "string", "minLength": 1}
+          }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_direct_cost_cny", "max_wall_time_hours"],
+      "properties": {
+        "max_direct_cost_cny": {"type": "number", "minimum": 0},
+        "max_wall_time_hours": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "user_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "approved_at",
+        "approved_scope",
+        "approved_max_direct_cost_cny",
+        "approved_max_wall_time_hours",
+        "resource_override_approved"
+      ],
+      "properties": {
+        "status": {"const": "approved"},
+        "approved_at": {"type": "string", "minLength": 1},
+        "approved_scope": {"type": "string", "minLength": 1},
+        "approved_max_direct_cost_cny": {"type": "number", "minimum": 0},
+        "approved_max_wall_time_hours": {"type": "number", "exclusiveMinimum": 0},
+        "resource_override_approved": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "qualitativeSelectionProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_before_results", "categories", "required_outcomes", "sampling_rule", "comparison_views"],
+      "properties": {
+        "frozen_before_results": {"const": true},
+        "categories": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "required_outcomes": {
+          "type": "array",
+          "items": {"enum": ["success", "failure", "unchanged-or-regression"]},
+          "minItems": 3,
+          "uniqueItems": true,
+          "allOf": [
+            {"contains": {"const": "success"}},
+            {"contains": {"const": "failure"}},
+            {"contains": {"const": "unchanged-or-regression"}}
+          ]
+        },
+        "sampling_rule": {"type": "string", "minLength": 1},
+        "comparison_views": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 2,
+          "uniqueItems": true,
+          "allOf": [{"contains": {"const": "baseline"}}, {"contains": {"const": "full-method"}}]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"schema_version": {"const": "research-idea/validation-alignment-v2"}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["parent_problem", "motivation_design"],
+        "properties": {
+          "validation": {
+            "required": ["quantitative_evidence", "qualitative_evidence", "qualitative_selection_protocol"],
+            "properties": {"qualitative_selection_protocol": {"type": "string", "minLength": 1}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"schema_version": {"const": "research-idea/validation-alignment-v3"}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["parent_problem", "motivation_design"],
+        "properties": {
+          "validation": {
+            "required": ["quantitative_evidence", "qualitative_evidence", "qualitative_selection_protocol"],
+            "properties": {"qualitative_selection_protocol": {"$ref": "#/$defs/qualitativeSelectionProtocol"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "idea_type": {"enum": ["baseline-modification", "mechanism-combination"]}
+        },
+        "required": ["idea_type"]
+      },
+      "then": {"properties": {"baseline_change": {"type": "object"}}}
+    }
+  ]
+}

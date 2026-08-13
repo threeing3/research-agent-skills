@@ -40,14 +40,6 @@ def read_json(path: Path) -> dict[str, Any]:
     return value
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def normalized(value: Any) -> Any:
     if isinstance(value, str):
         return re.sub(r"\s+", " ", value.strip().lower())
@@ -133,6 +125,14 @@ def main() -> int:
         decision = contract.get("decision") if isinstance(contract.get("decision"), dict) else {}
         lifecycle = contract.get("lifecycle") if isinstance(contract.get("lifecycle"), dict) else {}
 
+        plan_schema = plan.get("schema_version")
+        checks.append(check_result("plan-schema-v3", plan_schema == "research-experiment/plan-v3", repr(plan_schema)))
+        if plan_schema != "research-experiment/plan-v3":
+            blockers.append("legacy-plan-migration-required")
+        admission_mode = plan.get("admission_mode")
+        checks.append(check_result("formal-admission-mode", admission_mode == "formal", repr(admission_mode)))
+        if admission_mode != "formal":
+            blockers.append("wrong-prelaunch-protocol")
         checks.append(check_result("idea-schema", contract.get("schema_version") == "research-idea/v4", str(contract.get("schema_version"))))
         checks.append(check_result("idea-experiment-ready", contract.get("status") == "experiment-ready", str(contract.get("status"))))
         lifecycle_declared = isinstance(contract.get("lifecycle"), dict)
@@ -155,19 +155,68 @@ def main() -> int:
         checks.append(check_result("idea-user-selected", decision.get("selected_by_user") is True, str(decision.get("selected_by_user"))))
         checks.append(check_result("anti-reskin-gate", gate.get("status") == "pass" and gate.get("independence_valid") is True and gate.get("review_context_policy") == "cold", repr(gate.get("status"))))
 
+        contract_profile = contract.get("contract_profile")
+        checks.append(check_result("problem-led-profile", contract_profile == "problem-led/v1", repr(contract_profile)))
+        if contract_profile != "problem-led/v1":
+            blockers.append("legacy-contract-read-only")
+        if contract_profile == "problem-led/v1":
+            novelty_review = contract.get("novelty_review") if isinstance(contract.get("novelty_review"), dict) else {}
+            target_boundary = contract.get("target_domain_boundary") if isinstance(contract.get("target_domain_boundary"), dict) else {}
+            novelty_supported = (
+                novelty_review.get("status") == "supported"
+                and bool(novelty_review.get("coverage_end"))
+                and novelty_review.get("recall_confidence") in {"low", "medium", "high"}
+                and bool(target_boundary.get("task"))
+                and bool(target_boundary.get("problem_setting"))
+            )
+            checks.append(
+                check_result(
+                    "focused-target-novelty",
+                    novelty_supported,
+                    f"status={novelty_review.get('status')!r} coverage_end={novelty_review.get('coverage_end')!r}",
+                )
+            )
+            if not novelty_supported:
+                blockers.append("novelty-not-supported")
+
+        if contract_profile == "problem-led/v1":
+            derivation = contract.get("problem_derivation") if isinstance(contract.get("problem_derivation"), dict) else {}
+            required_derivation = (
+                "problem_id",
+                "problem_revision",
+                "problem_card",
+                "problem_maturity",
+                "observed_failure",
+                "bottleneck_hypothesis",
+                "distinctive_motivation_insight",
+                "motivation_status",
+                "research_value",
+                "required_behavior_change",
+                "design_principle",
+                "module_operation",
+                "implementation_location",
+            )
+            derivation_complete = all(derivation.get(field) not in (None, "") for field in required_derivation)
+            chain = derivation.get("motivation_to_design_chain")
+            derivation_complete = derivation_complete and isinstance(chain, list) and len(chain) >= 4 and all(chain)
+            triad = derivation.get("evidence_triad") if isinstance(derivation.get("evidence_triad"), dict) else {}
+            triad_complete = all(isinstance(triad.get(family), list) and bool(triad[family]) for family in ("mechanism", "quantitative", "qualitative"))
+            checks.append(check_result("problem-led-derivation", derivation_complete, repr(derivation)))
+            checks.append(check_result("problem-led-evidence-triad", triad_complete, repr(triad)))
+            if not derivation_complete or not triad_complete:
+                blockers.append("problem-led-contract-incomplete")
+
         inherited = lineage.get("inherited_failures", []) if isinstance(lineage, dict) else []
         unresolved = [str(item.get("failure_id")) for item in inherited if isinstance(item, dict) and item.get("status") == "unresolved"]
         checks.append(check_result("inherited-failures-resolved", not unresolved, repr(unresolved)))
         if unresolved:
             blockers.append("lineage-blocked")
 
-        contract_hash = file_sha256(contract_path)
         mechanism_hash = mechanism_sha256(contract)
         checks.append(check_result("idea-recorded-mechanism-hash", gate.get("mechanism_signature_sha256") == mechanism_hash, f"recorded={gate.get('mechanism_signature_sha256')!r} computed={mechanism_hash!r}"))
         identities = (
             ("idea-id", plan.get("idea_id"), contract.get("idea_id")),
             ("idea-revision", plan.get("idea_revision"), contract.get("revision")),
-            ("idea-contract-sha256", plan.get("idea_contract_sha256"), contract_hash),
             ("mechanism-family-id", plan.get("mechanism_family_id"), lineage.get("family_id")),
             ("mechanism-signature-sha256", plan.get("mechanism_signature_sha256"), mechanism_hash),
         )
@@ -222,10 +271,6 @@ def main() -> int:
                 if isinstance(record, dict) and record.get("idea_id") == contract.get("idea_id")
             ] if isinstance(records, list) else []
             inferred_pool_path = contract_path.parent.parent / "idea_pool.json"
-            pool_hash_matches = (
-                inferred_pool_path.is_file()
-                and consistency.get("pool_sha256") == file_sha256(inferred_pool_path)
-            )
             current_pool_status = None
             pool_identity_matches = False
             if inferred_pool_path.is_file():
@@ -247,18 +292,16 @@ def main() -> int:
             consistency_valid = (
                 consistency.get("schema_version") == "research-idea/state-consistency-v2"
                 and consistency.get("passed") is True
-                and pool_hash_matches
                 and pool_identity_matches
                 and len(matching) == 1
                 and record.get("contract_revision") == contract.get("revision")
-                and record.get("contract_sha256") == contract_hash
                 and record.get("lifecycle_validity") == ACTIVE_LIFECYCLE
                 and record.get("lifecycle_pool_status") == current_pool_status
                 and record.get("pool_status") == current_pool_status
             )
             consistency_evidence = (
                 f"{consistency_path}; schema={consistency.get('schema_version')!r}; "
-                f"passed={consistency.get('passed')!r}; pool_hash_matches={pool_hash_matches}; "
+                f"passed={consistency.get('passed')!r}; "
                 f"pool_identity_matches={pool_identity_matches}; matching_records={len(matching)}"
             )
         checks.append(

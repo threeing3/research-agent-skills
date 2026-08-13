@@ -14,6 +14,8 @@ from typing import Any
 
 import yaml
 
+from check_problem_card import validate as validate_problem_card
+
 
 RELATIONS = {
     "new-family",
@@ -80,12 +82,142 @@ def nonempty_mapping_fields(value: Any, fields: tuple[str, ...], prefix: str) ->
     return failures
 
 
-def validate(contract: dict[str, Any]) -> tuple[list[str], list[str], str]:
+def find_project_root(contract_path: Path) -> Path | None:
+    for ancestor in contract_path.resolve().parents:
+        if (ancestor / "research_state").is_dir():
+            return ancestor
+    return None
+
+
+def validate_problem_binding(
+    contract: dict[str, Any], contract_path: Path | None
+) -> list[str]:
+    failures: list[str] = []
+    derivation = contract.get("problem_derivation")
+    if not isinstance(derivation, dict) or contract_path is None:
+        return failures
+    declared = derivation.get("problem_card")
+    if not isinstance(declared, str) or not declared.strip():
+        return failures
+    declared_path = Path(declared)
+    if declared_path.is_absolute():
+        return ["problem_derivation.problem_card must be a project-relative path"]
+    project_root = find_project_root(contract_path)
+    if project_root is None:
+        return ["cannot locate project root containing research_state"]
+    problem_path = (project_root / declared_path).resolve()
+    problems_root = (project_root / "research_state" / "problems").resolve()
+    if problems_root not in problem_path.parents:
+        return [
+            "problem_derivation.problem_card must stay under research_state/problems"
+        ]
+    if not problem_path.is_file():
+        return [f"problem_derivation.problem_card does not exist: {problem_path}"]
+    try:
+        card = load_yaml(problem_path)
+        card_failures, _ = validate_problem_card(card)
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        return [f"problem card is unreadable: {type(exc).__name__}: {exc}"]
+    failures.extend(f"problem card invalid: {failure}" for failure in card_failures)
+    for contract_field, card_field in (
+        ("problem_id", "problem_id"),
+        ("problem_revision", "revision"),
+        ("problem_maturity", "maturity"),
+    ):
+        if derivation.get(contract_field) != card.get(card_field):
+            failures.append(
+                f"problem_derivation.{contract_field} does not match problem card "
+                f"{card_field}: contract={derivation.get(contract_field)!r} "
+                f"card={card.get(card_field)!r}"
+            )
+    if card.get("status") == "closed":
+        failures.append("problem card status is closed and cannot support experiment handoff")
+    return failures
+
+
+def validate(
+    contract: dict[str, Any], contract_path: Path | None = None
+) -> tuple[list[str], list[str], str]:
     failures: list[str] = []
     warnings: list[str] = []
     schema = contract.get("schema_version")
     if schema != "research-idea/v4":
         failures.append(f"schema_version must be research-idea/v4, found {schema!r}")
+
+    profile = contract.get("contract_profile")
+    if profile != "problem-led/v1":
+        if profile in {"staged-novelty/v1", "legacy-read-only/v1"}:
+            failures.append(
+                f"{profile} is legacy-read-only and cannot be used for experiment handoff"
+            )
+        else:
+            failures.append(
+                "research-idea/v4 experiment handoff requires contract_profile problem-led/v1"
+            )
+    if profile in {"staged-novelty/v1", "problem-led/v1"}:
+        novelty_review = contract.get("novelty_review")
+        target_boundary = contract.get("target_domain_boundary")
+        decision = contract.get("decision")
+        if not isinstance(novelty_review, dict):
+            failures.append(f"{profile} contract requires novelty_review")
+            novelty_review = {}
+        if novelty_review.get("status") != "supported":
+            failures.append(f"{profile} contract requires target-domain novelty status supported")
+        if not novelty_review.get("coverage_end"):
+            failures.append(f"{profile} contract requires novelty_review.coverage_end")
+        if novelty_review.get("recall_confidence") not in {"low", "medium", "high"}:
+            failures.append(f"{profile} contract requires novelty_review.recall_confidence")
+        if not isinstance(target_boundary, dict):
+            failures.append(f"{profile} contract requires target_domain_boundary")
+            target_boundary = {}
+        for field in ("task", "problem_setting"):
+            if not target_boundary.get(field):
+                failures.append(f"{profile} contract requires target_domain_boundary.{field}")
+        if not isinstance(decision, dict) or decision.get("selected_by_user") is not True:
+            failures.append(f"{profile} contract requires explicit user selection")
+
+    if profile == "problem-led/v1":
+        derivation = contract.get("problem_derivation")
+        if not isinstance(derivation, dict):
+            failures.append("problem-led contract requires problem_derivation")
+            derivation = {}
+        for field in (
+            "problem_id",
+            "problem_card",
+            "problem_maturity",
+            "observed_failure",
+            "bottleneck_hypothesis",
+            "distinctive_motivation_insight",
+            "motivation_status",
+            "research_value",
+            "required_behavior_change",
+            "design_principle",
+            "module_operation",
+            "implementation_location",
+        ):
+            if derivation.get(field) in (None, ""):
+                failures.append(f"problem-led contract requires problem_derivation.{field}")
+        problem_revision = derivation.get("problem_revision")
+        if (
+            not isinstance(problem_revision, int)
+            or isinstance(problem_revision, bool)
+            or problem_revision < 1
+        ):
+            failures.append(
+                "problem-led contract requires a positive integer problem_derivation.problem_revision"
+            )
+        chain = derivation.get("motivation_to_design_chain")
+        if not isinstance(chain, list) or len(chain) < 4 or not all(chain):
+            failures.append("problem-led contract requires a complete motivation_to_design_chain")
+        triad = derivation.get("evidence_triad")
+        if not isinstance(triad, dict):
+            failures.append("problem-led contract requires evidence_triad")
+            triad = {}
+        for family in ("mechanism", "quantitative", "qualitative"):
+            evidence = triad.get(family)
+            if not isinstance(evidence, list) or not evidence:
+                failures.append(f"problem-led contract requires evidence_triad.{family}")
+        failures.extend(validate_problem_binding(contract, contract_path))
 
     lifecycle = contract.get("lifecycle")
     if lifecycle is None:
@@ -193,7 +325,7 @@ def main() -> int:
     try:
         contract_path = args.contract.resolve()
         contract = load_yaml(contract_path)
-        failures, warnings, digest = validate(contract)
+        failures, warnings, digest = validate(contract, contract_path)
         report = {
             "schema_version": "research-idea/lineage-check-v1",
             "contract": str(contract_path),

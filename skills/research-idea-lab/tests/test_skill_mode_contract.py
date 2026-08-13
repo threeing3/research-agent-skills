@@ -7,6 +7,10 @@ from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_TEXT = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+ANTI_RESKIN_TEXT = (SKILL_ROOT / "references/anti-reskin-protocol.md").read_text(encoding="utf-8")
+NOVELTY_TEXT = (SKILL_ROOT / "references/novelty-workflow.md").read_text(encoding="utf-8")
+PROBLEM_TEXT = (SKILL_ROOT / "references/problem-discovery.md").read_text(encoding="utf-8")
+SOLUTION_TEXT = (SKILL_ROOT / "references/solution-design.md").read_text(encoding="utf-8")
 
 
 def section(start: str, end: str) -> str:
@@ -21,10 +25,40 @@ def section(start: str, end: str) -> str:
 
 
 class SkillModeContractTests(unittest.TestCase):
+    def test_vague_direction_defaults_to_problem_discovery(self) -> None:
+        problem = section("### `problem-discovery`", "### `explore`")
+        self.assertIn("Return a portfolio of research problems before proposing methods", problem)
+        self.assertIn("Prioritize problems exposed or actively studied by the newest credible papers", problem)
+        self.assertIn("Do not require a module or complete solution", problem)
+        self.assertIn("Literature absence alone is not a problem", problem)
+
+    def test_problem_discovery_requires_frontier_and_bottleneck_evidence(self) -> None:
+        self.assertIn("Frontier-first search", PROBLEM_TEXT)
+        self.assertIn("coverage_end", PROBLEM_TEXT)
+        self.assertIn("observed_failure", PROBLEM_TEXT)
+        self.assertIn("bottleneck_hypothesis", PROBLEM_TEXT)
+        self.assertIn("motivation_insight", PROBLEM_TEXT)
+        self.assertIn("Research value before solution design", PROBLEM_TEXT)
+
+    def test_solution_design_is_derived_from_motivation_and_has_evidence_triad(self) -> None:
+        self.assertIn("verified failure", SOLUTION_TEXT)
+        self.assertIn("distinctive motivation insight", SOLUTION_TEXT)
+        self.assertIn("module or system operation", SOLUTION_TEXT)
+        self.assertIn("mechanism", SOLUTION_TEXT)
+        self.assertIn("quantitative", SOLUTION_TEXT)
+        self.assertIn("qualitative", SOLUTION_TEXT)
+
+    def test_monitor_is_incremental_and_not_a_rejection_gate(self) -> None:
+        self.assertIn("### `monitor`", SKILL_TEXT)
+        self.assertIn("`RELAX`, `RESEARCH`, or `FOLLOW-UP`", SKILL_TEXT)
+        self.assertIn("never directly rejects an idea", SKILL_TEXT)
+
     def test_interaction_policy_limits_questions_and_silent_escalation(self) -> None:
         self.assertIn("Ask at most one blocking question in a turn", SKILL_TEXT)
         self.assertIn("Do not ask for routine mode changes or skill handoffs", SKILL_TEXT)
-        self.assertIn("never silently escalate to `gate`", SKILL_TEXT)
+        self.assertIn("never silently escalate to", SKILL_TEXT)
+        self.assertIn("solution generation or the full `gate`", SKILL_TEXT)
+        self.assertIn("Before every validation round", SKILL_TEXT)
 
     def test_explore_cannot_run_strict_rejection(self) -> None:
         explore = section("### `explore`", "### `develop`")
@@ -32,19 +66,46 @@ class SkillModeContractTests(unittest.TestCase):
         self.assertIn("A literature collision creates a differentiation", explore)
 
     def test_develop_separates_potential_and_cannot_reject(self) -> None:
-        develop = section("### `develop`", "### `gate`")
+        develop = section("### `develop`", "### `novelty`")
         self.assertIn("Separate current weakness from development potential", develop)
         self.assertIn("Do not write `rejected`", develop)
+
+    def test_novelty_mode_is_focused_and_tri_state(self) -> None:
+        novelty = section("### `novelty`", "### `gate`")
+        self.assertIn("`supported`, `occupied`, or `uncertain`", novelty)
+        self.assertIn("Do not score, rank", novelty)
+        self.assertIn("independent conclusions", novelty)
 
     def test_gate_requires_explicit_user_intent(self) -> None:
         gate = section("### `gate`", "## Start")
         self.assertIn("only when the user explicitly requests", gate)
-        self.assertIn("Only this mode may set `rejected` or `experiment-ready`", gate)
+        self.assertIn("Only this mode may set `rejected`", gate)
 
     def test_exploration_has_positive_output_contract(self) -> None:
-        self.assertIn("return 3–5 coherent candidates", SKILL_TEXT)
-        self.assertIn("never return an empty rejection-only answer", SKILL_TEXT)
+        self.assertIn("return 3–5 candidates", SKILL_TEXT)
+        self.assertIn("methods merely to complete the count", SKILL_TEXT)
         self.assertIn("at least one attempted material rescue route", SKILL_TEXT)
+
+    def test_portfolio_includes_baseline_changes_and_maturity(self) -> None:
+        self.assertIn("`baseline-modification`", SKILL_TEXT)
+        self.assertIn("include at least one", SKILL_TEXT)
+        self.assertIn("`seed`, `developing`, or `validation-ready`", SKILL_TEXT)
+
+    def test_source_scope_and_target_domain_are_separate(self) -> None:
+        self.assertIn("Mechanism discovery may use high-quality primary sources from any field or venue", SKILL_TEXT)
+        self.assertIn("regardless of venue", SKILL_TEXT)
+        self.assertIn("does not occupy target-domain novelty by itself", SKILL_TEXT)
+
+    def test_full_anti_reskin_is_not_an_exploration_prerequisite(self) -> None:
+        self.assertIn("Use the full protocol only for a stable selected idea", ANTI_RESKIN_TEXT)
+        self.assertNotIn("Use this protocol before creating a candidate", ANTI_RESKIN_TEXT)
+        self.assertIn("Do not impose a fixed scientific rescue count", ANTI_RESKIN_TEXT)
+
+    def test_novelty_workflow_uses_complete_target_mechanism_occupation(self) -> None:
+        self.assertIn("Return exactly one status", NOVELTY_TEXT)
+        self.assertIn("complete operative mechanism", NOVELTY_TEXT)
+        self.assertIn("regardless of venue", NOVELTY_TEXT)
+        self.assertIn("Report these independently", NOVELTY_TEXT)
 
     def test_all_direct_references_exist(self) -> None:
         paths = set(re.findall(r"(?:references|scripts)/[A-Za-z0-9._-]+", SKILL_TEXT))

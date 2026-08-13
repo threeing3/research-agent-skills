@@ -2,8 +2,10 @@
 
 Use this protocol whenever the user authorizes a campaign to continue without
 turn-by-turn confirmation. Autonomy is bounded by the frozen experiment plan,
-the declared budget ceiling, the selected AutoDL profile, and the idea revision
-currently owned by `research-idea-lab`.
+the declared budget ceiling, the selected AutoDL profile, and either the
+user-approved validation-alignment hash or the formal idea contract currently
+owned by `research-idea-lab`. Authorization covers one frozen validation round
+or formal campaign; it does not authorize inventing a new scientific round.
 
 ## Campaign task graph
 
@@ -28,8 +30,8 @@ After every condition-based check:
 
 1. Read the current `research_state.json`, experiment state, plan revision,
    idea ID, idea revision, mechanism family, and mechanism-signature hash.
-   Read the latest prelaunch reconciliation report and require it to match the
-   current plan and idea contract.
+   Read the applicable alignment-check or formal prelaunch reconciliation
+   report and require it to match the current plan and source idea artifact.
 2. Verify the active task with fresh artifacts and the proving command for its
    gate.
 3. If the task is technically and scientifically allowed to advance, select
@@ -51,8 +53,14 @@ silently enlarge a run because a task failed.
 ## Idea-revision synchronization
 
 Before launching every task and at every scheduled check, compare the plan's
-`idea_id`, `idea_revision`, and `idea_contract_sha256` with the canonical idea
-state. Consume new `research_events.jsonl` entries from the last cursor.
+`idea_id` and `idea_revision` with the canonical idea state. Consume new
+`research_events.jsonl` entries from the last cursor.
+
+For `exploratory-validation`, compare the alignment ID, idea revision, and
+`implementation_revision` instead of requiring an idea contract. Any change
+to the approved question, mechanism, implementation behavior, dataset, metric,
+budget, or outcome semantics stales queued tasks and requires fresh user
+alignment.
 
 - A non-material idea note may be recorded and acknowledged automatically.
 - A material revision to the hypothesis, mechanism, primary dataset, split,

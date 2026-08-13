@@ -9,10 +9,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from experiment_common import append_jsonl, atomic_json, now, read_json, require_id
 
 
 MODES = {"pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"}
+ADMISSION_MODES = {"exploratory-validation", "formal", "diagnostic"}
 
 
 def update_project_index(root: Path, experiment_id: str) -> None:
@@ -39,21 +42,92 @@ def initialize(args: argparse.Namespace) -> None:
     experiment_id = require_id(args.experiment_id, "experiment_id")
     if args.mode not in MODES:
         raise ValueError(f"mode must be one of {sorted(MODES)}")
+    admission_mode = args.admission_mode or ("formal" if args.idea_id else "diagnostic")
+    if admission_mode not in ADMISSION_MODES:
+        raise ValueError(f"admission_mode must be one of {sorted(ADMISSION_MODES)}")
+    if admission_mode == "formal":
+        if not args.idea_id or not isinstance(args.idea_revision, int):
+            raise ValueError("formal admission requires idea_id and idea_revision")
+        if args.method_tier != "full":
+            raise ValueError("formal admission requires method_tier full")
+    if admission_mode == "exploratory-validation":
+        if not args.idea_id or not isinstance(args.idea_revision, int):
+            raise ValueError("exploratory-validation requires idea_id and idea_revision")
+        if not isinstance(args.implementation_revision, int):
+            raise ValueError("exploratory-validation requires implementation_revision")
+        if not args.validation_alignment or not args.validation_alignment_id:
+            raise ValueError("exploratory-validation requires validation alignment path and alignment_id")
+        declared_alignment = Path(args.validation_alignment)
+        alignment_path = (
+            declared_alignment.resolve()
+            if declared_alignment.is_absolute()
+            else (root / declared_alignment).resolve()
+        )
+        try:
+            alignment_path.relative_to(root)
+        except ValueError as exc:
+            raise ValueError("validation alignment must stay inside project_root") from exc
+        if not alignment_path.is_file():
+            raise ValueError(f"validation alignment does not exist: {alignment_path}")
+        alignment = yaml.safe_load(alignment_path.read_text(encoding="utf-8"))
+        if not isinstance(alignment, dict):
+            raise ValueError("validation alignment must be a YAML mapping")
+        if alignment.get("schema_version") != "research-idea/validation-alignment-v3":
+            raise ValueError("new exploratory validation requires validation-alignment-v3")
+        if alignment.get("alignment_id") != args.validation_alignment_id:
+            raise ValueError("validation alignment ID does not match --validation-alignment-id")
+        for field, expected in (
+            ("idea_id", args.idea_id),
+            ("idea_revision", args.idea_revision),
+            ("implementation_revision", args.implementation_revision),
+        ):
+            if alignment.get(field) != expected:
+                raise ValueError(
+                    f"validation alignment {field} does not match requested experiment identity"
+                )
+        parent_problem = alignment.get("parent_problem")
+        if not isinstance(parent_problem, dict):
+            raise ValueError("validation-alignment-v3 requires parent_problem")
+        stored_alignment = alignment_path.relative_to(root).as_posix()
+    else:
+        if args.validation_alignment or args.validation_alignment_id:
+            raise ValueError(
+                "validation alignment is only valid for exploratory-validation admission"
+            )
+        parent_problem = None
+        stored_alignment = None
     experiment_dir = root / "research_state" / "experiments" / experiment_id
     if experiment_dir.exists():
         raise ValueError(f"experiment already exists; do not overwrite it: {experiment_dir}")
     for relative in ("runs", "analysis", "logs"):
         (experiment_dir / relative).mkdir(parents=True, exist_ok=False)
     plan: dict[str, Any] = {
-        "schema_version": "research-experiment/plan-v2",
+        "schema_version": "research-experiment/plan-v3",
+        "admission_mode": admission_mode,
         "experiment_id": experiment_id,
         "plan_revision": 1,
         "mode": args.mode,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
-        "idea_contract_sha256": "",
+        "implementation_revision": args.implementation_revision,
+        "validation_alignment": (
+            {
+                "artifact": stored_alignment,
+                "alignment_id": args.validation_alignment_id,
+                "idea_revision": args.idea_revision,
+                "implementation_revision": args.implementation_revision,
+                "parent_problem": parent_problem,
+            }
+            if admission_mode == "exploratory-validation"
+            else None
+        ),
+        "method_identity": {
+            "method_tier": args.method_tier,
+            "publication_eligible": args.method_tier == "full" and admission_mode == "formal",
+            "scientific_configuration": args.scientific_configuration,
+            "excluded_simplifications": [],
+        },
         "mechanism_family_id": "",
-        "mechanism_signature_sha256": "",
         "inherited_failure_ids": [],
         "research_question": args.research_question,
         "hypothesis": "",
@@ -69,6 +143,11 @@ def initialize(args: argparse.Namespace) -> None:
         "failure_thresholds": [],
         "stop_conditions": [],
         "confounders_and_controls": [],
+        "evidence_obligations": {
+            "mechanism": [],
+            "quantitative": [],
+            "qualitative": [],
+        },
         "prelaunch": {
             "required_gates": [
                 "anti-reskin",
@@ -79,6 +158,7 @@ def initialize(args: argparse.Namespace) -> None:
             "constraints": [],
             "lineage_check_report": "",
             "idea_state_consistency_report": "",
+            "validation_alignment_check_report": "",
             "last_reconciled_at": None,
         },
         "autonomy": {
@@ -108,6 +188,7 @@ def initialize(args: argparse.Namespace) -> None:
         },
         "budget": {
             "gpu_types": [],
+            "max_direct_cost_cny": 100,
             "max_parallel_runs": 1,
             "max_wall_time_hours": 24,
             "max_retry_per_failure": 2,
@@ -123,6 +204,8 @@ def initialize(args: argparse.Namespace) -> None:
         "experiment_id": experiment_id,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
+        "implementation_revision": args.implementation_revision,
+        "admission_mode": admission_mode,
         "plan_revision": 1,
         "stage": "designed",
         "active_runs": [],
@@ -145,6 +228,7 @@ def initialize(args: argparse.Namespace) -> None:
             "event": "experiment-created",
             "experiment_id": experiment_id,
             "mode": args.mode,
+            "admission_mode": admission_mode,
             "idea_id": args.idea_id,
             "idea_revision": args.idea_revision,
         },
@@ -179,6 +263,8 @@ def new_run(args: argparse.Namespace) -> None:
         "plan_revision": plan.get("plan_revision"),
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
+        "implementation_revision": plan.get("implementation_revision"),
+        "admission_mode": plan.get("admission_mode"),
         "mode": plan.get("mode"),
         "variant": args.variant,
         "dataset": args.dataset,
@@ -230,8 +316,15 @@ def main() -> int:
     init_parser.add_argument("project_root", type=Path)
     init_parser.add_argument("--experiment-id", required=True)
     init_parser.add_argument("--mode", required=True)
+    init_parser.add_argument("--admission-mode", choices=sorted(ADMISSION_MODES))
     init_parser.add_argument("--idea-id")
     init_parser.add_argument("--idea-revision", type=int)
+    init_parser.add_argument("--implementation-revision", type=int)
+    init_parser.add_argument("--validation-alignment")
+    init_parser.add_argument("--validation-alignment-sha256")
+    init_parser.add_argument("--validation-alignment-id")
+    init_parser.add_argument("--method-tier", choices=("full", "simplified", "proxy", "toy", "debug"), default="full")
+    init_parser.add_argument("--scientific-configuration", default="")
     init_parser.add_argument("--research-question", default="")
     init_parser.set_defaults(func=initialize)
 
@@ -253,7 +346,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         args.func(args)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, json.JSONDecodeError, yaml.YAMLError) as exc:
         print(f"experimentctl failed: {exc}", file=sys.stderr)
         return 2
     return 0

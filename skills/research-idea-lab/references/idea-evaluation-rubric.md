@@ -1,6 +1,6 @@
 # Research Idea Evaluation Rubric
 
-Use this rubric after field mapping and before experiment handoff. Keep `soundness` and `excitement` independent. Record evidence beside every score; do not average away a fatal gate.
+Use this rubric only in user-requested full `gate` mode for scoring, ranking, investment, or abandon decisions. Focused target-domain novelty review and user-approved pre-gate validation do not load or require this rubric. Keep `soundness` and `excitement` independent. Record evidence beside every score; do not average away a fatal gate.
 
 ## Decision sequence
 
@@ -118,6 +118,12 @@ Cover at least novelty, soundness, significance, evaluation, reproducibility, ef
 
 ## Promotion rule
 
+This section governs promotion through a user-requested full `gate`. A focused
+`novelty` review may separately prepare a selected idea for formal experiments
+under the staged contract in `idea-contract.md`; it must still satisfy focused
+novelty, lineage, identifiability, feasibility, and user-selection requirements
+but need not manufacture numeric comparison scores.
+
 Promote only when:
 
 - all fatal gates pass;
@@ -180,8 +186,12 @@ Promotion guidance:
 
 - Any of the four dimensions below 2: `revise` or `park`, never `experiment-ready`.
 - Any mapping below 2: rewrite the chain and specify the missing evidence or intervention.
-- `idea_readiness < 2.5`: exploratory only; run literature or framing work, not a long experiment.
+- `idea_readiness < 2.5`: exploratory only; allow a user-approved low-cost validation under `iterative-development.md`, but do not start a full experiment campaign.
 - `2.5 ≤ idea_readiness < 3.2`: allow a bounded pilot with explicit kill criteria.
 - `idea_readiness ≥ 3.2`, all links ≥ 3, and fatal gates pass: eligible for user-selected experiment design.
 
 Always store the one-sentence background, one-sentence motivation, one-sentence method, the six scores, evidence notes, and the weakest link beside the numeric index. Do not report the index as a probability of acceptance.
+
+Never use these readiness scores to convert a target-domain novelty conclusion
+into “not novel.” Contribution strength, adaptation value, and experimental
+maturity remain separate from novelty occupation.

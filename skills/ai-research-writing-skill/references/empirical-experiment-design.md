@@ -25,6 +25,10 @@ python3 scripts/validate_design_csvs.py --project-dir <project> --fail-on-issues
 ```
 
 Do not draft superiority, robustness, efficiency, or significance claims until the supporting matrix rows are `verified`.
+Do not draft a causal module claim until mechanism evidence is verified. Do not draft
+a systematic qualitative-improvement claim from hand-picked successes; require a
+predeclared case-selection protocol with baseline, full-method, ablation, unchanged,
+and failure cases where applicable.
 
 ## Baseline contract
 
@@ -45,6 +49,19 @@ Define a minimum viable innovation with explicit inputs, outputs, replaceability
 - `low`: hyperparameter choice; include only when scientifically material.
 
 Default to single-factor ablations. Use removal, simpler replacement, or controlled random replacement. Add combination ablations only when an interaction hypothesis is stated in advance. Always include the full method in the same table.
+
+For a baseline modification or mechanism combination, require the upstream
+idea artifact to identify the exact baseline version, target failure, add /
+replace / remove / rewire / combine operation, insertion location, before and
+after information or training flow, reused and redesigned parts, expected
+resource delta, and isolating controls. Do not infer these changes from a
+method name or final code diff alone.
+
+Before treating a negative result as mechanism evidence, require upstream
+activation evidence that the implementation used the intended mechanism and
+intervention evidence showing that disabling, shuffling, or replacing it had
+the predicted effect. Otherwise describe the result as an implementation or
+measurement limitation.
 
 ## Experiment matrix
 

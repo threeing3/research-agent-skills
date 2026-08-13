@@ -77,21 +77,12 @@ class IdeaStateConsistencyTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn('"passed": true', result.stdout)
             report = json.loads(result.stdout)
-            pool_path = root / "research_state" / "ideas" / "idea_pool.json"
-            contract_path = (
-                root / "research_state" / "ideas" / "idea-1" / "idea_contract.yaml"
-            )
             self.assertEqual(
                 report["schema_version"], "research-idea/state-consistency-v2"
             )
-            self.assertEqual(
-                report["pool_sha256"], hashlib.sha256(pool_path.read_bytes()).hexdigest()
-            )
+            self.assertNotIn("pool_sha256", report)
             self.assertEqual(report["records"][0]["contract_revision"], 1)
-            self.assertEqual(
-                report["records"][0]["contract_sha256"],
-                hashlib.sha256(contract_path.read_bytes()).hexdigest(),
-            )
+            self.assertNotIn("contract_sha256", report["records"][0])
 
     def test_legacy_ready_contract_conflicts_with_rejected_pool(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

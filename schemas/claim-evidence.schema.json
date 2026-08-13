@@ -10,8 +10,13 @@
     "project_id": {"type": "string"},
     "claim_id": {"type": "string"},
     "claim": {"type": "string", "minLength": 1},
-    "status": {"enum": ["planned", "supported", "partially-supported", "unsupported", "blocked"]},
+    "status": {"enum": ["planned", "supported", "partially-supported", "unsupported", "overstated", "unclear", "blocked"]},
     "evidence": {"type": "array", "items": {"type": "object", "required": ["source", "role"]}},
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "idea_id": {"type": "string"},
+    "idea_revision": {"type": "integer", "minimum": 1},
+    "experiment_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "next_action": {"type": "string"},
     "limitations": {"type": "array", "items": {"type": "string"}},
     "paper_section": {"type": "string"}
   }

@@ -76,7 +76,7 @@ Allowed session statuses:
 
 `framing`, `opportunity-mapping`, `evidence-frozen`, `divergent-generation`, `clustering`, `development`, `cross-examination`, `adversarial-review`, `rebuttal`, `chair-adjudication`, `user-decision`, `completed`, `blocked`.
 
-Allowed work modes are `explore`, `develop`, and `gate`. In `explore`, set strict-review role runs to `not-requested` unless the user explicitly enters `gate`; do not manufacture empty adversarial artifacts.
+Allowed work modes are `explore`, `develop`, `novelty`, and `gate`. In `explore`, set strict-review role runs to `not-requested`; do not manufacture empty adversarial artifacts. Focused `novelty` review records target-domain occupation without requiring full scoring or reviewer debate.
 
 ## Evidence packet
 
@@ -121,6 +121,11 @@ candidates:
     revision: 1
     origin: native
     title: ""
+    maturity: seed
+    idea_type: mechanism-invention
+    implementation_revision: 1
+    parent_idea_id: null
+    parent_revision: null
     family_id: ""
     relation_to_family: new-family
     problem_signature: {}
@@ -141,10 +146,17 @@ candidates:
     kill_condition: ""
     expected_reviewer_attack: ""
     uncertainty: []
+    missing_links: []
+    baseline_change: null
     transfer_card: null
 ```
 
 For `cross_domain_researcher`, set `origin: cross-domain` and populate `transfer_card` using `cross-domain-transfer.md`.
+
+For `baseline-modification` and `mechanism-combination`, populate
+`baseline_change` from `iterative-development.md`. A `seed` may leave fields
+incomplete when `missing_links` names them. Require the complete blueprint only
+before `validation-ready`.
 
 ## Cross-examination
 

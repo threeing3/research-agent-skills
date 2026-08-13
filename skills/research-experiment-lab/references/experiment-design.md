@@ -2,6 +2,11 @@
 
 ## Campaign contract
 
+Declare `admission_mode` first. For `exploratory-validation`, follow
+`exploratory-validation.md` and bind the user-approved validation alignment.
+For `formal`, bind the active idea contract and formal prelaunch evidence. Do
+not let a cheap validation silently become a full campaign.
+
 Define one campaign around an idea revision or reproduction question. Record:
 
 - research question and falsifiable mechanism prediction;
@@ -11,6 +16,8 @@ Define one campaign around an idea revision or reproduction question. Record:
 - direct competitors, foundations, and ablation anchors;
 - variants, seeds, metrics, uncertainty method, and comparison unit;
 - robustness, efficiency, and failure-analysis obligations;
+- a three-part evidence plan covering mechanism causality, quantitative improvement,
+  and qualitative behavior change;
 - success, failure, and stop thresholds set before formal results;
 - compute, wall-time, retry, parallelism, and download budgets;
 - confounders and controls.
@@ -28,6 +35,28 @@ failure must lead to a predeclared recovery, block, or review transition.
 Use at least three random seeds for stochastic formal comparisons when feasible.
 If fewer are possible, record the constraint and weaken statistical claims.
 Keep pilots diagnostic; keep full campaigns paper-complete.
+
+An exploratory validation may use one seed or a narrow controlled subset when
+that is sufficient for its frozen diagnostic question. Do not present that
+choice as formal uncertainty evidence. A full campaign still follows the
+multi-seed and paper-completeness requirements.
+
+## Motivation-to-evidence contract
+
+Bind the plan to the parent problem, distinctive motivation, and exact module
+derivation from the idea alignment or contract. Translate the motivation into:
+
+- a targeted subset, condition, or diagnostic on which the bottleneck should appear;
+- a mechanism intervention that distinguishes the module from capacity, data,
+  prompting, retrieval, or optimization effects;
+- an aggregate quantitative comparison and a bottleneck-targeted quantitative
+  comparison;
+- a qualitative analysis with categories and case-selection rules declared before
+  inspecting favorable examples.
+
+Qualitative evidence should compare the same cases across baseline, full method, and
+relevant ablation when possible. Include failures, regressions, and unchanged cases.
+Do not select examples only because the proposed method succeeds.
 
 ## Autonomy envelope
 
