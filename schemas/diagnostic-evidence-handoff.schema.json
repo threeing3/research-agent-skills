@@ -13,6 +13,10 @@
     "verified_stage",
     "observed_failure",
     "tested_explanations",
+    "separating_prediction",
+    "measurement",
+    "intervention_boundary",
+    "experiment_plan_sha256",
     "result",
     "scope",
     "limitations",
@@ -35,6 +39,13 @@
       "minItems": 2,
       "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
+    },
+    "separating_prediction": {"type": "string", "minLength": 1},
+    "measurement": {"type": "string", "minLength": 1},
+    "intervention_boundary": {"type": "string", "minLength": 1},
+    "experiment_plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "result": {
       "type": "object",

@@ -39,7 +39,20 @@ hypothesis; do not stack speculative fixes.
 Create a failing reproduction when possible, fix locally, make a new snapshot
 and run ID, then verify the original symptom and relevant regressions.
 
-After three failed fixes for the same symptom, stop and discuss architecture.
-Do not relabel a correctly executed negative result as a software failure or
-continue tuning until it becomes positive.
+Track fixes under a stable repair branch based on the interface or scientific
+role they serve. Parser failure, empty output, invalid format, low coverage,
+threshold failure, and fallback failure remain one branch when they are all
+attempts to activate the same realization. A new symptom label does not reset
+the history.
+
+Treat three failed fixes on one repair branch as the default point to stop and
+discuss architecture. Continue only when verified new evidence, a newly isolated
+blocker, or a material realization change makes another attempt informative and
+supplies a stopping condition. Do not relabel a correctly executed negative
+result as a software failure or continue tuning until it becomes positive.
+
+If the parent problem and bottleneck remain supported while the realization is
+infeasible, preserve them and close the implementation branch. Return to
+solution exploration rather than redefining the problem as making that
+interface work.
 

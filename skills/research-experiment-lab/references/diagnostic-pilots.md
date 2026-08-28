@@ -47,6 +47,7 @@ Ground-truth information used for diagnosis stays evaluator-side unless the inte
 
 - Set `admission_mode` to `diagnostic`.
 - Use an execution `mode` such as `pilot`, `reproduction`, or `debug` according to the run shape.
+- Keep a single `hypothesis` optional; the research question, competing explanations, and separating prediction are the diagnostic commitments.
 - An idea ID, idea revision, contract hash, mechanism family, and anti-reskin report may be empty or null.
 - Freeze the diagnostic handoff and sample-selection rule before observing the new result.
 - Keep the normal immutable run IDs, readable logs, resource records, raw outputs, and verification artifacts.

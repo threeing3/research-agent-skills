@@ -4,7 +4,7 @@
   "title": "Experiment Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "admission_mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
+  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "admission_mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
   "properties": {
     "schema_version": {"const": "research-experiment/plan-v2"},
     "project_id": {"type": "string", "minLength": 1},
@@ -86,9 +86,11 @@
         "properties": {"admission_mode": {"const": "method-validation"}}
       },
       "then": {
+        "required": ["hypothesis"],
         "properties": {
           "idea_id": {"type": "string", "minLength": 1},
-          "idea_revision": {"type": "integer", "minimum": 1}
+          "idea_revision": {"type": "integer", "minimum": 1},
+          "hypothesis": {"type": "string", "minLength": 1}
         }
       }
     },

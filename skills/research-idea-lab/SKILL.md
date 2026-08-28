@@ -111,6 +111,18 @@ Separate:
 
 Engineering repairs do not become new scientific evidence merely because the version number changes. After the intended implementation is confirmed active, failure of its distinguishing prediction is mechanism counterevidence; do not continue prompt, parser, fallback, or threshold tuning under the same claim without a material reason.
 
+Track low-information history by the implementation branch and scientific role,
+not by the latest surface symptom. Parser failure, empty output, invalid format,
+low coverage, and fallback behavior belong to the same branch when each repair
+serves the same intermediate interface or realization. Renaming the symptom does
+not reset the warning.
+
+An implementation branch may fail while its parent scientific problem and
+supported bottleneck remain valuable. In that case, preserve the problem,
+abandon the failed interface or realization, and return to solution exploration.
+Do not redefine the research problem as making that interface work merely to
+rescue prior implementation effort.
+
 Use two consecutive low-information rounds as a default warning, not a universal ban. Continuing is reasonable only when new evidence, a newly verified engineering blocker, or a material mechanism change makes the next round informative. State the reason and stopping condition.
 
 When a method depends on generated traces, retrieved evidence, pseudo-labels, annotations, or another intermediate artifact, check that the artifact can occur naturally at useful quality and coverage before a long run. Choose thresholds from the claim and intended analysis; do not use a universal pass rate.

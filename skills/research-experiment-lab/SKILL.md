@@ -46,9 +46,12 @@ Read only the references needed for the task:
      makes no novel-method claim unless separately admitted as method validation.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
-4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
-   and failure thresholds, stop conditions, budget, and confounders before
-   observing formal results.
+4. Freeze the commitments applicable to the admission mode before observing
+   results. For diagnosis, freeze the research question, competing explanations,
+   separating prediction, measurement, intervention boundary, and outcome
+   meanings; a single favored hypothesis is optional. For method validation,
+   freeze the method hypothesis, comparisons, datasets, splits, metrics, seeds,
+   thresholds, stop conditions, budget, and confounders.
    Declare evidenced minimum prerequisites and verify that they are jointly
    satisfiable. A smaller run that cannot possibly pass the frozen scientific
    gate is not an eligible pilot.
@@ -119,7 +122,9 @@ diagnose, make implementation-level fixes, and retry within the frozen plan and
 budget. After every fresh gate verification, automatically launch the next
 eligible predeclared task instead of stopping at an intermediate milestone.
 Pause for hypothesis changes, metric or dataset changes, budget expansion,
-destructive actions, credentials, or three failed fixes for the same symptom.
+destructive actions, credentials, or an exhausted repair branch. Track repairs
+by the interface or scientific role they serve; changing the surface symptom
+does not reset the branch history.
 For `method-validation`, before every launch and scheduled check, reconcile the
 active idea ID, revision, and contract hash with `research-idea-lab`; a material
 idea revision stales queued tasks, preserves prior evidence, and requires a new
@@ -159,11 +164,19 @@ Apply `references/systematic-experiment-debugging.md` before changing code:
 4. Record one root-cause hypothesis and run the smallest discriminating test.
 5. Implement one fix locally and create a new run.
 
-Do not tune away a negative scientific result. After three failed fixes for
-one symptom, stop and request architectural discussion. Do not count renaming,
+Do not tune away a negative scientific result. Treat three failed fixes on one
+repair branch as the default point to stop and request architectural discussion,
+even when the surface symptoms differ. Continue only when verified new evidence,
+a newly isolated blocker, or a material realization change makes the next run
+informative and gives it an explicit stopping condition. Do not count renaming,
 backbone swaps, optimizer swaps, or adding a training wrapper around the same
 target as architectural progress. Return these as an `idea-revision-request`
 with the inherited family evidence.
+
+When the parent problem and bottleneck remain supported but the interface or
+realization is infeasible, close the implementation branch and return an
+`idea-revision-request` for alternative solution exploration. Do not redefine
+the scientific problem around rescuing the failed interface.
 
 ## Verify and Aggregate
 

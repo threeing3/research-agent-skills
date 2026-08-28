@@ -18,7 +18,10 @@ positive or negative conclusion.
 ## Evidence boundary
 
 - Copy the frozen research question, experiment ID, plan revision, observed
-  failure, and competing explanations from the verified plan.
+  failure, competing explanations, separating prediction, measurement, and
+  intervention boundary from the verified plan.
+- Copy `experiment_plan_sha256` from the verification report so later readers
+  can identify the exact frozen plan that produced the receipt.
 - Classify only claims reached by inspectable evidence as `supports`, `weakens`,
   or `inconclusive`.
 - Point `evidence_refs` to the verification report and the smallest result

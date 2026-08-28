@@ -48,8 +48,19 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             schema["properties"]["admission_mode"]["enum"],
         )
         self.assertIn("admission_mode", schema["required"])
+        self.assertNotIn("hypothesis", schema["required"])
         self.assertIn("diagnostic_handoff", schema["properties"])
         self.assertEqual(template["admission_mode"], "method-validation")
+        method_rule = next(
+            rule
+            for rule in schema["allOf"]
+            if rule.get("if", {})
+            .get("properties", {})
+            .get("admission_mode", {})
+            .get("const")
+            == "method-validation"
+        )
+        self.assertIn("hypothesis", method_rule["then"]["required"])
 
     def test_diagnostic_evidence_handoff_schema_matches_template(self) -> None:
         schema = load(REPO / "schemas" / "diagnostic-evidence-handoff.schema.json")
@@ -64,6 +75,10 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "research_question",
             "experiment_id",
             "verified_stage",
+            "separating_prediction",
+            "measurement",
+            "intervention_boundary",
+            "experiment_plan_sha256",
             "result",
             "scope",
             "limitations",

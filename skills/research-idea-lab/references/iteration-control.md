@@ -22,6 +22,12 @@ Use prose instead of this form when convenient. What matters is whether the answ
 
 If the previous result changed no scientific uncertainty and the next round exposes no new discriminating observation, do not continue the implementation branch merely because another repair is possible.
 
+Give the branch a stable description based on the interface or scientific role
+being repaired. A shift from parser failure to empty output, format instability,
+low coverage, threshold failure, or fallback behavior does not start a new
+branch when the fixes still serve the same realization. Surface symptom names
+must not reset the low-information history.
+
 ## Classify what failed
 
 ### Engineering blocker
@@ -70,6 +76,11 @@ Two consecutive low-information rounds are a useful default warning, not an abso
 
 State why continuation is informative and what will end the branch. User preference, project risk, and resource cost may justify an earlier or later checkpoint.
 
+If the parent problem and bottleneck remain supported but the current interface
+or realization is infeasible, close that implementation branch and return to
+solution exploration. Preserve the scientific problem without redefining it as
+the task of making the failed interface work.
+
 ## Scope of an approved campaign
 
 A user may approve a bounded validation campaign rather than every small engineering repair. The approved scope should identify the research question, model or baseline family, data, resource envelope, and allowed repair class.
@@ -88,4 +99,3 @@ When a new experimental round is genuinely informative, hand off:
 - stopping conditions, resource envelope, and logging requirements.
 
 The experiment workflow owns execution and verification. This reference controls the scientific reason to run, not the operational details.
-

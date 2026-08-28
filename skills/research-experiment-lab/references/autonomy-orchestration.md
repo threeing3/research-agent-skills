@@ -163,8 +163,15 @@ Recovery is bounded:
 - resume the same immutable run only when the plan explicitly permits resume;
 - otherwise create a child run with `parent_run_id` and `change_reason`;
 - apply one root-cause fix at a time;
-- after three failed fixes for the same symptom, mark the task blocked and
-  request architectural review;
+- record a stable repair-branch identifier based on the interface or scientific
+  role being repaired; a changed symptom name does not reset its history;
+- after three failed fixes on the same repair branch, normally mark the task
+  blocked and request architectural review; continue only when verified new
+  evidence, a newly isolated blocker, or a material realization change makes
+  the next attempt informative and gives it a stopping condition;
+- when the scientific problem remains supported but the realization is
+  infeasible, close the branch and request alternative solution exploration
+  instead of redefining the problem around the failed interface;
 - never convert a verified negative scientific result into an infrastructure
   failure merely to keep the graph moving.
 

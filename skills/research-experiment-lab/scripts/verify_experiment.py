@@ -117,6 +117,14 @@ def main() -> int:
                 )
             )
         elif admission_mode == "method-validation":
+            checks.append(
+                result(
+                    "method-hypothesis",
+                    isinstance(plan.get("hypothesis"), str)
+                    and bool(plan.get("hypothesis").strip()),
+                    repr(plan.get("hypothesis")),
+                )
+            )
             identities.extend(
                 [
                     (

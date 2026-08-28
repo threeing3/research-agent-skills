@@ -10,6 +10,10 @@
     "First competing explanation.",
     "Second competing explanation."
   ],
+  "separating_prediction": "Copy the frozen prediction that distinguishes the explanations.",
+  "measurement": "Copy the frozen measurement used to test that prediction.",
+  "intervention_boundary": "Copy the frozen boundary of any diagnostic intervention.",
+  "experiment_plan_sha256": "Copy experiment_plan_sha256 from verification_report.json.",
   "result": {
     "supports": [],
     "weakens": [],
