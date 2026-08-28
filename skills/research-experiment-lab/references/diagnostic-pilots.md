@@ -64,7 +64,14 @@ Return one of:
 
 Verified diagnostic evidence updates problem or bottleneck state. It does not set novelty, `experiment-ready`, method validity, or `paper-ready`.
 
+After verification, write `diagnostic_evidence_handoff.json` using
+`assets/diagnostic_evidence_handoff.json.template` and
+`schemas/diagnostic-evidence-handoff.schema.json` at the repository root. Every interpretation
+must cite an inspectable result or verification artifact. The experiment skill
+owns this evidence receipt; the idea skill decides whether and how it changes
+the canonical problem or bottleneck state. Read
+`references/diagnostic-evidence-handoff.md` for the boundary.
+
 ## Transition to method validation
 
 Enter `method-validation` only after diagnostic evidence supports a bottleneck strongly enough to derive a required behavior and method hypothesis. Freeze a new plan linked to the approved idea contract. Do not mutate the diagnostic plan into a method campaign.
-

@@ -15,7 +15,7 @@ Read only the references needed for the task:
 
 | Task | Read first |
 |---|---|
-| Bottleneck or problem diagnosis | `references/diagnostic-pilots.md`, `references/experiment-design.md`, `references/state-and-artifacts.md` |
+| Bottleneck or problem diagnosis | `references/diagnostic-pilots.md`, `references/diagnostic-evidence-handoff.md`, `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | New pilot or full campaign | `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | Novel-method prelaunch or revised idea | `references/prelaunch-reconciliation.md` plus the new-pilot references |
 | AutoDL console, lifecycle, or other SSH execution | `references/autodl-operations.md`, `references/autodl-console-playbook.md`, `references/logging-and-statistics.md` |
@@ -185,10 +185,18 @@ cannot be promoted directly to `paper-ready`. Only `paper-ready` evidence with
 a v2 verification report and matching method-validation idea contract and
 experiment-plan hashes may enter an unblocked shared-state writing handoff.
 
+After a diagnostic experiment reaches `verified-diagnostic`, write
+`diagnostic_evidence_handoff.json` from the verified report and inspectable
+result artifacts. The handoff states what the evidence supports, weakens, or
+leaves inconclusive; its scope and limitations; and a recommended next update.
+Do not infer an interpretation from aggregate performance alone, and do not
+write the recommendation directly into idea-owned state. Read
+`references/diagnostic-evidence-handoff.md`.
+
 ## Ownership and Safety
 
 - Own experiment design, execution, debugging, result verification,
-  aggregation, and experimental evidence.
+  aggregation, experimental evidence, and diagnostic evidence handoffs.
 - Let `research-idea-lab` own novelty and idea revisions. Emit an idea revision
   request rather than silently changing the mechanism.
 - Let `ai-research-writing-skill` own claims, prose, publication tables, and

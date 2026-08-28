@@ -69,6 +69,13 @@ Ownership:
 
 Writers must read the current `revision`, write detailed artifacts first, then atomically update the index only if the expected revision still matches. Append an event for every transition. Never let one stage erase another stage's keys.
 
+For a verified diagnostic experiment, `research-experiment-lab` also owns
+`experiments/<experiment-id>/diagnostic_evidence_handoff.json`. The handoff is
+an evidence receipt, not an idea-state write. `research-idea-lab` reads it,
+checks the referenced evidence and scope, decides whether the problem or
+bottleneck changes, and records that decision in idea-owned state and the event
+log. It may reject the handoff's recommendation while preserving the receipt.
+
 ## Idea modes and status ownership
 
 When an ideation session is persisted, record one compatibility work mode for historical state and status ownership:

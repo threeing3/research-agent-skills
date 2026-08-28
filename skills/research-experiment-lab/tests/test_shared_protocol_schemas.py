@@ -47,8 +47,30 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "diagnostic",
             schema["properties"]["admission_mode"]["enum"],
         )
+        self.assertIn("admission_mode", schema["required"])
         self.assertIn("diagnostic_handoff", schema["properties"])
         self.assertEqual(template["admission_mode"], "method-validation")
+
+    def test_diagnostic_evidence_handoff_schema_matches_template(self) -> None:
+        schema = load(REPO / "schemas" / "diagnostic-evidence-handoff.schema.json")
+        template = load(
+            EXPERIMENT_SKILL / "assets" / "diagnostic_evidence_handoff.json.template"
+        )
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            template["schema_version"],
+        )
+        for field in (
+            "research_question",
+            "experiment_id",
+            "verified_stage",
+            "result",
+            "scope",
+            "limitations",
+            "recommended_update",
+            "evidence_refs",
+        ):
+            self.assertIn(field, schema["required"])
 
     def test_verification_schema_tracks_emitted_v2_identity(self) -> None:
         schema = load(REPO / "schemas" / "verification-report.schema.json")

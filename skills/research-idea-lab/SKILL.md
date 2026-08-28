@@ -32,6 +32,14 @@ These are decision aids, not a fixed sequence. A narrow discussion may need only
 
 Read references/problem-and-diagnosis.md when the problem or bottleneck is uncertain. Read references/iteration-control.md before recommending another implementation or experimental round after a negative, inconclusive, or repeated failure.
 
+When an experiment supplies a verified
+`diagnostic_evidence_handoff.json`, read it during **Learn**. Check its evidence
+references, scope, and limitations before deciding whether to keep or weaken a
+bottleneck, narrow the problem, or return to diagnosis. Treat
+`recommended_update` as an experiment-owned recommendation, not an automatic
+canonical state transition. Read references/state-protocol.md before persisting
+the decision.
+
 ## Choose a primary intent, not a rigid mode
 
 Infer the user's main intent and use adjacent capabilities when useful:

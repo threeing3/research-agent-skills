@@ -1,0 +1,27 @@
+{
+  "schema_version": "research-experiment/diagnostic-evidence-handoff-v1",
+  "created_at": "RFC3339 timestamp",
+  "research_question": "State the frozen diagnostic question.",
+  "experiment_id": "diagnostic-experiment-id",
+  "plan_revision": 1,
+  "verified_stage": "verified-diagnostic",
+  "observed_failure": "Describe the observed failure tested by this experiment.",
+  "tested_explanations": [
+    "First competing explanation.",
+    "Second competing explanation."
+  ],
+  "result": {
+    "supports": [],
+    "weakens": [],
+    "inconclusive": [
+      "Replace this placeholder with an evidence-backed interpretation."
+    ]
+  },
+  "scope": "State the population, subgroup, model, dataset, or condition supported by the evidence.",
+  "limitations": [],
+  "recommended_update": "return-to-diagnosis",
+  "evidence_refs": [
+    "verification_report.json"
+  ],
+  "source_verification_report": "verification_report.json"
+}

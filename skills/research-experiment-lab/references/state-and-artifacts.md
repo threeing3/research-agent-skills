@@ -16,6 +16,7 @@ research_state/
         metric_summary.csv
         failures.csv
       verification_report.json
+      diagnostic_evidence_handoff.json  # verified diagnostic experiments only
   logs/research_events.jsonl
 ```
 
@@ -48,6 +49,10 @@ For diagnostic work, a material change to the observed failure, competing
 explanations, separating prediction, intervention boundary, measurement, or
 sample-selection rule likewise creates a new plan revision. Verified diagnostic
 evidence may update problem state but cannot become `paper-ready` directly.
+After `verified-diagnostic`, the experiment skill writes
+`diagnostic_evidence_handoff.json` as an evidence receipt. The idea skill reads
+that receipt and owns any resulting problem, bottleneck, or idea-state change;
+the experiment skill never applies its recommendation directly.
 
 The experiment skill owns `research_state/experiments/`. It may read but not
 rewrite literature, idea, or paper-owned state.

@@ -80,6 +80,14 @@ def main() -> int:
             )
         )
         if admission_mode == "diagnostic":
+            checks.append(
+                result(
+                    "diagnostic-research-question",
+                    isinstance(plan.get("research_question"), str)
+                    and bool(plan.get("research_question").strip()),
+                    repr(plan.get("research_question")),
+                )
+            )
             handoff = plan.get("diagnostic_handoff")
             handoff_ok = (
                 isinstance(handoff, dict)
