@@ -1,4 +1,4 @@
 interface:
   display_name: "Research Idea Lab"
-  short_description: "Explore, rescue, and strictly gate ML/AI ideas"
-  default_prompt: "Use $research-idea-lab to explore several materially different research directions first, then develop or strictly gate only the candidate I choose."
+  short_description: "Find problems, diagnose bottlenecks, and derive research ideas"
+  default_prompt: "Use $research-idea-lab to establish the research problem and competing bottleneck explanations before deriving a method, then recommend only the next step that can add discriminating evidence."
