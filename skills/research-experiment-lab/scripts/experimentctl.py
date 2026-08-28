@@ -13,6 +13,7 @@ from experiment_common import append_jsonl, atomic_json, now, read_json, require
 
 
 MODES = {"pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"}
+ADMISSION_MODES = {"diagnostic", "method-validation", "reproduction"}
 
 
 def update_project_index(root: Path, experiment_id: str) -> None:
@@ -39,6 +40,14 @@ def initialize(args: argparse.Namespace) -> None:
     experiment_id = require_id(args.experiment_id, "experiment_id")
     if args.mode not in MODES:
         raise ValueError(f"mode must be one of {sorted(MODES)}")
+    if args.admission_mode not in ADMISSION_MODES:
+        raise ValueError(f"admission_mode must be one of {sorted(ADMISSION_MODES)}")
+    if args.admission_mode == "diagnostic" and not args.research_question.strip():
+        raise ValueError("diagnostic admission requires a research question")
+    if args.admission_mode == "method-validation" and (
+        not args.idea_id or not isinstance(args.idea_revision, int) or args.idea_revision < 1
+    ):
+        raise ValueError("method-validation admission requires idea ID and positive idea revision")
     experiment_dir = root / "research_state" / "experiments" / experiment_id
     if experiment_dir.exists():
         raise ValueError(f"experiment already exists; do not overwrite it: {experiment_dir}")
@@ -49,6 +58,7 @@ def initialize(args: argparse.Namespace) -> None:
         "experiment_id": experiment_id,
         "plan_revision": 1,
         "mode": args.mode,
+        "admission_mode": args.admission_mode,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
         "idea_contract_sha256": "",
@@ -56,6 +66,16 @@ def initialize(args: argparse.Namespace) -> None:
         "mechanism_signature_sha256": "",
         "inherited_failure_ids": [],
         "research_question": args.research_question,
+        "diagnostic_handoff": {
+            "observed_failure": "",
+            "scope_or_prevalence": "",
+            "competing_explanations": [],
+            "separating_prediction": "",
+            "measurement": "",
+            "intervention_boundary": "",
+            "outcome_interpretations": {},
+            "stop_condition": "",
+        } if args.admission_mode == "diagnostic" else None,
         "hypothesis": "",
         "mechanism_prediction": "",
         "null_explanation": "",
@@ -75,7 +95,7 @@ def initialize(args: argparse.Namespace) -> None:
                 "mechanism-identifiability",
                 "simple-baseline-survival",
                 "data-feasibility",
-            ],
+            ] if args.admission_mode == "method-validation" else [],
             "constraints": [],
             "lineage_check_report": "",
             "idea_state_consistency_report": "",
@@ -121,6 +141,7 @@ def initialize(args: argparse.Namespace) -> None:
     state = {
         "schema_version": "research-experiment/state-v1",
         "experiment_id": experiment_id,
+        "admission_mode": args.admission_mode,
         "idea_id": args.idea_id,
         "idea_revision": args.idea_revision,
         "plan_revision": 1,
@@ -145,6 +166,7 @@ def initialize(args: argparse.Namespace) -> None:
             "event": "experiment-created",
             "experiment_id": experiment_id,
             "mode": args.mode,
+            "admission_mode": args.admission_mode,
             "idea_id": args.idea_id,
             "idea_revision": args.idea_revision,
         },
@@ -230,6 +252,11 @@ def main() -> int:
     init_parser.add_argument("project_root", type=Path)
     init_parser.add_argument("--experiment-id", required=True)
     init_parser.add_argument("--mode", required=True)
+    init_parser.add_argument(
+        "--admission-mode",
+        choices=sorted(ADMISSION_MODES),
+        default="method-validation",
+    )
     init_parser.add_argument("--idea-id")
     init_parser.add_argument("--idea-revision", type=int)
     init_parser.add_argument("--research-question", default="")

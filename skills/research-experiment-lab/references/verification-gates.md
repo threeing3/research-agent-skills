@@ -2,7 +2,7 @@
 
 Use fresh evidence for every completion claim.
 
-For novel-method work, first require a passing prelaunch reconciliation tied
+For `method-validation`, first require a passing prelaunch reconciliation tied
 to an active idea lifecycle, a fresh idea-state consistency report, the exact
 idea-contract hash, mechanism family, mechanism-signature hash, and
 experiment-plan revision. A later rename or idea revision never repairs a
@@ -25,6 +25,12 @@ Require all mandatory variants and seeds, stable dataset and split IDs,
 consistent evaluator version, fair baseline protocol, declared uncertainty,
 documented exclusions, and mechanism-specific tests. Recompute reported
 aggregates from run-level records.
+
+For `diagnostic` admission, require the frozen competing explanations,
+separating prediction, measurement, intervention boundary, outcome meanings,
+scope estimate, and stop condition. A passed diagnostic receives
+`verified-diagnostic`; it updates problem evidence but cannot be promoted
+directly to `paper-ready`.
 
 Declare mandatory combinations in `experiment_plan.json.required_runs`. Use
 structured success thresholds with `metric`, `variant`, `dataset`, `split`,

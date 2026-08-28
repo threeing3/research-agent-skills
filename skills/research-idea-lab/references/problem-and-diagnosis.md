@@ -15,6 +15,7 @@ problem:
   one_sentence: ""
   observed_failure: ""
   conditions: []
+  scope_or_prevalence: ""
   evidence: []
   counter_evidence: []
   competing_explanations: []
@@ -45,6 +46,10 @@ Retain a problem only when at least one inspectable signal exists, such as:
 
 A low aggregate score is a starting observation, not a causal diagnosis. A limitation sentence and an absence of papers are search leads, not problem evidence.
 
+## Scope and prevalence
+
+Estimate how broadly the phenomenon appears before developing a paper-scale method. The estimate may be lightweight, such as a frozen sample audit with counts by task or condition. Distinguish an isolated case, a recurring subgroup failure, and a broad capability failure. State uncertainty when the sample is small; do not turn one compelling example into a general problem claim.
+
 ## Competing explanations
 
 Name the strongest simple explanation before introducing a new one. For a pipeline failure, useful alternatives often include:
@@ -63,12 +68,12 @@ Do not require this list when it does not fit the task. Its purpose is to preven
 A separating check makes competing explanations predict different observations. Prefer checks that:
 
 - use existing data or official metadata;
-- do not require the proposed method to work;
+- do not require the full proposed method to work;
 - isolate one information boundary at a time;
 - expose both supportive and disconfirming outcomes;
 - remain interpretable when aggregate accuracy is near the floor or ceiling.
 
-Examples include controlled input conditions, local versus cumulative probes, prefix evaluations, component substitution, oracle information at the evaluator side, and manual audit of a frozen sample. These are examples, not required stages.
+Examples include controlled input conditions, local versus cumulative probes, prefix evaluations, component substitution, oracle information at the evaluator side, and manual audit of a frozen sample. A minimal diagnostic intervention is valid when pure observation cannot identify the bottleneck, but the complete proposed method must not become the evidence for its own motivation. These are examples, not required stages.
 
 ## Feasibility before solution generation
 
@@ -93,4 +98,3 @@ A problem is ready to derive solutions when:
 - the intended dataset and evaluation can support the claim.
 
 These are decision criteria, not a demand for a particular document, candidate count, or sequence of work.
-

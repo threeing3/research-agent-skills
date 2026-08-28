@@ -24,7 +24,7 @@ Use only the parts needed for the current request:
 
 1. **Observe** — state the failure in ordinary language and identify inspectable evidence.
 2. **Separate** — name credible competing explanations, including the strongest simple explanation.
-3. **Discriminate** — find the smallest observation or intervention that makes those explanations predict different outcomes. Prefer a check that does not depend on the proposed method.
+3. **Discriminate** — find the smallest observation or intervention that makes those explanations predict different outcomes. Prefer a check independent of the full proposed method; when pure observation is insufficient, use a minimal diagnostic intervention rather than the complete method.
 4. **Derive** — after one bottleneck is sufficiently supported, derive the required behavior, mechanism, and simplest implementation.
 5. **Learn** — bind each result to the layer it informs, then continue, return to diagnosis, revise the mechanism, pivot, or park.
 
@@ -67,7 +67,7 @@ Before treating a direction as method-ready, make the following understandable w
 
 When these are incomplete, return a problem seed and the next evidence task. Do not invent modules to make an uncertain problem appear complete.
 
-Do not use the proposed method's performance to establish the existence of its target bottleneck. First diagnose the bottleneck with existing data, controls, analysis, or a method-independent probe. If no feasible separating observation exists, label the mechanism not identifiable and revise or park it.
+Do not use the full proposed method's performance to establish the existence of its target bottleneck. First diagnose the bottleneck with existing data, controls, analysis, or a method-independent probe. When the bottleneck is identifiable only through intervention, a minimal diagnostic intervention such as evaluator-side oracle information or component substitution is allowed, provided it does not instantiate the complete proposed solution. If no feasible separating observation or minimal intervention exists, label the mechanism not identifiable and revise or park it.
 
 ## Derive methods from supported bottlenecks
 

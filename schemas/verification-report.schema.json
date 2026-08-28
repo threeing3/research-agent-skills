@@ -14,7 +14,7 @@
     "idea_revision": {"type": ["integer", "null"], "minimum": 1},
     "idea_contract_sha256": {"type": ["string", "null"], "pattern": "^$|^[0-9a-f]{64}$"},
     "experiment_plan_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-    "stage": {"enum": ["verified-scientific", "paper-ready", "blocked"]},
+    "stage": {"enum": ["verified-diagnostic", "verified-scientific", "paper-ready", "blocked"]},
     "passed": {"type": "boolean"},
     "blockers": {"type": "array", "items": {"type": "string"}},
     "checks": {

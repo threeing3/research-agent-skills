@@ -43,6 +43,12 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             schema["properties"]["prelaunch"]["required"],
         )
         self.assertIn("idea_state_consistency_report", template["prelaunch"])
+        self.assertIn(
+            "diagnostic",
+            schema["properties"]["admission_mode"]["enum"],
+        )
+        self.assertIn("diagnostic_handoff", schema["properties"])
+        self.assertEqual(template["admission_mode"], "method-validation")
 
     def test_verification_schema_tracks_emitted_v2_identity(self) -> None:
         schema = load(REPO / "schemas" / "verification-report.schema.json")
@@ -61,6 +67,10 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "passed",
         ):
             self.assertIn(field, schema["required"])
+        self.assertIn(
+            "verified-diagnostic",
+            schema["properties"]["stage"]["enum"],
+        )
 
     def test_research_state_schema_allows_real_phase_and_current_paths(self) -> None:
         schema = load(REPO / "schemas" / "research-state.schema.json")

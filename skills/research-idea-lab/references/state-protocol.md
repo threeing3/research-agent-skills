@@ -71,7 +71,9 @@ Writers must read the current `revision`, write detailed artifacts first, then a
 
 ## Idea modes and status ownership
 
-Record one work mode in every ideation session:
+When an ideation session is persisted, record one compatibility work mode for historical state and status ownership:
+
+The persisted mode is bookkeeping metadata, not a workflow fence. The agent may use adjacent capabilities required by the current decision, and ordinary discussion does not need a persisted session merely to choose an intent. The mode controls which canonical status transitions are allowed; it does not force the response into one rigid procedure.
 
 - `explore` may create provisional seeds and write `raw` or `developing` candidates. It may not write `rejected` or `experiment-ready`.
 - `develop` may write `developing`, `screened`, `novelty-risk`, `discussion-active`, `gate-ready`, or `parked`. It may not write `rejected` or `experiment-ready`.

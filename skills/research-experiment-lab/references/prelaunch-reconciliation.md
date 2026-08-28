@@ -1,8 +1,11 @@
 # Prelaunch Lineage and Gate Reconciliation
 
-Use this protocol before creating a novel-method run, allocating a GPU, or
-starting an autonomous task graph. It prevents a renamed failed mechanism or
-an impossible experimental gate from consuming compute.
+Use this protocol for `method-validation` before creating a novel-method run,
+allocating a GPU, or starting an autonomous task graph. It prevents a renamed
+failed mechanism or an impossible experimental gate from consuming compute.
+Do not apply it to a `diagnostic` pilot; use `diagnostic-pilots.md` and check
+the frozen diagnostic handoff, measurement feasibility, intervention boundary,
+authorization, and resource limits instead.
 
 ## Required handoff
 

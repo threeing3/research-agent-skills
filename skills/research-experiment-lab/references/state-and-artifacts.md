@@ -19,10 +19,12 @@ research_state/
   logs/research_events.jsonl
 ```
 
-`experiment_state.json` links the idea ID and revision, plan revision, active
-runs, stage, budget consumption, blockers, and verified evidence paths.
-For novel-method work it also links the mechanism family ID,
-mechanism-signature hash, and latest passing prelaunch reconciliation report.
+`experiment_state.json` records `admission_mode`, plan revision, active runs,
+stage, budget consumption, blockers, and verified evidence paths.
+For `method-validation` it also links the idea ID and revision, mechanism family
+ID, mechanism-signature hash, and latest passing prelaunch reconciliation
+report. For `diagnostic` it instead links the explicit research question and
+frozen diagnostic handoff; idea and contract identity may be null.
 
 For autonomously continuing campaigns, `experiment_plan.json` also contains a
 durable `tasks` array. Each task records dependencies, required gates, successor
@@ -38,9 +40,14 @@ Detailed artifacts are written before the project-root index is updated. Use
 atomic JSON writes and optimistic revision checks. Append state changes to
 `research_state/logs/research_events.jsonl`; do not rewrite history.
 
-When the idea revision or contract hash changes, mark queued tasks stale and
+For method validation, when the idea revision or contract hash changes, mark queued tasks stale and
 create a new plan revision/run ID. Never mutate an existing formal run to
 follow a new hypothesis.
+
+For diagnostic work, a material change to the observed failure, competing
+explanations, separating prediction, intervention boundary, measurement, or
+sample-selection rule likewise creates a new plan revision. Verified diagnostic
+evidence may update problem state but cannot become `paper-ready` directly.
 
 The experiment skill owns `research_state/experiments/`. It may read but not
 rewrite literature, idea, or paper-owned state.

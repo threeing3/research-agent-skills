@@ -15,6 +15,7 @@ Read only the references needed for the task:
 
 | Task | Read first |
 |---|---|
+| Bottleneck or problem diagnosis | `references/diagnostic-pilots.md`, `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | New pilot or full campaign | `references/experiment-design.md`, `references/state-and-artifacts.md` |
 | Novel-method prelaunch or revised idea | `references/prelaunch-reconciliation.md` plus the new-pilot references |
 | AutoDL console, lifecycle, or other SSH execution | `references/autodl-operations.md`, `references/autodl-console-playbook.md`, `references/logging-and-statistics.md` |
@@ -26,12 +27,23 @@ Read only the references needed for the task:
 ## Entry Contract
 
 1. Locate project-root `research_state.json`.
-2. Require a selected idea contract for novel-method work. Reproduction and
-   diagnostic modes may instead cite an explicit research question.
-   For novel-method work, require a passed `research-idea/v4` anti-reskin gate,
-   an `active` lifecycle whose current pool status is `experiment-ready`, a
-   fresh passed `research-idea/state-consistency-v2` report, mechanism family
-   ID, mechanism-signature hash, and resolved inherited failure ledger.
+2. Declare `admission_mode` as `diagnostic`, `method-validation`, or
+   `reproduction`.
+   - `diagnostic` answers where a problem or bottleneck lies. It requires the
+     observed failure, competing explanations, separating prediction,
+     measurement, outcome meanings, stop condition, and bounded authorization.
+     It does not require an idea contract, `experiment-ready` status,
+     anti-reskin gate, mechanism family, or mechanism signature. It may use a
+     minimal diagnostic intervention, but must not instantiate the full proposed
+     method to prove that method's motivation. Read `references/diagnostic-pilots.md`.
+   - `method-validation` tests a selected novel method after the problem,
+     supported bottleneck, method hypothesis, and distinguishing prediction are
+     established. Require a passed `research-idea/v4` anti-reskin gate, an
+     `active` lifecycle whose current pool status is `experiment-ready`, a fresh
+     passed `research-idea/state-consistency-v2` report, mechanism family ID,
+     mechanism-signature hash, and resolved inherited failure ledger.
+   - `reproduction` cites an explicit research question and source protocol. It
+     makes no novel-method claim unless separately admitted as method validation.
 3. Create or update
    `research_state/experiments/<experiment-id>/experiment_plan.json`.
 4. Freeze hypothesis, comparisons, datasets, splits, metrics, seeds, success
@@ -47,13 +59,14 @@ Read only the references needed for the task:
 6. Create every long run with `scripts/experimentctl.py new-run` before
    launching it. Refuse a long run if its record directory or readable log
    cannot be created.
-7. Before the first novel-method run and after every idea revision, run
+7. Before the first `method-validation` run and after every idea revision, run
    `scripts/prelaunch_reconcile.py`. Preserve the report and refuse launch when
    lifecycle, idea-state freshness, lineage, identity, inherited-failure,
    constraint, or task-graph checks fail.
 
 Supported modes are `pilot`, `full`, `ablation`, `robustness`, `efficiency`,
-`reproduction`, and `debug`.
+`reproduction`, and `debug`. These describe execution shape; `admission_mode`
+describes why the experiment is scientifically allowed to run.
 
 ## Execute
 
@@ -107,13 +120,15 @@ budget. After every fresh gate verification, automatically launch the next
 eligible predeclared task instead of stopping at an intermediate milestone.
 Pause for hypothesis changes, metric or dataset changes, budget expansion,
 destructive actions, credentials, or three failed fixes for the same symptom.
-Before every launch and scheduled check, reconcile the active idea ID,
-revision, and contract hash with `research-idea-lab`; a material idea revision
-stales queued tasks, preserves prior evidence, and requires a new plan revision
-and immutable run IDs rather than an in-place change.
-Also reconcile the mechanism family and signature hash. A renamed idea with the
-same failed mechanism remains blocked until `research-idea-lab` resolves the
-family failure; do not treat it as a fresh campaign.
+For `method-validation`, before every launch and scheduled check, reconcile the
+active idea ID, revision, and contract hash with `research-idea-lab`; a material
+idea revision stales queued tasks, preserves prior evidence, and requires a new
+plan revision and immutable run IDs rather than an in-place change. Also
+reconcile the mechanism family and signature hash. A renamed idea with the same
+failed mechanism remains blocked until `research-idea-lab` resolves the family
+failure; do not treat it as a fresh campaign. Diagnostic and reproduction work
+reconcile their frozen question, inputs, intervention boundary, and measurement
+instead of inventing an idea identity.
 
 ## Logging Contract
 
@@ -162,11 +177,13 @@ efficiency evidence.
 Use these stages exactly:
 
 `draft`, `designed`, `preflight-passed`, `code-synced`, `queued`, `running`,
-`completed-technical`, `verified-scientific`, `paper-ready`, `blocked`.
+`completed-technical`, `verified-diagnostic`, `verified-scientific`,
+`paper-ready`, `blocked`.
 
-Only `paper-ready` evidence with a v2 verification report and matching idea
-contract and experiment-plan hashes may enter an unblocked shared-state writing
-handoff.
+`verified-diagnostic` evidence may update the problem or bottleneck record but
+cannot be promoted directly to `paper-ready`. Only `paper-ready` evidence with
+a v2 verification report and matching method-validation idea contract and
+experiment-plan hashes may enter an unblocked shared-state writing handoff.
 
 ## Ownership and Safety
 
