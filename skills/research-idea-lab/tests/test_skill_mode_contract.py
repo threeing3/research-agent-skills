@@ -41,6 +41,15 @@ class SkillEvidenceLoopContractTests(unittest.TestCase):
         self.assertIn("Do not force a request", intent)
         self.assertNotIn("Select exactly one primary mode", SKILL_TEXT)
 
+    def test_method_first_speculation_is_allowed_without_claim_upgrade(self) -> None:
+        intent = section(
+            "## Choose a primary intent, not a rigid mode",
+            "## Start lightly",
+        )
+        self.assertIn("Method-first speculation is allowed", intent)
+        self.assertIn("explicitly speculative", intent)
+        self.assertIn("does not establish the problem", intent)
+
     def test_problem_diagnosis_allows_minimal_intervention_without_circular_proof(self) -> None:
         problem = section(
             "## Establish the problem before building the method",
@@ -65,6 +74,9 @@ class SkillEvidenceLoopContractTests(unittest.TestCase):
         ):
             self.assertIn(concept, iteration)
         self.assertIn("do not create another scientific revision", iteration)
+        self.assertIn("implementation branch", iteration)
+        self.assertIn("does not reset the warning", iteration)
+        self.assertIn("critical interface or causal", iteration)
 
     def test_natural_intermediate_interface_is_checked_before_long_runs(self) -> None:
         iteration = section(

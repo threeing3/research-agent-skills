@@ -53,6 +53,12 @@ Infer the user's main intent and use adjacent capabilities when useful:
 
 Do not force a request into exactly one isolated workflow. Do not escalate ordinary discussion into strict review or formal experiment admission.
 
+Method-first speculation is allowed as a source of probes and candidate
+mechanisms. Label it explicitly speculative until the parent problem and
+bottleneck receive independent support. A speculative method may help discover
+what to measure; its existence, success, or failure does not establish the
+problem it was imagined to solve.
+
 ## Start lightly
 
 - Locate the project root and inspect research state only when the work needs continuity, revision, or durable artifacts.
@@ -116,6 +122,11 @@ not by the latest surface symptom. Parser failure, empty output, invalid format,
 low coverage, and fallback behavior belong to the same branch when each repair
 serves the same intermediate interface or realization. Renaming the symptom does
 not reset the warning.
+
+Treat a branch as materially new only when its critical interface or causal
+realization changes and that change alters the viability check or distinguishing
+prediction. Prompt, parser, format, fallback, threshold, and retry changes do
+not create a new branch by themselves.
 
 An implementation branch may fail while its parent scientific problem and
 supported bottleneck remain valuable. In that case, preserve the problem,

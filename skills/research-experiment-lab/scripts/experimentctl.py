@@ -16,6 +16,22 @@ MODES = {"pilot", "full", "ablation", "robustness", "efficiency", "reproduction"
 ADMISSION_MODES = {"diagnostic", "method-validation", "reproduction"}
 
 
+IMPLEMENTATION_BRANCH_FIELDS = (
+    "branch_id",
+    "realization_summary",
+    "critical_interface",
+    "viability_check",
+    "abandon_condition",
+)
+
+
+def valid_implementation_branch(value: Any) -> bool:
+    return isinstance(value, dict) and all(
+        isinstance(value.get(field), str) and bool(value.get(field).strip())
+        for field in IMPLEMENTATION_BRANCH_FIELDS
+    )
+
+
 def update_project_index(root: Path, experiment_id: str) -> None:
     index_path = root / "research_state.json"
     if not index_path.exists():
@@ -76,7 +92,14 @@ def initialize(args: argparse.Namespace) -> None:
             "outcome_interpretations": {},
             "stop_condition": "",
         } if args.admission_mode == "diagnostic" else None,
-        "hypothesis": "",
+        "hypothesis": None if args.admission_mode == "diagnostic" else "",
+        "implementation_branch": {
+            "branch_id": "",
+            "realization_summary": "",
+            "critical_interface": "",
+            "viability_check": "",
+            "abandon_condition": "",
+        } if args.admission_mode == "method-validation" else None,
         "mechanism_prediction": "",
         "null_explanation": "",
         "datasets": [],
@@ -180,6 +203,14 @@ def new_run(args: argparse.Namespace) -> None:
     run_id = require_id(args.run_id, "run_id")
     experiment_dir = root / "research_state" / "experiments" / experiment_id
     plan = read_json(experiment_dir / "experiment_plan.json")
+    implementation_branch = plan.get("implementation_branch")
+    if plan.get("admission_mode", "method-validation") == "method-validation":
+        if not isinstance(plan.get("hypothesis"), str) or not plan["hypothesis"].strip():
+            raise ValueError("method-validation new-run requires a non-empty hypothesis")
+        if not valid_implementation_branch(implementation_branch):
+            raise ValueError(
+                "method-validation new-run requires a complete implementation_branch"
+            )
     state_path = experiment_dir / "experiment_state.json"
     state = read_json(state_path)
     run_dir = experiment_dir / "runs" / run_id
@@ -201,6 +232,11 @@ def new_run(args: argparse.Namespace) -> None:
         "plan_revision": plan.get("plan_revision"),
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
+        "implementation_branch_id": (
+            implementation_branch.get("branch_id")
+            if isinstance(implementation_branch, dict)
+            else None
+        ),
         "mode": plan.get("mode"),
         "variant": args.variant,
         "dataset": args.dataset,
@@ -237,6 +273,7 @@ def new_run(args: argparse.Namespace) -> None:
             "event": "run-created",
             "experiment_id": experiment_id,
             "run_id": run_id,
+            "implementation_branch_id": manifest["implementation_branch_id"],
             "variant": args.variant,
             "seed": args.seed,
         },

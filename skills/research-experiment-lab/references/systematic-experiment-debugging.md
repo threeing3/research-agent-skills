@@ -45,6 +45,11 @@ threshold failure, and fallback failure remain one branch when they are all
 attempts to activate the same realization. A new symptom label does not reset
 the history.
 
+For method validation, read the stable branch ID from
+`experiment_plan.json.implementation_branch.branch_id` and preserve it in every
+child run. A new branch requires a material change to the critical interface or
+causal realization and to its viability check or distinguishing prediction.
+
 Treat three failed fixes on one repair branch as the default point to stop and
 discuss architecture. Continue only when verified new evidence, a newly isolated
 blocker, or a material realization change makes another attempt informative and

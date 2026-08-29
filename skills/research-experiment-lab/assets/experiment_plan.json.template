@@ -13,6 +13,13 @@
   "research_question": "",
   "diagnostic_handoff": null,
   "hypothesis": "",
+  "implementation_branch": {
+    "branch_id": "",
+    "realization_summary": "",
+    "critical_interface": "",
+    "viability_check": "",
+    "abandon_condition": ""
+  },
   "mechanism_prediction": "",
   "null_explanation": "",
   "datasets": [],

@@ -174,6 +174,42 @@ def main() -> int:
         for name, observed, expected in identities:
             checks.append(check_result(name, observed == expected, f"plan={observed!r} idea={expected!r}"))
 
+        implementation_branch = plan.get("implementation_branch")
+        method_hypothesis_ok = (
+            isinstance(plan.get("hypothesis"), str)
+            and bool(plan.get("hypothesis").strip())
+        )
+        checks.append(
+            check_result(
+                "method-hypothesis",
+                method_hypothesis_ok,
+                repr(plan.get("hypothesis")),
+            )
+        )
+        if not method_hypothesis_ok:
+            blockers.append("method-hypothesis-missing")
+        branch_fields = (
+            "branch_id",
+            "realization_summary",
+            "critical_interface",
+            "viability_check",
+            "abandon_condition",
+        )
+        branch_ok = isinstance(implementation_branch, dict) and all(
+            isinstance(implementation_branch.get(field), str)
+            and bool(implementation_branch.get(field).strip())
+            for field in branch_fields
+        )
+        checks.append(
+            check_result(
+                "implementation-branch",
+                branch_ok,
+                repr(implementation_branch),
+            )
+        )
+        if not branch_ok:
+            blockers.append("implementation-branch-missing")
+
         expected_failure_ids = sorted(str(item.get("failure_id")) for item in inherited if isinstance(item, dict) and item.get("failure_id"))
         observed_failure_ids = plan.get("inherited_failure_ids")
         checks.append(check_result("failure-ledger-consumed", isinstance(observed_failure_ids, list) and sorted(map(str, observed_failure_ids)) == expected_failure_ids, f"plan={observed_failure_ids!r} idea={expected_failure_ids!r}"))

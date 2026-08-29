@@ -17,6 +17,11 @@ resolved configuration paths, dataset and split, variant, seed, environment,
 hardware, start/end times, periodic progress, warnings, checkpoints, resume or
 recovery events, output paths, exit status, and final summary.
 
+For method validation, `run_manifest.json`, `run.log`, recovery events,
+`run_index.csv`, and `failures.csv` also carry the frozen
+`implementation_branch_id`. A change in the surface symptom does not change
+that ID.
+
 `events.jsonl` uses one JSON object per line:
 
 ```json

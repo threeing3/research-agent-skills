@@ -28,6 +28,11 @@ low coverage, threshold failure, or fallback behavior does not start a new
 branch when the fixes still serve the same realization. Surface symptom names
 must not reset the low-information history.
 
+A new branch requires a material change to the critical interface or causal
+realization that also changes the viability check or distinguishing prediction.
+Changing prompts, parsers, formats, fallbacks, thresholds, or retry behavior is
+normally a repair within the existing branch.
+
 ## Classify what failed
 
 ### Engineering blocker

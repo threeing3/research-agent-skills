@@ -125,6 +125,26 @@ def main() -> int:
                     repr(plan.get("hypothesis")),
                 )
             )
+            implementation_branch = plan.get("implementation_branch")
+            branch_fields = (
+                "branch_id",
+                "realization_summary",
+                "critical_interface",
+                "viability_check",
+                "abandon_condition",
+            )
+            branch_ok = isinstance(implementation_branch, dict) and all(
+                isinstance(implementation_branch.get(field), str)
+                and bool(implementation_branch.get(field).strip())
+                for field in branch_fields
+            )
+            checks.append(
+                result(
+                    "implementation-branch",
+                    branch_ok,
+                    repr(implementation_branch),
+                )
+            )
             identities.extend(
                 [
                     (
@@ -251,6 +271,11 @@ def main() -> int:
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
         "idea_contract_sha256": plan.get("idea_contract_sha256"),
+        "implementation_branch_id": (
+            plan.get("implementation_branch", {}).get("branch_id")
+            if isinstance(plan.get("implementation_branch"), dict)
+            else None
+        ),
         "experiment_plan_sha256": sha256_file(plan_path) if plan_path.is_file() else None,
         "stage": stage,
         "passed": passed,

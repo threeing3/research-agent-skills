@@ -49,7 +49,10 @@ class SharedProtocolSchemaTests(unittest.TestCase):
         )
         self.assertIn("admission_mode", schema["required"])
         self.assertNotIn("hypothesis", schema["required"])
+        self.assertIn("null", schema["properties"]["hypothesis"]["type"])
         self.assertIn("diagnostic_handoff", schema["properties"])
+        self.assertIn("implementation_branch", schema["properties"])
+        self.assertIn("implementation_branch", template)
         self.assertEqual(template["admission_mode"], "method-validation")
         method_rule = next(
             rule
@@ -61,6 +64,7 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             == "method-validation"
         )
         self.assertIn("hypothesis", method_rule["then"]["required"])
+        self.assertIn("implementation_branch", method_rule["then"]["required"])
 
     def test_diagnostic_evidence_handoff_schema_matches_template(self) -> None:
         schema = load(REPO / "schemas" / "diagnostic-evidence-handoff.schema.json")
@@ -104,6 +108,11 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "passed",
         ):
             self.assertIn(field, schema["required"])
+        self.assertIn("implementation_branch_id", schema["properties"])
+        self.assertIn(
+            "implementation_branch_id",
+            schema["allOf"][0]["then"]["required"],
+        )
         self.assertIn(
             "verified-diagnostic",
             schema["properties"]["stage"]["enum"],

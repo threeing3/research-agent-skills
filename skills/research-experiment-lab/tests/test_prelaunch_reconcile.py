@@ -119,6 +119,14 @@ def write_fixture(
         "mechanism_family_id": "family-1",
         "mechanism_signature_sha256": MODULE.mechanism_sha256(contract),
         "inherited_failure_ids": ["F1"],
+        "hypothesis": "The declared realization improves the target behavior.",
+        "implementation_branch": {
+            "branch_id": "IB-fixture",
+            "realization_summary": "Run the fixture implementation.",
+            "critical_interface": "Fixture task output.",
+            "viability_check": "The task graph produces auditable evidence.",
+            "abandon_condition": "Repeated repairs add no discriminating evidence.",
+        },
         "prelaunch": {
             "required_gates": sorted(MODULE.REQUIRED_GATES),
             "lineage_check_report": "lineage_check.json",
@@ -193,6 +201,16 @@ class PrelaunchReconcileTests(unittest.TestCase):
             result = run(*write_fixture(Path(directory), cyclic=True))
             self.assertEqual(result.returncode, 1)
             self.assertIn("contains a cycle", result.stdout)
+
+    def test_missing_implementation_branch_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            contract_path, plan_path = write_fixture(Path(directory))
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan.pop("implementation_branch")
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
+            result = run(contract_path, plan_path)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("implementation-branch", result.stdout)
 
     def test_invalidated_contract_blocks_even_when_consistency_report_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

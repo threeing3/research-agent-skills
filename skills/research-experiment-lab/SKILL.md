@@ -52,6 +52,10 @@ Read only the references needed for the task:
    meanings; a single favored hypothesis is optional. For method validation,
    freeze the method hypothesis, comparisons, datasets, splits, metrics, seeds,
    thresholds, stop conditions, budget, and confounders.
+   A method-validation plan also declares one lightweight
+   `implementation_branch`: its stable ID, realization summary, critical
+   interface, viability check, and abandon condition. Diagnostic and
+   reproduction plans do not require this object.
    Declare evidenced minimum prerequisites and verify that they are jointly
    satisfiable. A smaller run that cannot possibly pass the frozen scientific
    gate is not an eligible pilot.
@@ -125,6 +129,9 @@ Pause for hypothesis changes, metric or dataset changes, budget expansion,
 destructive actions, credentials, or an exhausted repair branch. Track repairs
 by the interface or scientific role they serve; changing the surface symptom
 does not reset the branch history.
+Every method-validation run inherits `implementation_branch_id` from the frozen
+plan. Change the branch only when the critical interface or causal realization
+and its viability check or distinguishing prediction materially change.
 For `method-validation`, before every launch and scheduled check, reconcile the
 active idea ID, revision, and contract hash with `research-idea-lab`; a material
 idea revision stales queued tasks, preserves prior evidence, and requires a new
@@ -175,8 +182,10 @@ with the inherited family evidence.
 
 When the parent problem and bottleneck remain supported but the interface or
 realization is infeasible, close the implementation branch and return an
-`idea-revision-request` for alternative solution exploration. Do not redefine
-the scientific problem around rescuing the failed interface.
+`realization-review-request` for alternative solution exploration. This event
+may recommend retaining, revising, or abandoning the realization, but only the
+idea skill may change idea-owned state. Do not redefine the scientific problem
+around rescuing the failed interface.
 
 ## Verify and Aggregate
 

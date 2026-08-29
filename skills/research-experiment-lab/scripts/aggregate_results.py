@@ -18,17 +18,17 @@ from experiment_common import finite_number, load_jsonl, read_json
 
 RUN_FIELDS = (
     "experiment_id", "run_id", "parent_run_id", "plan_revision", "idea_id",
-    "idea_revision", "mode", "variant", "dataset", "split", "seed",
+    "idea_revision", "implementation_branch_id", "mode", "variant", "dataset", "split", "seed",
     "snapshot_id", "remote_profile", "status", "exit_code", "started_at",
     "ended_at", "duration_seconds", "metric_count", "output_file_count",
     "output_total_bytes", "failure_class", "change_reason",
 )
 SUMMARY_FIELDS = (
-    "experiment_id", "plan_revision", "variant", "dataset", "split", "metric",
+    "experiment_id", "plan_revision", "implementation_branch_id", "variant", "dataset", "split", "metric",
     "n", "mean", "sample_std", "min", "max", "seeds", "run_ids",
 )
 FAILURE_FIELDS = (
-    "experiment_id", "run_id", "parent_run_id", "variant", "dataset", "seed",
+    "experiment_id", "run_id", "parent_run_id", "implementation_branch_id", "variant", "dataset", "seed",
     "technical_status", "exit_code", "failure_class", "symptom",
     "root_cause_hypothesis", "fix", "change_reason",
 )
@@ -163,6 +163,7 @@ def main() -> int:
                     key = (
                         manifest.get("experiment_id"),
                         manifest.get("plan_revision"),
+                        manifest.get("implementation_branch_id"),
                         metric.get("variant", manifest.get("variant")),
                         metric.get("dataset", manifest.get("dataset")),
                         metric.get("split", manifest.get("split")),
@@ -185,10 +186,11 @@ def main() -> int:
                 {
                     "experiment_id": key[0],
                     "plan_revision": key[1],
-                    "variant": key[2],
-                    "dataset": key[3],
-                    "split": key[4],
-                    "metric": key[5],
+                    "implementation_branch_id": key[2],
+                    "variant": key[3],
+                    "dataset": key[4],
+                    "split": key[5],
+                    "metric": key[6],
                     "n": len(values),
                     "mean": statistics.fmean(values),
                     "sample_std": statistics.stdev(values) if len(values) > 1 else "",
