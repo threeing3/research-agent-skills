@@ -109,6 +109,17 @@ class ExperimentLabTests(unittest.TestCase):
                 "--research-question", "Does X improve Y?",
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            plan_path = experiment / "experiment_plan.json"
+            plan = json.loads(plan_path.read_text(encoding="utf-8"))
+            plan["hypothesis"] = "X improves Y through the declared realization."
+            plan["implementation_branch"] = {
+                "branch_id": "IB-fixture",
+                "realization_summary": "Run the fixture implementation.",
+                "critical_interface": "Fixture command output.",
+                "viability_check": "The command emits an auditable metric.",
+                "abandon_condition": "Repeated repairs add no discriminating evidence.",
+            }
+            plan_path.write_text(json.dumps(plan), encoding="utf-8")
         command = {
             "argv": [
                 sys.executable,
@@ -139,6 +150,10 @@ class ExperimentLabTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         run_dir = experiment / "runs" / run_id
+        manifest = json.loads(
+            (run_dir / "records/run_manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(manifest["implementation_branch_id"], "IB-fixture")
         result = run(
             "remote_run.py",
             "--run-dir", run_dir,
@@ -225,6 +240,7 @@ class ExperimentLabTests(unittest.TestCase):
             self.assertEqual(verification["plan_revision"], 1)
             self.assertEqual(verification["idea_id"], "idea-1")
             self.assertEqual(verification["idea_revision"], 1)
+            self.assertEqual(verification["implementation_branch_id"], "IB-fixture")
             self.assertEqual(verification["stage"], "paper-ready")
             self.assertEqual(
                 verification["experiment_plan_sha256"],
@@ -516,6 +532,7 @@ class ExperimentLabTests(unittest.TestCase):
                 "experimentctl.py", "init", root,
                 "--experiment-id", "exp-remote",
                 "--mode", "pilot",
+                "--admission-mode", "reproduction",
                 "--research-question", "remote fixture",
             )
             self.assertEqual(init_result.returncode, 0, init_result.stdout + init_result.stderr)
@@ -619,6 +636,7 @@ class ExperimentLabTests(unittest.TestCase):
                 "experimentctl.py", "init", root,
                 "--experiment-id", "exp-screen",
                 "--mode", "pilot",
+                "--admission-mode", "reproduction",
                 "--research-question", "screen fixture",
             )
             self.assertEqual(init_result.returncode, 0, init_result.stdout + init_result.stderr)

@@ -39,6 +39,7 @@ def main() -> int:
     try:
         plan = read_json(plan_path)
         state = read_json(state_path)
+        admission_mode = plan.get("admission_mode", "method-validation")
         checks.append(
             result(
                 "plan-schema",
@@ -53,7 +54,7 @@ def main() -> int:
                 repr(state.get("schema_version")),
             )
         )
-        identities = (
+        identities = [
             (
                 "experiment-id",
                 isinstance(plan.get("experiment_id"), str)
@@ -69,22 +70,109 @@ def main() -> int:
                 and plan.get("plan_revision") == state.get("plan_revision"),
                 f"plan={plan.get('plan_revision')!r} state={state.get('plan_revision')!r}",
             ),
-            (
-                "idea-id",
-                isinstance(plan.get("idea_id"), str)
-                and bool(plan.get("idea_id"))
-                and plan.get("idea_id") == state.get("idea_id"),
-                f"plan={plan.get('idea_id')!r} state={state.get('idea_id')!r}",
-            ),
-            (
-                "idea-revision",
-                isinstance(plan.get("idea_revision"), int)
-                and not isinstance(plan.get("idea_revision"), bool)
-                and int(plan["idea_revision"]) >= 1
-                and plan.get("idea_revision") == state.get("idea_revision"),
-                f"plan={plan.get('idea_revision')!r} state={state.get('idea_revision')!r}",
-            ),
+        ]
+        checks.append(
+            result(
+                "admission-mode",
+                admission_mode in {"diagnostic", "method-validation", "reproduction"}
+                and state.get("admission_mode", admission_mode) == admission_mode,
+                f"plan={admission_mode!r} state={state.get('admission_mode')!r}",
+            )
         )
+        if admission_mode == "diagnostic":
+            checks.append(
+                result(
+                    "diagnostic-research-question",
+                    isinstance(plan.get("research_question"), str)
+                    and bool(plan.get("research_question").strip()),
+                    repr(plan.get("research_question")),
+                )
+            )
+            handoff = plan.get("diagnostic_handoff")
+            handoff_ok = (
+                isinstance(handoff, dict)
+                and all(
+                    isinstance(handoff.get(field), str) and bool(handoff.get(field).strip())
+                    for field in (
+                        "observed_failure",
+                        "scope_or_prevalence",
+                        "separating_prediction",
+                        "measurement",
+                        "intervention_boundary",
+                        "stop_condition",
+                    )
+                )
+                and isinstance(handoff.get("competing_explanations"), list)
+                and len(handoff["competing_explanations"]) >= 2
+                and all(isinstance(item, str) and item.strip() for item in handoff["competing_explanations"])
+                and isinstance(handoff.get("outcome_interpretations"), dict)
+                and bool(handoff["outcome_interpretations"])
+            )
+            checks.append(result("diagnostic-handoff", handoff_ok, repr(handoff)))
+            checks.append(
+                result(
+                    "diagnostic-not-paper-ready",
+                    not args.promote_paper_ready,
+                    "diagnostic evidence cannot be promoted directly to paper-ready",
+                )
+            )
+        elif admission_mode == "method-validation":
+            checks.append(
+                result(
+                    "method-hypothesis",
+                    isinstance(plan.get("hypothesis"), str)
+                    and bool(plan.get("hypothesis").strip()),
+                    repr(plan.get("hypothesis")),
+                )
+            )
+            implementation_branch = plan.get("implementation_branch")
+            branch_fields = (
+                "branch_id",
+                "realization_summary",
+                "critical_interface",
+                "viability_check",
+                "abandon_condition",
+            )
+            branch_ok = isinstance(implementation_branch, dict) and all(
+                isinstance(implementation_branch.get(field), str)
+                and bool(implementation_branch.get(field).strip())
+                for field in branch_fields
+            )
+            checks.append(
+                result(
+                    "implementation-branch",
+                    branch_ok,
+                    repr(implementation_branch),
+                )
+            )
+            identities.extend(
+                [
+                    (
+                        "idea-id",
+                        isinstance(plan.get("idea_id"), str)
+                        and bool(plan.get("idea_id"))
+                        and plan.get("idea_id") == state.get("idea_id"),
+                        f"plan={plan.get('idea_id')!r} state={state.get('idea_id')!r}",
+                    ),
+                    (
+                        "idea-revision",
+                        isinstance(plan.get("idea_revision"), int)
+                        and not isinstance(plan.get("idea_revision"), bool)
+                        and int(plan["idea_revision"]) >= 1
+                        and plan.get("idea_revision") == state.get("idea_revision"),
+                        f"plan={plan.get('idea_revision')!r} state={state.get('idea_revision')!r}",
+                    ),
+                ]
+            )
+        else:
+            checks.append(
+                result(
+                    "reproduction-question",
+                    isinstance(plan.get("research_question"), str)
+                    and bool(plan.get("research_question").strip()),
+                    repr(plan.get("research_question")),
+                )
+            )
         for name, identity_passed, evidence in identities:
             checks.append(result(name, identity_passed, evidence))
         required_runs = plan.get("required_runs")
@@ -157,7 +245,7 @@ def main() -> int:
                 )
             )
 
-        if plan.get("mode") != "pilot":
+        if admission_mode != "diagnostic" and plan.get("mode") != "pilot":
             for field in ("datasets", "variants", "metrics", "seeds"):
                 value = plan.get(field)
                 checks.append(result(f"formal-plan:{field}", isinstance(value, list) and bool(value), repr(value)))
@@ -165,8 +253,11 @@ def main() -> int:
         checks.append(result("verification-readable", False, f"{type(exc).__name__}: {exc}"))
 
     passed = all(item["passed"] for item in checks)
+    admission_mode = plan.get("admission_mode", "method-validation")
     stage = (
-        "paper-ready"
+        "verified-diagnostic"
+        if passed and admission_mode == "diagnostic"
+        else "paper-ready"
         if passed and args.promote_paper_ready
         else "verified-scientific"
         if passed
@@ -180,6 +271,11 @@ def main() -> int:
         "idea_id": plan.get("idea_id"),
         "idea_revision": plan.get("idea_revision"),
         "idea_contract_sha256": plan.get("idea_contract_sha256"),
+        "implementation_branch_id": (
+            plan.get("implementation_branch", {}).get("branch_id")
+            if isinstance(plan.get("implementation_branch"), dict)
+            else None
+        ),
         "experiment_plan_sha256": sha256_file(plan_path) if plan_path.is_file() else None,
         "stage": stage,
         "passed": passed,

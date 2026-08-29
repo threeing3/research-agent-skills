@@ -1,8 +1,11 @@
 # Prelaunch Lineage and Gate Reconciliation
 
-Use this protocol before creating a novel-method run, allocating a GPU, or
-starting an autonomous task graph. It prevents a renamed failed mechanism or
-an impossible experimental gate from consuming compute.
+Use this protocol for `method-validation` before creating a novel-method run,
+allocating a GPU, or starting an autonomous task graph. It prevents a renamed
+failed mechanism or an impossible experimental gate from consuming compute.
+Do not apply it to a `diagnostic` pilot; use `diagnostic-pilots.md` and check
+the frozen diagnostic handoff, measurement feasibility, intervention boundary,
+authorization, and resource limits instead.
 
 ## Required handoff
 
@@ -17,7 +20,14 @@ lineage-check report. Copy these immutable identifiers into
   "idea_contract_sha256": "",
   "mechanism_family_id": "",
   "mechanism_signature_sha256": "",
-  "inherited_failure_ids": []
+  "inherited_failure_ids": [],
+  "implementation_branch": {
+    "branch_id": "",
+    "realization_summary": "",
+    "critical_interface": "",
+    "viability_check": "",
+    "abandon_condition": ""
+  }
 }
 ```
 
@@ -31,6 +41,7 @@ Reject the handoff when:
 - the anti-reskin gate did not pass;
 - any inherited failure is unresolved;
 - the idea revision, family, contract hash, or mechanism hash differs;
+- the implementation branch is incomplete or lacks a viability and abandon condition;
 - the proposed experiment does not test the recorded discriminating prediction.
 
 Historical runs remain valid evidence for their original revision. They do not
@@ -102,6 +113,7 @@ Freshly recompute:
 - inherited failure set;
 - constraint values backed by current manifests or preflight records;
 - task dependency eligibility;
+- implementation branch identity and completeness;
 - current idea revision and user selection.
 - current idea lifecycle, pool status, contract hash, and pool hash against the
   referenced state-consistency report.

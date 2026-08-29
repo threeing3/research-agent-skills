@@ -2,7 +2,15 @@
 
 ## Campaign contract
 
-Define one campaign around an idea revision or reproduction question. Record:
+First declare `admission_mode`:
+
+- `diagnostic` for separating bottleneck explanations without a novel-method claim;
+- `method-validation` for a selected, admitted novel method;
+- `reproduction` for an existing source protocol without a new method claim.
+
+For a diagnostic campaign, follow `diagnostic-pilots.md` and record only the lightweight diagnostic handoff plus the operational information needed for a traceable run.
+
+For method validation, define one campaign around an admitted idea revision. Record:
 
 - research question and falsifiable mechanism prediction;
 - null or trivial explanation;
@@ -27,7 +35,7 @@ failure must lead to a predeclared recovery, block, or review transition.
 
 Use at least three random seeds for stochastic formal comparisons when feasible.
 If fewer are possible, record the constraint and weaken statistical claims.
-Keep pilots diagnostic; keep full campaigns paper-complete.
+Keep diagnostic pilots claim-limited; keep method-validation campaigns proportionate to their declared evidence goal, and keep formal full campaigns paper-complete.
 
 ## Autonomy envelope
 
@@ -41,8 +49,9 @@ metric, success threshold, core method, baseline set, or budget ceiling.
 before such a change remain attached to the prior plan revision, and queued
 tasks become stale until a new plan revision is created.
 
-Before allocating compute, run the lineage and satisfiability checks in
-`prelaunch-reconciliation.md`. If a required sample count, action class,
+Before allocating method-validation compute, run the lineage and satisfiability checks in
+`prelaunch-reconciliation.md`. For diagnostic work, check the frozen handoff,
+measurement feasibility, intervention boundary, and authorization instead. If a required sample count, action class,
 intervention, access permission, or resource minimum cannot be met, mark the
 campaign blocked. Do not reinterpret an undersized diagnostic as a formal test.
 

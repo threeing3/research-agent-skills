@@ -4,21 +4,49 @@
   "title": "Experiment Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "hypothesis", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
+  "required": ["schema_version", "experiment_id", "plan_revision", "mode", "admission_mode", "idea_id", "idea_revision", "idea_contract_sha256", "research_question", "metrics", "seeds", "stop_conditions", "prelaunch", "tasks", "required_runs"],
   "properties": {
     "schema_version": {"const": "research-experiment/plan-v2"},
     "project_id": {"type": "string", "minLength": 1},
     "experiment_id": {"type": "string", "minLength": 1},
     "plan_revision": {"type": "integer", "minimum": 1},
     "mode": {"enum": ["pilot", "full", "ablation", "robustness", "efficiency", "reproduction", "debug"]},
-    "idea_id": {"type": "string", "minLength": 1},
-    "idea_revision": {"type": "integer", "minimum": 1},
+    "admission_mode": {"enum": ["diagnostic", "method-validation", "reproduction"]},
+    "idea_id": {"type": ["string", "null"], "minLength": 1},
+    "idea_revision": {"type": ["integer", "null"], "minimum": 1},
     "idea_contract_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
     "mechanism_family_id": {"type": "string"},
     "mechanism_signature_sha256": {"type": "string", "pattern": "^$|^[0-9a-f]{64}$"},
     "inherited_failure_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
     "research_question": {"type": "string"},
-    "hypothesis": {"type": "string", "minLength": 1},
+    "diagnostic_handoff": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["observed_failure", "scope_or_prevalence", "competing_explanations", "separating_prediction", "measurement", "intervention_boundary", "outcome_interpretations", "stop_condition"],
+      "properties": {
+        "observed_failure": {"type": "string", "minLength": 1},
+        "scope_or_prevalence": {"type": "string", "minLength": 1},
+        "competing_explanations": {"type": "array", "items": {"type": "string"}, "minItems": 2},
+        "separating_prediction": {"type": "string", "minLength": 1},
+        "measurement": {"type": "string", "minLength": 1},
+        "intervention_boundary": {"type": "string", "minLength": 1},
+        "outcome_interpretations": {"type": "object", "minProperties": 1},
+        "stop_condition": {"type": "string", "minLength": 1}
+      }
+    },
+    "hypothesis": {"type": ["string", "null"], "minLength": 1},
+    "implementation_branch": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["branch_id", "realization_summary", "critical_interface", "viability_check", "abandon_condition"],
+      "properties": {
+        "branch_id": {"type": "string", "minLength": 1},
+        "realization_summary": {"type": "string", "minLength": 1},
+        "critical_interface": {"type": "string", "minLength": 1},
+        "viability_check": {"type": "string", "minLength": 1},
+        "abandon_condition": {"type": "string", "minLength": 1}
+      }
+    },
     "mechanism_prediction": {"type": "string"},
     "null_explanation": {"type": "string"},
     "datasets": {"type": "array", "items": {"type": ["string", "object"]}},
@@ -49,5 +77,46 @@
     "budget": {"type": "object"},
     "required_outputs": {"type": "array", "items": {"type": ["string", "object"]}},
     "required_runs": {"type": "array", "items": {"type": "object"}}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["admission_mode"],
+        "properties": {"admission_mode": {"const": "diagnostic"}}
+      },
+      "then": {
+        "required": ["diagnostic_handoff"],
+        "properties": {
+          "research_question": {"type": "string", "minLength": 1},
+          "diagnostic_handoff": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["admission_mode"],
+        "properties": {"admission_mode": {"const": "method-validation"}}
+      },
+      "then": {
+        "required": ["hypothesis", "implementation_branch"],
+        "properties": {
+          "idea_id": {"type": "string", "minLength": 1},
+          "idea_revision": {"type": "integer", "minimum": 1},
+          "hypothesis": {"type": "string", "minLength": 1},
+          "implementation_branch": {"type": "object"}
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["admission_mode"],
+        "properties": {"admission_mode": {"const": "reproduction"}}
+      },
+      "then": {
+        "properties": {
+          "research_question": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
 }

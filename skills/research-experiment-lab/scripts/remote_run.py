@@ -227,7 +227,15 @@ def main() -> int:
             "exit_code": None,
         }
         atomic_json(status_path, status)
-        append_jsonl(events_path, {"timestamp": start, "event": "run-started", "argv": argv})
+        append_jsonl(
+            events_path,
+            {
+                "timestamp": start,
+                "event": "run-started",
+                "implementation_branch_id": manifest.get("implementation_branch_id"),
+                "argv": argv,
+            },
+        )
         stop = threading.Event()
         monitor = threading.Thread(
             target=sample_resources,
@@ -247,6 +255,9 @@ def main() -> int:
             log.write(f"experiment_id: {manifest.get('experiment_id')}\n")
             log.write(f"plan_revision: {manifest.get('plan_revision')}\n")
             log.write(f"idea_revision: {manifest.get('idea_revision')}\n")
+            log.write(
+                f"implementation_branch_id: {manifest.get('implementation_branch_id')}\n"
+            )
             log.write(f"variant: {manifest.get('variant')}\n")
             log.write(f"dataset: {manifest.get('dataset')}\n")
             log.write(f"split: {manifest.get('split')}\n")
@@ -296,6 +307,7 @@ def main() -> int:
             {
                 "timestamp": end,
                 "event": "run-ended",
+                "implementation_branch_id": manifest.get("implementation_branch_id"),
                 "state": terminal_state,
                 "exit_code": exit_code,
                 "metric_count": metric_count,

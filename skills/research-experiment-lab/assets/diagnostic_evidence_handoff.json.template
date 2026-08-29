@@ -1,0 +1,31 @@
+{
+  "schema_version": "research-experiment/diagnostic-evidence-handoff-v1",
+  "created_at": "RFC3339 timestamp",
+  "research_question": "State the frozen diagnostic question.",
+  "experiment_id": "diagnostic-experiment-id",
+  "plan_revision": 1,
+  "verified_stage": "verified-diagnostic",
+  "observed_failure": "Describe the observed failure tested by this experiment.",
+  "tested_explanations": [
+    "First competing explanation.",
+    "Second competing explanation."
+  ],
+  "separating_prediction": "Copy the frozen prediction that distinguishes the explanations.",
+  "measurement": "Copy the frozen measurement used to test that prediction.",
+  "intervention_boundary": "Copy the frozen boundary of any diagnostic intervention.",
+  "experiment_plan_sha256": "Copy experiment_plan_sha256 from verification_report.json.",
+  "result": {
+    "supports": [],
+    "weakens": [],
+    "inconclusive": [
+      "Replace this placeholder with an evidence-backed interpretation."
+    ]
+  },
+  "scope": "State the population, subgroup, model, dataset, or condition supported by the evidence.",
+  "limitations": [],
+  "recommended_update": "return-to-diagnosis",
+  "evidence_refs": [
+    "verification_report.json"
+  ],
+  "source_verification_report": "verification_report.json"
+}

@@ -43,6 +43,53 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             schema["properties"]["prelaunch"]["required"],
         )
         self.assertIn("idea_state_consistency_report", template["prelaunch"])
+        self.assertIn(
+            "diagnostic",
+            schema["properties"]["admission_mode"]["enum"],
+        )
+        self.assertIn("admission_mode", schema["required"])
+        self.assertNotIn("hypothesis", schema["required"])
+        self.assertIn("null", schema["properties"]["hypothesis"]["type"])
+        self.assertIn("diagnostic_handoff", schema["properties"])
+        self.assertIn("implementation_branch", schema["properties"])
+        self.assertIn("implementation_branch", template)
+        self.assertEqual(template["admission_mode"], "method-validation")
+        method_rule = next(
+            rule
+            for rule in schema["allOf"]
+            if rule.get("if", {})
+            .get("properties", {})
+            .get("admission_mode", {})
+            .get("const")
+            == "method-validation"
+        )
+        self.assertIn("hypothesis", method_rule["then"]["required"])
+        self.assertIn("implementation_branch", method_rule["then"]["required"])
+
+    def test_diagnostic_evidence_handoff_schema_matches_template(self) -> None:
+        schema = load(REPO / "schemas" / "diagnostic-evidence-handoff.schema.json")
+        template = load(
+            EXPERIMENT_SKILL / "assets" / "diagnostic_evidence_handoff.json.template"
+        )
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            template["schema_version"],
+        )
+        for field in (
+            "research_question",
+            "experiment_id",
+            "verified_stage",
+            "separating_prediction",
+            "measurement",
+            "intervention_boundary",
+            "experiment_plan_sha256",
+            "result",
+            "scope",
+            "limitations",
+            "recommended_update",
+            "evidence_refs",
+        ):
+            self.assertIn(field, schema["required"])
 
     def test_verification_schema_tracks_emitted_v2_identity(self) -> None:
         schema = load(REPO / "schemas" / "verification-report.schema.json")
@@ -61,6 +108,15 @@ class SharedProtocolSchemaTests(unittest.TestCase):
             "passed",
         ):
             self.assertIn(field, schema["required"])
+        self.assertIn("implementation_branch_id", schema["properties"])
+        self.assertIn(
+            "implementation_branch_id",
+            schema["allOf"][0]["then"]["required"],
+        )
+        self.assertIn(
+            "verified-diagnostic",
+            schema["properties"]["stage"]["enum"],
+        )
 
     def test_research_state_schema_allows_real_phase_and_current_paths(self) -> None:
         schema = load(REPO / "schemas" / "research-state.schema.json")
